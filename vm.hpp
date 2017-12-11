@@ -1,5 +1,5 @@
-#ifndef vm_vm
-#define vm_vm
+#ifndef kafe_vm
+#define kafe_vm
 
 #include "instructions.hpp"
 #include "value.hpp"
@@ -11,7 +11,7 @@
 #include <exception>
 #include <stdexcept>
 
-namespace vm
+namespace kafe
 {
 
     class VM
@@ -54,6 +54,6 @@ namespace vm
         std::vector<Value>& getStack();
     };
 
-}  // namespace vm
+}  // namespace kafe
 
-#endif // vm_vm
+#endif // kafe_vm

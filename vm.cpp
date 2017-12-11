@@ -3,7 +3,7 @@
 
 #include "vm.hpp"
 
-namespace vm
+namespace kafe
 {
 
     VM::VM() :
@@ -418,4 +418,4 @@ namespace vm
         return m_stack;
     }
 
-}  // namespace vm
+}  // namespace kafe

@@ -1,12 +1,12 @@
-#ifndef vm_utils
-#define vm_utils
+#ifndef kafe_utils
+#define kafe_utils
 
 #include <vector>
 #include <string>
 #include <sstream>
 #include <iostream>
 
-namespace vm
+namespace kafe
 {
     namespace abc
     {
@@ -16,12 +16,12 @@ namespace vm
         {
             T element {};
 
-            if (0 <= i && i < obj.size())
+            if (0 <= i && (unsigned)i < obj.size())
             {
                 element = obj[i];
                 obj.erase(obj.begin() + i);
             }
-            else if (i < 0 && (-i) <= obj.size())
+            else if (i < 0 && (unsigned)(-i) <= obj.size())
             {
                 element = obj[obj.size() + i];
                 obj.erase(obj.begin() + obj.size() + i);
@@ -33,9 +33,9 @@ namespace vm
         template<typename T>
         void pop_no_return(std::vector<T>& obj, int i)
         {
-            if (0 <= i && i < obj.size())
+            if (0 <= i && (unsigned)i < obj.size())
                 obj.erase(obj.begin() + i);
-            else if (i < 0 && (-i) < obj.size())
+            else if (i < 0 && (unsigned)(-i) <= obj.size())
                 obj.erase(obj.begin() + obj.size() + i);
         }
 
@@ -58,4 +58,4 @@ namespace vm
     }  // namespace abc
 }  // namespace abc
 
-#endif // vm_utils
+#endif // kafe_utils

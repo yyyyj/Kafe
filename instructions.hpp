@@ -1,7 +1,7 @@
-#ifndef vm_inst
-#define vm_inst
+#ifndef kafe_inst
+#define kafe_inst
 
-namespace vm
+namespace kafe
 {
 
     enum Instruction
@@ -61,6 +61,6 @@ namespace vm
         // print, getchar, getline
     };
 
-}  // namespace vm
+}  // namespace kafe
 
-#endif // vm_inst
+#endif // kafe_inst

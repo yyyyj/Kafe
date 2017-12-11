@@ -1,10 +1,10 @@
-#ifndef vm_value
-#define vm_value
+#ifndef kafe_value
+#define kafe_value
 
 #include <string>
 #include <vector>
 
-namespace vm
+namespace kafe
 {
 
     enum ValueType
@@ -28,6 +28,6 @@ namespace vm
         std::vector<int> lastPosition;
     };
 
-}  // namespace vm
+}  // namespace kafe
 
-#endif // vm_value
+#endif // kafe_value
