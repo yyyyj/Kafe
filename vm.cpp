@@ -8,6 +8,7 @@ namespace vm
 
     VM::VM() :
         m_stack_size(0)
+        , m_debug(false)
     {}
 
     VM::~VM() {}
@@ -38,6 +39,144 @@ namespace vm
         throw std::runtime_error("Index out of range, can not get next byte ! => Malformed bytecode");
     }
 
+    int VM::getXBytesInt(char* bytecode, unsigned s, unsigned& i, unsigned X)
+    {
+        int v = getByte(bytecode, s, ++i);
+        for (unsigned k=1; k < X; ++k)
+            { v = (v << 8) + getByte(bytecode, s, ++i); }
+        return v;
+    }
+
+    std::string VM::readString(char* bytecode, unsigned s, unsigned& i, unsigned strSize)
+    {
+        std::string work = "";
+        ++i;
+        for (unsigned j=i; i - j < strSize; ++i)
+            { work += getByte(bytecode, s, i); }
+        --i;
+        return work;
+    }
+
+    std::string VM::getSegmentName(char* bytecode, unsigned s, unsigned& i)
+    {
+        unsigned str_size = getByte(bytecode, s, ++i);
+        if (str_size > 0)
+            { return readString(bytecode, s, i, str_size); }
+        else
+            { throw std::logic_error("Invalid size given for the segment name to fetch"); }
+    }
+
+    void VM::goToSegmentPosition(const std::string& segmentName, unsigned& i)
+    {
+        if (m_segments.find(segmentName) != m_segments.end())
+            { i = m_segments[segmentName] - 1; }  // -1 because we do that before an iteration end, so we will do ++i just after
+        else
+            { throw std::runtime_error("Can not jump to an undefined segment"); }
+    }
+
+    void VM::pushCallStack(const std::string& segmentName, unsigned lastPos)
+    {
+        if (m_call_stack.size() == 0 || m_call_stack[m_call_stack.size() - 1].segmentName != segmentName)
+        {
+            Call call_element;
+            call_element.lastPosition.push_back(lastPos);
+            call_element.segmentName = segmentName;
+            m_call_stack.push_back(call_element);
+        }
+        else
+            { m_call_stack[m_call_stack.size() - 1].lastPosition.push_back(lastPos); }
+
+        if (m_debug) std::cout << "    call stack: " << m_call_stack[m_call_stack.size() - 1].lastPosition[m_call_stack[m_call_stack.size() - 1].lastPosition.size() - 1] << " " << m_call_stack[m_call_stack.size() - 1].segmentName << std::endl;
+    }
+
+    bool VM::canValueCompareTo(Value val, bool c)
+    {
+        return (val.type == TYPE_BOOL && val.boolValue == c) ||
+               (val.type == TYPE_INT && bool(val.intValue) == c) ||
+               (val.type == TYPE_STRING && bool(val.stringValue.size()) == c);
+    }
+
+    void VM::builtins(char instruction)
+    {
+        switch (instruction)
+        {
+            case INST_ADD:
+            {
+                std::cout << "add" << std::endl;
+
+                Value b = pop();
+                Value a = pop();
+
+                if (a.type == b.type)
+                {
+                    if (a.type == TYPE_INT)
+                    {
+                        Value c;
+                        c.type = TYPE_INT;
+                        c.intValue = b.intValue + a.intValue;
+                        push(c);
+                    }
+                    else if (a.type == TYPE_STRING)
+                    {
+                        Value c;
+                        c.type = TYPE_STRING;
+                        c.stringValue = std::string(a.stringValue) + std::string(b.stringValue);
+                        push(c);
+                    }
+                    else
+                        { throw std::logic_error("Can not add two booleans"); }
+                }
+                else
+                    { throw std::logic_error("Can not add two variables of heterogeneous types"); }
+
+                break;
+            }
+
+            case INST_NE:
+            {
+                std::cout << "ne" << std::endl;
+
+                Value b = pop();
+                Value a = pop();
+
+                if (a.type != b.type)
+                {
+                    Value c;
+                    c.type = TYPE_BOOL;
+                    c.boolValue = true;
+                    push(c);
+                }
+                else
+                {
+                    if ((a.type == TYPE_BOOL && a.boolValue != b.boolValue) ||
+                        (a.type == TYPE_INT && a.intValue != b.intValue) ||
+                        (a.type == TYPE_STRING && a.stringValue != b.stringValue))
+                    {
+                        Value c;
+                        c.type = TYPE_BOOL;
+                        c.boolValue = true;
+                        push(c);
+                    }
+                    else
+                    {
+                        Value c;
+                        c.type = TYPE_BOOL;
+                        c.boolValue = false;
+                        push(c);
+                    }
+                }
+
+                break;
+            }
+
+            default:
+            {
+                throw std::runtime_error("Invalid byte used to identify a non-existing procedure : " +
+                                         abc::str((unsigned) instruction));
+            }
+        }
+    }
+
     int VM::exec(char* bytecode, unsigned s)
     {
         clear();
@@ -45,108 +184,132 @@ namespace vm
         for (unsigned i=0; i < s; ++i)
         {
             char instruction = getByte(bytecode, s, i);
+            if (m_debug) std::cout << i << " ";
 
             switch (instruction)
             {
                 case INST_INT:
                 {
-                    std::cout << "int" << std::endl;
+                    if (m_debug) std::cout << "int" << std::endl;
+
                     Value v;
                     v.type = TYPE_INT;
-                    v.intValue = (getByte(bytecode, s, ++i) << 8) + getByte(bytecode, s, ++i);
+                    v.intValue = getXBytesInt(bytecode, s, i);
                     push(v);
+
                     break;
                 }
 
                 case INST_STR:
                 {
-                    std::cout << "str" << std::endl;
-                    unsigned str_size = (getByte(bytecode, s, ++i) << 8) + getByte(bytecode, s, ++i);
+                    if (m_debug)  std::cout << "str" << std::endl;
+
+                    unsigned str_size = getXBytesInt(bytecode, s, i);
                     if (str_size > 0)
                     {
                         Value a;
                         a.type = TYPE_STRING;
-                        ++i;
-                        for (unsigned j=i; i - j < str_size; ++i)
-                            { a.stringValue += getByte(bytecode, s, i); }
-                        i--;
+                        a.stringValue = readString(bytecode, s, i, str_size);
                         push(a);
                     }
                     else
                         { throw std::logic_error("Invalid size given for the string to store"); }
+
                     break;
                 }
 
                 case INST_BOOL:
                 {
-                    std::cout << "bool" << std::endl;
+                    if (m_debug)  std::cout << "bool" << std::endl;
+
                     Value a;
                     a.type = TYPE_BOOL;
                     a.boolValue = getByte(bytecode, s, ++i) > 0;
                     push(a);
+
                     break;
                 }
 
                 case INST_VAR:
                 {
-                    std::cout << "var" << std::endl;
+                    if (m_debug) std::cout << "var" << std::endl;
+
                     unsigned str_size = getByte(bytecode, s, ++i);
                     if (str_size > 0)
                     {
                         Value a;
                         a.type = TYPE_STRING;
-                        ++i;
-                        for (unsigned j=i; i - j < str_size; ++i)
-                            { a.stringValue += getByte(bytecode, s, i); }
-                        i--;
+                        a.stringValue = readString(bytecode, s, i, str_size);
                         push(a);
                     }
                     else
                         { throw std::logic_error("Invalid size given for the variable name to store"); }
+
                     break;
                 }
 
                 case INST_SEGMENT:
                 {
-                    std::cout << "segment" << std::endl;
-                    unsigned seg_size = getByte(bytecode, s, ++i);
+                    if (m_debug) std::cout << "segment" << std::endl;
+
+                    unsigned str_size = getByte(bytecode, s, ++i);
                     std::string seg_name;
-                    if (seg_size > 0)
-                    {
-                        ++i;
-                        for (unsigned j=i; i - j < seg_size; ++i)
-                            { seg_name += getByte(bytecode, s, i); }
-                        --i;
-                    }
+                    if (str_size > 0)
+                        { seg_name = readString(bytecode, s, i, str_size); }
                     else
                         { throw std::logic_error("Invalid size for the segment name"); }
-                    m_segments[seg_name] = i;
+
+                    if (m_segments.find(seg_name) == m_segments.end())
+                        { m_segments[seg_name] = i; }
+
+                    unsigned seg_size = getXBytesInt(bytecode, s, i);
+                    if (seg_size > 0)
+                        { i += seg_size; }
+                    else
+                        { throw std::logic_error("Invalid bloc count for the segment"); }
+
+                    break;
+                }
+
+                case INST_DECL_SEG:
+                {
+                    if (m_debug) std::cout << "declare segment" << std::endl;
+
+                    unsigned str_size = getByte(bytecode, s, ++i);
+                    std::string seg_name;
+                    if (str_size > 0)
+                        { seg_name = readString(bytecode, s, i, str_size); }
+                    else
+                        { throw std::logic_error("Invalid size for the segment name"); }
+
+                    m_segments[seg_name] = getXBytesInt(bytecode, s, i);
+
                     break;
                 }
 
                 case INST_STORE_VAR:
                 {
-                    std::cout << "store var" << std::endl;
+                    if (m_debug) std::cout << "store var" << std::endl;
+
                     Value var_name = pop();
                     Value val = pop();
+
                     if (var_name.type == TYPE_STRING)
                         { m_variables[var_name.stringValue] = val; }
                     else
                         { throw std::logic_error("A variable name should be a string"); }
+
                     break;
                 }
 
                 case INST_PUSH_VAR:
                 {
-                    std::cout << "push var" << std::endl;
+                    if (m_debug) std::cout << "push var" << std::endl;
+
                     unsigned str_size = getByte(bytecode, s, ++i);
                     if (str_size > 0)
                     {
-                        std::string v;
-                        ++i;
-                        for (unsigned j=i; i - j < str_size; ++i)
-                            { v += getByte(bytecode, s, i); }
-                        i--;
+                        std::string v = readString(bytecode, s, i, str_size);
                         if (m_variables.find(v) != m_variables.end())
                             { push(m_variables[v]); }
                         else
@@ -154,64 +317,88 @@ namespace vm
                     }
                     else
                         { throw std::logic_error("Invalid size given for the variable name to fetch"); }
+
                     break;
                 }
 
                 case INST_JUMP:
                 {
-                    std::cout << "jump" << std::endl;
-                    unsigned str_size = getByte(bytecode, s, ++i);
-                    if (str_size > 0)
-                    {
-                        std::string v;
-                        ++i;
-                        for (unsigned j=i; i - j < str_size; ++i)
-                            { v += getByte(bytecode, s, i); }
-                        i--;
-                        if (m_segments.find(v) != m_segments.end())
-                            { i = m_segments[v]; }
-                        else
-                            { throw std::runtime_error("Can not jump to an undefined segment"); }
-                    }
-                    else
-                        { throw std::logic_error("Invalid size given for the segment name to fetch"); }
+                    if (m_debug) std::cout << "jump" << std::endl;
+
+                    std::string seg_name = getSegmentName(bytecode, s, i);
+                    unsigned last_pos = i;
+                    goToSegmentPosition(seg_name, i);
+                    pushCallStack(seg_name, last_pos);
+
+                    if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;
+
                     break;
                 }
 
-                case INST_ADD:
+                case INST_JUMP_IF:
                 {
-                    std::cout << "add" << std::endl;
-                    Value b = pop();
+                    if (m_debug) std::cout << "jump if" << std::endl;
+
                     Value a = pop();
-                    if (a.type == b.type)
+                    if (canValueCompareTo(a, true))
                     {
-                        if (a.type == TYPE_INT)
-                        {
-                            Value c;
-                            c.type = TYPE_INT;
-                            c.intValue = b.intValue + a.intValue;
-                            push(c);
-                        }
-                        else if (a.type == TYPE_STRING)
-                        {
-                            Value c;
-                            c.type = TYPE_STRING;
-                            c.stringValue = std::string(a.stringValue) + std::string(b.stringValue);
-                            push(c);
-                        }
-                        else
-                            { throw std::logic_error("Can not add two booleans"); }
+                        std::string seg_name = getSegmentName(bytecode, s, i);
+                        unsigned last_pos = i;
+                        goToSegmentPosition(seg_name, i);
+                        pushCallStack(seg_name, last_pos);
+
+                        if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;
+                    }
+
+                    break;
+                }
+
+                case INST_JUMP_IFN:
+                {
+                    if (m_debug) std::cout << "jump if not" << std::endl;
+
+                    Value a = pop();
+                    if (canValueCompareTo(a, false))
+                    {
+                        std::string seg_name = getSegmentName(bytecode, s, i);
+                        unsigned last_pos = i;
+                        goToSegmentPosition(seg_name, i);
+                        pushCallStack(seg_name, last_pos);
+
+                        if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;
+                    }
+
+                    break;
+                }
+
+                case INST_RET:
+                {
+                    if (m_debug) std::cout << "ret" << std::endl;
+
+                    if (m_call_stack.size() > 0)
+                    {
+                        i = abc::pop(m_call_stack[m_call_stack.size() - 1].lastPosition, -1);
+                        if (m_call_stack[m_call_stack.size() - 1].lastPosition.size() == 0)
+                            abc::pop_no_return(m_call_stack, -1);
                     }
                     else
-                        { throw std::logic_error("Can not add two variables of heterogeneous types"); }
+                        { throw std::logic_error("Can not return from a non-segment !"); }
+
+                    break;
+                }
+
+                case INST_PROCEDURE:
+                {
+                    // we implement the procedure in another function, using a special code
+                    // in order to be able to have (1st) more procedures and (2nd) a cleaner code
+                    builtins(getByte(bytecode, s, ++i));
                     break;
                 }
 
                 default:
                 {
-                    // could be end of string
                     if (instruction != 0x00)
-                        { throw std::runtime_error("Can not identify the instruction " + std::string(instruction, 1)); }
+                        { throw std::runtime_error("Can not identify the instruction " + abc::str((unsigned) instruction)); }
                 }
             }
         }
@@ -219,9 +406,11 @@ namespace vm
         return 0;
     }
 
-    int VM::execSegment(char* bytecode, char* segment_name)
+    // int VM::execSegment(char* bytecode, char* segment_name) { return 0; }
+
+    void VM::setDebug(bool debug)
     {
-        return 0;
+        m_debug = debug;
     }
 
     std::vector<Value>& VM::getStack()

@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <iostream>
 
 namespace vm
 {
@@ -11,7 +12,7 @@ namespace vm
     {
 
         template<typename T>
-        T pop(std::vector<T>& obj, std::size_t i)
+        T pop(std::vector<T>& obj, int i)
         {
             T element {};
 
@@ -20,7 +21,7 @@ namespace vm
                 element = obj[i];
                 obj.erase(obj.begin() + i);
             }
-            else if (i < 0 && (-i) < obj.size())
+            else if (i < 0 && (-i) <= obj.size())
             {
                 element = obj[obj.size() + i];
                 obj.erase(obj.begin() + obj.size() + i);
@@ -30,7 +31,7 @@ namespace vm
         }
 
         template<typename T>
-        void pop_no_return(std::vector<T>& obj, std::size_t i)
+        void pop_no_return(std::vector<T>& obj, int i)
         {
             if (0 <= i && i < obj.size())
                 obj.erase(obj.begin() + i);

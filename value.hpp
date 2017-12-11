@@ -2,6 +2,7 @@
 #define vm_value
 
 #include <string>
+#include <vector>
 
 namespace vm
 {
@@ -19,6 +20,12 @@ namespace vm
         int intValue;
         bool boolValue;
         std::string stringValue;
+    };
+
+    struct Call
+    {
+        std::string segmentName;
+        std::vector<int> lastPosition;
     };
 
 }  // namespace vm
