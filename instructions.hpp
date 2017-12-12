@@ -12,7 +12,8 @@ namespace kafe
         INST_INT       = 0x01,  // 0x01 [integer on 2 bytes]
         INST_STR       = 0x02,  // 0x02 [size of the string on 2 bytes] [string]
         INST_BOOL      = 0x03,  // 0x03 [value] ; if value > 0x00 => true
-        INST_VAR       = 0x04,  // 0x04 [size of var name on 1 byte] [var]
+        INST_LIST      = 0x04,  // 0x04 [number of elements on two bytes = X] ; take the X last elements putted on the stack and put them into a list
+        INST_VAR       = 0x05,  // 0x05 [size of var name on 1 byte] [var]
 
         // labels and blocs
         INST_SEGMENT   = 0x10,  // 0x10 [segment name size on 1 byte] [segment] [size (from the next byte after this two, to the INST_RET included) on two bytes]

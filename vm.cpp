@@ -230,6 +230,22 @@ namespace kafe
                     break;
                 }
 
+                case INST_LIST:
+                {
+                    if (m_debug) std::cout << "list" << std::endl;
+
+                    unsigned nb_elements = getXBytesInt(bytecode, s, i);
+                    Value c;
+                    c.type = TYPE_LIST;
+                    while (nb_elements != 0)
+                    {
+                        c.listValue.push_back(pop());
+                        nb_elements--;
+                    }
+
+                    break;
+                }
+
                 case INST_VAR:
                 {
                     if (m_debug) std::cout << "var" << std::endl;
