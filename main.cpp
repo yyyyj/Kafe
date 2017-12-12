@@ -71,7 +71,7 @@ int main(int argc, char** argv)
             kafe::INST_INT, 0x00, 0x01,
             kafe::INST_VAR, 0x03, 'v', 'a', 'r',
             kafe::INST_STORE_VAR,
-            kafe::INST_PUSH_VAR, 0x03, 'v', 'a', 'r',
+            kafe::INST_LOAD_VAR, 0x03, 'v', 'a', 'r',
             kafe::INST_INT, 0x00, 0x09,
             kafe::INST_PROCEDURE, kafe::INST_ADD,
             0x00
@@ -92,7 +92,7 @@ int main(int argc, char** argv)
             kafe::INST_VAR, 0x01, 'a',                             // len:3 => 11
             kafe::INST_STORE_VAR,                                  // len:1 => 12
             kafe::INST_SEGMENT, 0x03, 'v', 'a', 'r', 0x00, 0x08,
-                kafe::INST_PUSH_VAR, 0x01, 'a',
+                kafe::INST_LOAD_VAR, 0x01, 'a',
                 kafe::INST_BOOL, 0x01,
                 kafe::INST_PROCEDURE, kafe::INST_NE,
                 kafe::INST_RET,

@@ -20,7 +20,13 @@ namespace kafe
     struct Value;
 
     // name of the variable : default value
-    using Structure = std::map<std::string, Value>;
+    using Structure = std::vector<StructElem>;
+
+    struct StructElem
+    {
+        std::string name;
+        Value val;
+    };
 
     struct Value
     {

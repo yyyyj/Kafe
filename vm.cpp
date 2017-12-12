@@ -21,11 +21,13 @@ namespace kafe
 
     Value VM::pop()
     {
+        // return last element put on the stack
         return abc::pop(m_stack, --m_stack_size);
     }
 
     void VM::clear()
     {
+        // cleaning the VM to run it again without creating a new instance
         m_stack.clear();
         m_stack_size = 0;
         m_variables.clear();
@@ -76,6 +78,8 @@ namespace kafe
 
     void VM::pushCallStack(const std::string& segmentName, unsigned lastPos)
     {
+        // we need to keep track of what segment we jumped to, from which position,
+        // to be able to go able to the caller position easily, and continue the execution
         if (m_call_stack.size() == 0 || m_call_stack[m_call_stack.size() - 1].segmentName != segmentName)
         {
             Call call_element;
@@ -91,6 +95,10 @@ namespace kafe
 
     bool VM::canValueCompareTo(Value val, bool c)
     {
+        // utility to compare a value to a boolean
+        if (val.type == TYPE_STRUCT)
+            { return true; }  // convention
+
         return (val.type == TYPE_BOOL && val.boolValue == c) ||
                (val.type == TYPE_INT && bool(val.intValue) == c) ||
                (val.type == TYPE_STRING && bool(val.stringValue.size()) == c);
@@ -264,6 +272,66 @@ namespace kafe
                     break;
                 }
 
+                case INST_STRUCT:
+                {
+                    if (m_debug) std::cout << "structure" << std::endl;
+
+                    unsigned str_size = getByte(bytecode, s, ++i);
+                    if (str_size > 0)
+                    {
+                        Value a;
+                        a.type = TYPE_STRUCT;
+                        // getting the structure name
+                        std::string name = readString(bytecode, s, i, str_size);
+                        // to take the default data in it and fill the new object with those
+                        if (m_struct_definitions.find(name) != m_struct_definitions.end())
+                        {
+                            for (std::size_t j=0; j < m_struct_definitions[name].size(); ++j)
+                                { a.structValue[m_struct_definitions[name][k].name] = m_struct_definitions[name][k].val; }
+                            /// TODO: read arguments given if there are any
+                            unsigned arg_nb = getByte(bytecode, s, ++i);
+                            ///for (unsigned j=0; j < arg_nb; ++j)
+                            ///    {  }
+                        }
+                        else
+                            { throw std::runtime_error("Can not use an undefined structure"); }
+                        push(a);
+                    }
+                    else
+                        { throw std::logic_error("Invalid size given for the structure name to store"); }
+
+                    break;
+                }
+
+                case INST_DECL_STRUCT:
+                {
+                    if (m_debug) std::cout << "declare structure" << std::endl;
+
+                    /**unsigned str_size = getByte(bytecode, s, ++i);
+                    if (str_size > 0)
+                    {
+                        std::string name = readString(bytecode, s, i, str_size);
+                        unsigned data_quantity = getXBytesInt(bytecode, s, i);
+                        m_struct_definitions[data_quantity] = Structure();
+                        ++i;
+                        for (unsigned j=0; j < data_quantity; ++j)
+                        {
+                            unsigned str_size = getByte(bytecode, s, i);
+                            std::string name = readString(bytecode, s, i, str_size);
+                            Value val;
+                            StructElem se;
+                            se.name = name;
+                            se.val = val;
+                            m_struct_definitions[data_quantity] = se;
+                        }
+                        --i;
+                    }
+                    else
+                        { throw std::logic_error("Invalid size given for the structure name to store"); }
+                    **/
+                    break;
+                }
+
                 case INST_SEGMENT:
                 {
                     if (m_debug) std::cout << "segment" << std::endl;
@@ -318,7 +386,7 @@ namespace kafe
                     break;
                 }
 
-                case INST_PUSH_VAR:
+                case INST_LOAD_VAR:
                 {
                     if (m_debug) std::cout << "push var" << std::endl;
 
