@@ -25,6 +25,9 @@ namespace kafe
         std::map<std::string, unsigned> m_segments;
         // keeping track of the segments' calls
         std::vector<Call> m_call_stack;
+        // keeping the signatures of the declared structures
+        // name of the struct : object Structure (.elements => name of the var : default value)
+        std::map<std::string, Structure> m_struct_definitions;
 
         bool m_debug;
 
