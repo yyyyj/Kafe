@@ -20,13 +20,7 @@ namespace kafe
         TYPE_STRUCT_DECL = 1 << 7,
     };
 
-    struct Value;
-
-    struct StructElem
-    {
-        std::string name;
-        Value val;
-    };
+    struct StructElem;
 
     struct Structure
     {
@@ -48,6 +42,12 @@ namespace kafe
         std::vector<Value> listValue;
 
         Structure structValue;
+    };
+
+    struct StructElem
+    {
+        std::string name;
+        Value val;
     };
 
     struct Call

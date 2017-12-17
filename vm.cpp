@@ -290,11 +290,12 @@ namespace kafe
                         a.type = TYPE_STRUCT;
                         // getting the structure name
                         std::string name = readString(bytecode, s, i, str_size);
+                        /**
                         // to take the default data in it and fill the new object with those
                         if (m_struct_definitions.find(name) != m_struct_definitions.end())
                         {
                             for (std::size_t j=0; j < m_struct_definitions[name].size(); ++j)
-                                { a.structValue[m_struct_definitions[name][k].name] = m_struct_definitions[name][k].val; }
+                                { a.structValue[m_struct_definitions[name][j].name] = m_struct_definitions[name][j].val; }
                             /// TODO: read arguments given if there are any
                             unsigned arg_nb = getByte(bytecode, s, ++i);
                             ///for (unsigned j=0; j < arg_nb; ++j)
@@ -303,6 +304,7 @@ namespace kafe
                         else
                             { throw std::runtime_error("Can not use an undefined structure"); }
                         push(a);
+                        */
                     }
                     else
                         { throw std::logic_error("Invalid size given for the structure name to store"); }
