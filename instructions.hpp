@@ -24,10 +24,11 @@ namespace kafe
         INST_DECL_SEG    = 0x11,  // 0x11 [segment name size on 1 byte] [name] [position on 2 bytes]
         INST_STORE_VAR   = 0x12,  // 0x12 ; store the value at stack[-2] in stack[-1]
         INST_LOAD_VAR    = 0x13,  // 0x13 [var name size on 1 byte] [name] ; push its value on the stack
-        INST_JUMP        = 0x14,  // 0x14 [segment name size on 1 byte] [name]
-        INST_JUMP_IF     = 0x15,  // 0x15 [size of the segment name on 1 byte] [name] ; jump if stack[-1] compares to true
-        INST_JUMP_IFN    = 0x16,  // 0x16 [size of the segment name on 1 byte] [name] ; jump if stack[-1] compares to false
-        INST_RET         = 0x17,  // 0x17 ; return from a segment
+        INST_DUP         = 0x14,  // 0x14 ; duplicate the value at stack[-1]
+        INST_JUMP        = 0x15,  // 0x15 [segment name size on 1 byte] [name]
+        INST_JUMP_IF     = 0x16,  // 0x16 [size of the segment name on 1 byte] [name] ; jump if stack[-1] compares to true
+        INST_JUMP_IFN    = 0x17,  // 0x17 [size of the segment name on 1 byte] [name] ; jump if stack[-1] compares to false
+        INST_RET         = 0x18,  // 0x18 ; return from a segment
 
         // built-in procedures around numbers and booleans
         INST_PROCEDURE   = 0x20,

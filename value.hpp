@@ -10,24 +10,31 @@ namespace kafe
 
     enum ValueType
     {
-        TYPE_INT    = 1 << 0,
-        TYPE_DOUBLE = 1 << 1,
-        TYPE_BOOL   = 1 << 2,
-        TYPE_STRING = 1 << 3,
-        TYPE_LIST   = 1 << 4,
-        TYPE_VAR    = 1 << 5,
-        TYPE_STRUCT = 1 << 6,
+        TYPE_INT         = 1 << 0,
+        TYPE_DOUBLE      = 1 << 1,
+        TYPE_BOOL        = 1 << 2,
+        TYPE_STRING      = 1 << 3,
+        TYPE_LIST        = 1 << 4,
+        TYPE_VAR         = 1 << 5,
+        TYPE_STRUCT      = 1 << 6,
+        TYPE_STRUCT_DECL = 1 << 7,
     };
 
     struct Value;
-
-    // name of the variable : default value
-    using Structure = std::vector<StructElem>;
 
     struct StructElem
     {
         std::string name;
         Value val;
+    };
+
+    struct Structure
+    {
+        // name of the variable : default value
+        std::vector<StructElem> members;
+        // in order to be able to identify a structure
+        // each structure has the same struct_id as its base structure
+        int struct_id;
     };
 
     struct Value
@@ -39,6 +46,7 @@ namespace kafe
         bool boolValue;
         std::string stringValue;
         std::vector<Value> listValue;
+
         Structure structValue;
     };
 

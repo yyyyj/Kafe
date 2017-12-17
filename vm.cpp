@@ -412,6 +412,21 @@ namespace kafe
                     break;
                 }
 
+                case INST_DUP:
+                {
+                    if (m_debug) std::cout << "duplicate" << std::endl;
+
+                    if (m_stack.size() > 0)
+                    {
+                        Value a = pop();
+                        push(a); push(a);
+                    }
+                    else
+                        { throw std::logic_error("Can not duplicate the last value of the stack if there isn't any"); }
+
+                    break;
+                }
+
                 case INST_JUMP:
                 {
                     if (m_debug) std::cout << "jump" << std::endl;
