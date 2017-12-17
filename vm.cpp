@@ -208,6 +208,13 @@ namespace kafe
                     break;
                 }
 
+                case INST_DOUBLE:
+                {
+                    if (m_debug) std::cout << "double" << std::endl;
+
+                    break;
+                }
+
                 case INST_STR:
                 {
                     if (m_debug)  std::cout << "str" << std::endl;
@@ -262,7 +269,7 @@ namespace kafe
                     if (str_size > 0)
                     {
                         Value a;
-                        a.type = TYPE_STRING;
+                        a.type = TYPE_VAR;
                         a.stringValue = readString(bytecode, s, i, str_size);
                         push(a);
                     }
@@ -378,10 +385,10 @@ namespace kafe
                     Value var_name = pop();
                     Value val = pop();
 
-                    if (var_name.type == TYPE_STRING)
+                    if (var_name.type == TYPE_VAR)
                         { m_variables[var_name.stringValue] = val; }
                     else
-                        { throw std::logic_error("A variable name should be a string"); }
+                        { throw std::logic_error("Can not store a value into a non-variable"); }
 
                     break;
                 }

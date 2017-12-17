@@ -10,13 +10,14 @@ namespace kafe
 
         // types
         INST_INT         = 0x01,  // 0x01 [integer on 2 bytes]
-        INST_STR         = 0x02,  // 0x02 [string size on 2 bytes] [text]
-        INST_BOOL        = 0x03,  // 0x03 [value] ; if value > 0x00 => true
-        INST_LIST        = 0x04,  // 0x04 [number of elements on two bytes = X] ; takes the X last elements putted on the stack and put them into a list
-        INST_VAR         = 0x05,  // 0x05 [var name size on 1 byte] [name]
-        INST_STRUCT      = 0x06,  // 0x06 [struct name size on 1 byte] [name] [number of arguments on 1 byte] [argument(s)]
+        INST_DOUBLE      = 0x02,  // 0x02 [double on
+        INST_STR         = 0x03,  // 0x03 [string size on 2 bytes] [text]
+        INST_BOOL        = 0x04,  // 0x04 [value] ; if value > 0x00 => true
+        INST_LIST        = 0x05,  // 0x05 [number of elements on two bytes = X] ; takes the X last elements putted on the stack and put them into a list
+        INST_VAR         = 0x06,  // 0x06 [var name size on 1 byte] [name]
+        INST_STRUCT      = 0x07,  // 0x07 [struct name size on 1 byte] [name] [number of arguments on 1 byte] [argument(s)]
         // bad declaration. the way it works currently is not good
-        INST_DECL_STRUCT = 0x07,  // 0x07 [struct name size on 1 byte] [name] [quantity of data to read on 2 bytes] [name of variable + value...]
+        INST_DECL_STRUCT = 0x08,  // 0x08 [struct name size on 1 byte] [name] [quantity of data to read on 2 bytes] [name of variable + value...]
 
         // labels and blocs
         INST_SEGMENT     = 0x10,  // 0x10 [segment name size on 1 byte] [name] [size (from the next byte after this two, to the INST_RET included) on two bytes]
