@@ -8,6 +8,8 @@
 namespace kafe
 {
 
+    // all the data types defined for kafe are listed below
+    // they probably won't change now (dec. 18 2017)
     enum ValueType
     {
         TYPE_INT         = 1 << 0,
@@ -20,6 +22,7 @@ namespace kafe
         TYPE_STRUCT_DECL = 1 << 7,
     };
 
+    // forward declaration for Structure
     struct StructElem;
 
     struct Structure
@@ -31,6 +34,7 @@ namespace kafe
         int struct_id;
     };
 
+    // a data holder for kafe values
     struct Value
     {
         ValueType type;
@@ -43,7 +47,7 @@ namespace kafe
 
         Structure structValue;
     };
-
+    // custom type to create stacks and avoid to much verbosity
     typedef std::vector<Value> ValueStack_t;
 
     struct StructElem
@@ -55,6 +59,9 @@ namespace kafe
     struct Call
     {
         std::string segmentName;
+        // all the positions from where the segment was called
+        // in order to be able to go back
+        // TODO : possible memory error if using a recursive segment
         std::vector<int> lastPosition;
     };
 

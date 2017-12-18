@@ -19,7 +19,8 @@ namespace kafe
     {
     private:
         int m_stack_size;
-        std::size_t m_stack_ptr;
+        // instruction pointer
+        std::size_t m_ip;
         ValueStack_t m_stack;
         // variable name => Value
         std::map<std::string, Value> m_variables;
@@ -38,11 +39,11 @@ namespace kafe
         void clear();
 
         bcval_t getByte(bytecode_t& bytecode, std::size_t i);
-        int getXBytesInt(bytecode_t& bytecode, std::size_t& i, unsigned X=2);
-        std::string readString(bytecode_t& bytecode, std::size_t& i, std::size_t strSize);
+        int getXBytesInt(bytecode_t& bytecode, unsigned bytesCount=2);
+        std::string readString(bytecode_t& bytecode, std::size_t strSize);
 
-        std::string getSegmentName(bytecode_t& bytecode, std::size_t& i);
-        void goToSegmentPosition(const std::string& segmentName, std::size_t& i);
+        std::string getSegmentName(bytecode_t& bytecode);
+        void goToSegmentPosition(const std::string& segmentName);
         void pushCallStack(const std::string& segmentName, std::size_t lastPos);
         bool canValueCompareTo(Value val, bool c=true);
 
