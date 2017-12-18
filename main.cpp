@@ -12,7 +12,7 @@ std::string format(int number, std::size_t sz)
     return text;
 }
 
-void start(const std::string& test_name, char* bytecode, unsigned bytecode_size)
+void start(const std::string& test_name, kafe::bytecode_t bytecode)
 {
     kafe::VM vm;
     vm.setDebug(true);
@@ -21,14 +21,14 @@ void start(const std::string& test_name, char* bytecode, unsigned bytecode_size)
 
     std::cout << " pos  | code " << std::endl
               << "------|------" << std::endl;
-    for (unsigned i=0; i < bytecode_size; ++i)
+    for (std::size_t i=0; i < bytecode.size(); ++i)
         std::cout << format((unsigned) i, 4) << "  |  "
                   << format((unsigned) bytecode[i], 4) << std::endl;
     std::cout << std::endl;
 
     std::cout << "Calling order" << std::endl
               << "-------------" << std::endl;
-    vm.exec(bytecode, bytecode_size);
+    vm.exec(bytecode);
     std::cout << std::endl
               << "Stack" << std::endl
               << "-------------" << std::endl
@@ -37,7 +37,7 @@ void start(const std::string& test_name, char* bytecode, unsigned bytecode_size)
 
     for (std::size_t _i=vm.getStack().size(); _i > 0; --_i)
     {
-        int i = _i - 1;;
+        int i = _i - 1;
         std::cout << "[" << i << "] ";
         if (vm.getStack()[i].type == kafe::TYPE_INT)
             std::cout << "INT " << vm.getStack()[i].intValue;
@@ -57,17 +57,17 @@ int main(int argc, char** argv)
         // testing area
 
         // int:18768, str:hello, bool:true
-        char bytecode[] = {
+        kafe::bytecode_t bytecode1 = {
             kafe::INST_INT, 0x49, 0x50,
             kafe::INST_STR, 0x00, 0x05, 'h', 'e', 'l', 'l', 'o',
             kafe::INST_BOOL, 'A',
             0x00
         };
-        start("int:18768, str:hello, bool:true", bytecode, 14);
+        start("int:18768, str:hello, bool:true", bytecode1);
 
         // put the integer 1 into `var`, then put `var` at the top of the stack
         // then push the int 9 on the stack and perform an addition, push the result on the stack
-        char bytecode2[] = {
+        kafe::bytecode_t bytecode2 = {
             kafe::INST_INT, 0x00, 0x01,
             kafe::INST_VAR, 0x03, 'v', 'a', 'r',
             kafe::INST_STORE_VAR,
@@ -76,17 +76,19 @@ int main(int argc, char** argv)
             kafe::INST_PROCEDURE, kafe::INST_ADD,
             0x00
         };
-        start("var = 1; push(var); push(9); add", bytecode2, 19);
+        start("var = 1; push(var); push(9); add", bytecode2);
 
         // jump to the beginning ... until the world burns out in flame
-        char bytecode3[] = {
+        /*
+        kafe::bytecode_t bytecode3[] = {
             kafe::INST_SEGMENT, 0x05, 'l', 'a', 'b', 'e', 'l',
             kafe::INST_JUMP, 0x05, 'l', 'a', 'b', 'e', 'l',
             0x00
         };
-        /// start("jump to `label` until the world burns", bytecode3, 15);
+        start("jump to `label` until the world burns", bytecode3);
+        */
 
-        char bytecode4[] = {
+        kafe::bytecode_t bytecode4 = {
             kafe::INST_DECL_SEG, 0x03, 'v', 'a', 'r', 0x00, 0x14,  // len:6
             kafe::INST_BOOL, 0x00,                                 // len:2 => 8
             kafe::INST_VAR, 0x01, 'a',                             // len:3 => 11
@@ -100,7 +102,17 @@ int main(int argc, char** argv)
             0x00
 
         };
-        start("testing segments, jump and ret", bytecode4, 33);
+        start("testing segments, jump and ret", bytecode4);
+
+        kafe::bytecode_t bytecode5 = {
+            kafe::INST_INT, 0x1a, 0x8b,
+            kafe::INST_VAR, 0x01, 'h',
+            kafe::INST_STORE_VAR,
+            kafe::INST_LOAD_VAR, 0x01, 'h',
+            kafe::INST_DUP,
+            0x00
+        };
+        start("testing variable duplication", bytecode5);
     }
 
     return 0;

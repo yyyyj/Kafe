@@ -44,6 +44,8 @@ namespace kafe
         Structure structValue;
     };
 
+    typedef std::vector<Value> ValueStack_t;
+
     struct StructElem
     {
         std::string name;

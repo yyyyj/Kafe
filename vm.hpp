@@ -2,6 +2,7 @@
 #define kafe_vm
 
 #include "instructions.hpp"
+#include "bytecode.hpp"
 #include "value.hpp"
 #include "utils.hpp"
 
@@ -18,11 +19,12 @@ namespace kafe
     {
     private:
         int m_stack_size;
-        std::vector<Value> m_stack;
+        std::size_t m_stack_ptr;
+        ValueStack_t m_stack;
         // variable name => Value
         std::map<std::string, Value> m_variables;
         // just keeping the position of the segments
-        std::map<std::string, unsigned> m_segments;
+        std::map<std::string, std::size_t> m_segments;
         // keeping track of the segments' calls
         std::vector<Call> m_call_stack;
         // keeping the signatures of the declared structures
@@ -35,26 +37,26 @@ namespace kafe
         Value pop();
         void clear();
 
-        char getByte(char* bytecode, unsigned s, unsigned i);
-        int getXBytesInt(char* bytecode, unsigned s, unsigned& i, unsigned X=2);
-        std::string readString(char* bytecode, unsigned s, unsigned& i, unsigned strSize);
+        bcval_t getByte(bytecode_t& bytecode, std::size_t i);
+        int getXBytesInt(bytecode_t& bytecode, std::size_t& i, unsigned X=2);
+        std::string readString(bytecode_t& bytecode, std::size_t& i, std::size_t strSize);
 
-        std::string getSegmentName(char* bytecode, unsigned s, unsigned& i);
-        void goToSegmentPosition(const std::string& segmentName, unsigned& i);
-        void pushCallStack(const std::string& segmentName, unsigned lastPos);
+        std::string getSegmentName(bytecode_t& bytecode, std::size_t& i);
+        void goToSegmentPosition(const std::string& segmentName, std::size_t& i);
+        void pushCallStack(const std::string& segmentName, std::size_t lastPos);
         bool canValueCompareTo(Value val, bool c=true);
 
-        void builtins(char instruction);
+        void builtins(bcval_t instruction);
 
     public:
         VM();
         ~VM();
 
-        int exec(char* bytecode, unsigned s);
+        int exec(bytecode_t bytecode);
         // int execSegment(char* bytecode, char* segment_name);
         void setDebug(bool debug);
 
-        std::vector<Value>& getStack();
+        ValueStack_t& getStack();
     };
 
 }  // namespace kafe

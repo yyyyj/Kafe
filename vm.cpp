@@ -34,41 +34,41 @@ namespace kafe
         m_segments.clear();
     }
 
-    char VM::getByte(char* bytecode, unsigned s, unsigned i)
+    bcval_t VM::getByte(bytecode_t& bytecode, std::size_t i)
     {
-        if (i < s)
+        if (i < bytecode.size())
             return bytecode[i];
         throw std::runtime_error("Index out of range, can not get next byte ! => Malformed bytecode");
     }
 
-    int VM::getXBytesInt(char* bytecode, unsigned s, unsigned& i, unsigned X)
+    int VM::getXBytesInt(bytecode_t& bytecode, std::size_t& i, unsigned X)
     {
-        int v = getByte(bytecode, s, ++i);
+        int v = getByte(bytecode, ++i);
         for (unsigned k=1; k < X; ++k)
-            { v = (v << 8) + getByte(bytecode, s, ++i); }
+            { v = (v << 8) + getByte(bytecode, ++i); }
         return v;
     }
 
-    std::string VM::readString(char* bytecode, unsigned s, unsigned& i, unsigned strSize)
+    std::string VM::readString(bytecode_t& bytecode, std::size_t& i, std::size_t strSize)
     {
         std::string work = "";
         ++i;
-        for (unsigned j=i; i - j < strSize; ++i)
-            { work += getByte(bytecode, s, i); }
+        for (std::size_t j=i; i - j < strSize; ++i)
+            { work += getByte(bytecode, i); }
         --i;
         return work;
     }
 
-    std::string VM::getSegmentName(char* bytecode, unsigned s, unsigned& i)
+    std::string VM::getSegmentName(bytecode_t& bytecode, std::size_t& i)
     {
-        unsigned str_size = getByte(bytecode, s, ++i);
+        std::size_t str_size = getByte(bytecode, ++i);
         if (str_size > 0)
-            { return readString(bytecode, s, i, str_size); }
+            { return readString(bytecode, i, str_size); }
         else
             { throw std::logic_error("Invalid size given for the segment name to fetch"); }
     }
 
-    void VM::goToSegmentPosition(const std::string& segmentName, unsigned& i)
+    void VM::goToSegmentPosition(const std::string& segmentName, std::size_t& i)
     {
         if (m_segments.find(segmentName) != m_segments.end())
             { i = m_segments[segmentName] - 1; }  // -1 because we do that before an iteration end, so we will do ++i just after
@@ -76,7 +76,7 @@ namespace kafe
             { throw std::runtime_error("Can not jump to an undefined segment"); }
     }
 
-    void VM::pushCallStack(const std::string& segmentName, unsigned lastPos)
+    void VM::pushCallStack(const std::string& segmentName, std::size_t lastPos)
     {
         // we need to keep track of what segment we jumped to, from which position,
         // to be able to go able to the caller position easily, and continue the execution
@@ -98,13 +98,17 @@ namespace kafe
         // utility to compare a value to a boolean
         if (val.type == TYPE_STRUCT)
             { return true; }  // convention
+        else if (val.type == TYPE_VAR || val.type == TYPE_STRUCT_DECL)
+            { throw std::logic_error("Malformed bytecode, trying to compare a boolean with an unfinished bytecode instruction"); }
 
         return (val.type == TYPE_BOOL && val.boolValue == c) ||
                (val.type == TYPE_INT && bool(val.intValue) == c) ||
+               (val.type == TYPE_DOUBLE && bool(val.doubleValue) == c) ||
+               (val.type == TYPE_LIST && bool(val.listValue.size()) == c) ||
                (val.type == TYPE_STRING && bool(val.stringValue.size()) == c);
     }
 
-    void VM::builtins(char instruction)
+    void VM::builtins(bcval_t instruction)
     {
         switch (instruction)
         {
@@ -185,13 +189,13 @@ namespace kafe
         }
     }
 
-    int VM::exec(char* bytecode, unsigned s)
+    int VM::exec(bytecode_t bytecode)
     {
         clear();
 
-        for (unsigned i=0; i < s; ++i)
+        for (std::size_t i=0; i < bytecode.size(); ++i)
         {
-            char instruction = getByte(bytecode, s, i);
+            bcval_t instruction = getByte(bytecode, i);
             if (m_debug) std::cout << i << " ";
 
             switch (instruction)
@@ -202,7 +206,7 @@ namespace kafe
 
                     Value v;
                     v.type = TYPE_INT;
-                    v.intValue = getXBytesInt(bytecode, s, i);
+                    v.intValue = getXBytesInt(bytecode, i);
                     push(v);
 
                     break;
@@ -219,12 +223,12 @@ namespace kafe
                 {
                     if (m_debug)  std::cout << "str" << std::endl;
 
-                    unsigned str_size = getXBytesInt(bytecode, s, i);
+                    std::size_t str_size = getXBytesInt(bytecode, i);
                     if (str_size > 0)
                     {
                         Value a;
                         a.type = TYPE_STRING;
-                        a.stringValue = readString(bytecode, s, i, str_size);
+                        a.stringValue = readString(bytecode, i, str_size);
                         push(a);
                     }
                     else
@@ -239,7 +243,7 @@ namespace kafe
 
                     Value a;
                     a.type = TYPE_BOOL;
-                    a.boolValue = getByte(bytecode, s, ++i) > 0;
+                    a.boolValue = getByte(bytecode, ++i) > 0;
                     push(a);
 
                     break;
@@ -249,7 +253,7 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "list" << std::endl;
 
-                    unsigned nb_elements = getXBytesInt(bytecode, s, i);
+                    std::size_t nb_elements = getXBytesInt(bytecode, i);
                     Value c;
                     c.type = TYPE_LIST;
                     while (nb_elements != 0)
@@ -265,12 +269,12 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "var" << std::endl;
 
-                    unsigned str_size = getByte(bytecode, s, ++i);
+                    std::size_t str_size = getByte(bytecode, ++i);
                     if (str_size > 0)
                     {
                         Value a;
                         a.type = TYPE_VAR;
-                        a.stringValue = readString(bytecode, s, i, str_size);
+                        a.stringValue = readString(bytecode, i, str_size);
                         push(a);
                     }
                     else
@@ -283,13 +287,13 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "structure" << std::endl;
 
-                    unsigned str_size = getByte(bytecode, s, ++i);
+                    std::size_t str_size = getByte(bytecode, ++i);
                     if (str_size > 0)
                     {
                         Value a;
                         a.type = TYPE_STRUCT;
                         // getting the structure name
-                        std::string name = readString(bytecode, s, i, str_size);
+                        std::string name = readString(bytecode, i, str_size);
                         /**
                         // to take the default data in it and fill the new object with those
                         if (m_struct_definitions.find(name) != m_struct_definitions.end())
@@ -297,8 +301,8 @@ namespace kafe
                             for (std::size_t j=0; j < m_struct_definitions[name].size(); ++j)
                                 { a.structValue[m_struct_definitions[name][j].name] = m_struct_definitions[name][j].val; }
                             /// TODO: read arguments given if there are any
-                            unsigned arg_nb = getByte(bytecode, s, ++i);
-                            ///for (unsigned j=0; j < arg_nb; ++j)
+                            std::size_t arg_nb = getByte(bytecode, ++i);
+                            ///for (std::size_t j=0; j < arg_nb; ++j)
                             ///    {  }
                         }
                         else
@@ -316,17 +320,17 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "declare structure" << std::endl;
 
-                    /**unsigned str_size = getByte(bytecode, s, ++i);
+                    /**std::size_t str_size = getByte(bytecode, ++i);
                     if (str_size > 0)
                     {
-                        std::string name = readString(bytecode, s, i, str_size);
-                        unsigned data_quantity = getXBytesInt(bytecode, s, i);
+                        std::string name = readString(bytecode, i, str_size);
+                        std::size_t data_quantity = getXBytesInt(bytecode, i);
                         m_struct_definitions[data_quantity] = Structure();
                         ++i;
-                        for (unsigned j=0; j < data_quantity; ++j)
+                        for (std::size_t j=0; j < data_quantity; ++j)
                         {
-                            unsigned str_size = getByte(bytecode, s, i);
-                            std::string name = readString(bytecode, s, i, str_size);
+                            std::size_t str_size = getByte(bytecode, i);
+                            std::string name = readString(bytecode, i, str_size);
                             Value val;
                             StructElem se;
                             se.name = name;
@@ -345,17 +349,17 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "segment" << std::endl;
 
-                    unsigned str_size = getByte(bytecode, s, ++i);
+                    std::size_t str_size = getByte(bytecode, ++i);
                     std::string seg_name;
                     if (str_size > 0)
-                        { seg_name = readString(bytecode, s, i, str_size); }
+                        { seg_name = readString(bytecode, i, str_size); }
                     else
                         { throw std::logic_error("Invalid size for the segment name"); }
 
                     if (m_segments.find(seg_name) == m_segments.end())
                         { m_segments[seg_name] = i; }
 
-                    unsigned seg_size = getXBytesInt(bytecode, s, i);
+                    std::size_t seg_size = getXBytesInt(bytecode, i);
                     if (seg_size > 0)
                         { i += seg_size; }
                     else
@@ -368,14 +372,14 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "declare segment" << std::endl;
 
-                    unsigned str_size = getByte(bytecode, s, ++i);
+                    std::size_t str_size = getByte(bytecode, ++i);
                     std::string seg_name;
                     if (str_size > 0)
-                        { seg_name = readString(bytecode, s, i, str_size); }
+                        { seg_name = readString(bytecode, i, str_size); }
                     else
                         { throw std::logic_error("Invalid size for the segment name"); }
 
-                    m_segments[seg_name] = getXBytesInt(bytecode, s, i);
+                    m_segments[seg_name] = getXBytesInt(bytecode, i);
 
                     break;
                 }
@@ -399,10 +403,10 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "push var" << std::endl;
 
-                    unsigned str_size = getByte(bytecode, s, ++i);
+                    std::size_t str_size = getByte(bytecode, ++i);
                     if (str_size > 0)
                     {
-                        std::string v = readString(bytecode, s, i, str_size);
+                        std::string v = readString(bytecode, i, str_size);
                         if (m_variables.find(v) != m_variables.end())
                             { push(m_variables[v]); }
                         else
@@ -433,8 +437,8 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "jump" << std::endl;
 
-                    std::string seg_name = getSegmentName(bytecode, s, i);
-                    unsigned last_pos = i;
+                    std::string seg_name = getSegmentName(bytecode, i);
+                    std::size_t last_pos = i;
                     goToSegmentPosition(seg_name, i);
                     pushCallStack(seg_name, last_pos);
 
@@ -450,8 +454,8 @@ namespace kafe
                     Value a = pop();
                     if (canValueCompareTo(a, true))
                     {
-                        std::string seg_name = getSegmentName(bytecode, s, i);
-                        unsigned last_pos = i;
+                        std::string seg_name = getSegmentName(bytecode, i);
+                        std::size_t last_pos = i;
                         goToSegmentPosition(seg_name, i);
                         pushCallStack(seg_name, last_pos);
 
@@ -468,8 +472,8 @@ namespace kafe
                     Value a = pop();
                     if (canValueCompareTo(a, false))
                     {
-                        std::string seg_name = getSegmentName(bytecode, s, i);
-                        unsigned last_pos = i;
+                        std::string seg_name = getSegmentName(bytecode, i);
+                        std::size_t last_pos = i;
                         goToSegmentPosition(seg_name, i);
                         pushCallStack(seg_name, last_pos);
 
@@ -499,7 +503,7 @@ namespace kafe
                 {
                     // we implement the procedure in another function, using a special code
                     // in order to be able to have (1st) more procedures and (2nd) a cleaner code
-                    builtins(getByte(bytecode, s, ++i));
+                    builtins(getByte(bytecode, ++i));
                     break;
                 }
 
@@ -521,7 +525,7 @@ namespace kafe
         m_debug = debug;
     }
 
-    std::vector<Value>& VM::getStack()
+    ValueStack_t& VM::getStack()
     {
         return m_stack;
     }
