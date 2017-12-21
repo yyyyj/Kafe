@@ -6,8 +6,8 @@
 namespace kafe
 {
 
-    typedef unsigned char bcval_t;
-    typedef std::vector<bcval_t> bytecode_t;
+    typedef unsigned char inst_t;
+    typedef std::vector<inst_t> bytecode_t;
 
 }  // namespace kafe
 

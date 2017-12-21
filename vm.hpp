@@ -38,7 +38,7 @@ namespace kafe
         Value pop();
         void clear();
 
-        bcval_t getByte(bytecode_t& bytecode, std::size_t i);
+        inst_t getByte(bytecode_t& bytecode, std::size_t i);
         int getXBytesInt(bytecode_t& bytecode, unsigned bytesCount=2);
         std::string readString(bytecode_t& bytecode, std::size_t strSize);
 
@@ -47,7 +47,7 @@ namespace kafe
         void pushCallStack(const std::string& segmentName, std::size_t lastPos);
         bool canValueCompareTo(Value val, bool c=true);
 
-        void builtins(bcval_t instruction);
+        void builtins(inst_t instruction);
 
     public:
         VM();

@@ -39,7 +39,7 @@ namespace kafe
     {
         ValueType type;
 
-        int intValue;
+        long intValue;
         double doubleValue;
         bool boolValue;
         std::string stringValue;

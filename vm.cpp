@@ -39,7 +39,7 @@ namespace kafe
         m_segments.clear();
     }
 
-    bcval_t VM::getByte(bytecode_t& bytecode, std::size_t i)
+    inst_t VM::getByte(bytecode_t& bytecode, std::size_t i)
     {
         if (i < bytecode.size())
             return bytecode[i];
@@ -115,7 +115,7 @@ namespace kafe
                (val.type == TYPE_STRING && bool(val.stringValue.size()) == c);
     }
 
-    void VM::builtins(bcval_t instruction)
+    void VM::builtins(inst_t instruction)
     {
         switch (instruction)
         {
@@ -202,8 +202,8 @@ namespace kafe
 
         for (m_ip=0; m_ip < bytecode.size(); ++m_ip)
         {
-            bcval_t instruction = getByte(bytecode, m_ip);
-            if (m_debug) std::cout << m_ip << " ";
+            inst_t instruction = getByte(bytecode, m_ip);
+            if (m_debug) std::cout << "[" << m_ip << "] " << (int)instruction << " ";
 
             switch (instruction)
             {
@@ -368,7 +368,7 @@ namespace kafe
                     if (m_segments.find(seg_name) == m_segments.end())
                         { m_segments[seg_name] = m_ip; }
 
-                    std::size_t seg_size = getXBytesInt(bytecode, m_ip);
+                    std::size_t seg_size = getXBytesInt(bytecode);
                     if (seg_size > 0)
                         { m_ip += seg_size; }
                     else
@@ -388,7 +388,7 @@ namespace kafe
                     else
                         { throw std::logic_error("Invalid size for the segment name"); }
 
-                    m_segments[seg_name] = getXBytesInt(bytecode, m_ip);
+                    m_segments[seg_name] = getXBytesInt(bytecode);
 
                     break;
                 }
