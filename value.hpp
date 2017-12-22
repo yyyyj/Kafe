@@ -4,6 +4,8 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <exception>
+#include <stdexcept>
 
 namespace kafe
 {
@@ -19,7 +21,6 @@ namespace kafe
         TYPE_LIST        = 1 << 4,
         TYPE_VAR         = 1 << 5,
         TYPE_STRUCT      = 1 << 6,
-        TYPE_STRUCT_DECL = 1 << 7,
     };
 
     // forward declaration for Structure
@@ -32,6 +33,19 @@ namespace kafe
         // in order to be able to identify a structure
         // each structure has the same struct_id as its base structure
         int struct_id;
+
+        Structure() {}
+
+        Structure(const Structure& other)
+        {
+            members = other.members;
+            struct_id = other.struct_id;
+        }
+
+        bool operator==(const Structure& other) const
+        {
+            return (other.struct_id == struct_id);
+        }
     };
 
     // a data holder for kafe values
@@ -46,6 +60,44 @@ namespace kafe
         std::vector<Value> listValue;
 
         Structure structValue;
+
+        Value() {}
+        Value(ValueType t, long i)   : type(t), intValue(i)    {}
+        Value(ValueType t, double d) : type(t), doubleValue(d) {}
+        Value(ValueType t, bool b)   : type(t), boolValue(b)   {}
+        Value(ValueType t, const std::string& s) : type(t), stringValue(s) {}
+        Value(ValueType t, std::vector<Value> l) : type(t), listValue(l)   {}
+        Value(ValueType t, Structure st) : type(t), structValue(st) {}
+
+
+        bool operator==(const Value& other) const
+        {
+            return (other.type == type) &&
+                   ((other.type == TYPE_INT) ? (other.intValue == intValue) : true) &&
+                   ((other.type == TYPE_DOUBLE) ? (other.doubleValue == doubleValue) : true) &&
+                   ((other.type == TYPE_BOOL) ? (other.boolValue == boolValue) : true) &&
+                   ((other.type == TYPE_STRING) ? (other.stringValue == stringValue) : true) &&
+                   ((other.type == TYPE_LIST) ? (other.listValue == listValue) : true) &&
+                   ((other.type == TYPE_VAR) ? (other.stringValue == stringValue) : true) &&
+                   ((other.type == TYPE_STRUCT) ? (other.structValue == structValue) : true);
+        }
+
+        bool operator<(const Value& other) const
+        {
+            return (other.type == type) &&
+                   ((other.type == TYPE_INT) ? (other.intValue >= intValue) : true) &&
+                   ((other.type == TYPE_DOUBLE) ? (other.doubleValue >= doubleValue) : true) &&
+                   ((other.type == TYPE_BOOL) ? (other.boolValue == true && boolValue == false) : true) &&
+                   ((other.type == TYPE_STRING) ? (other.stringValue.size() >= stringValue.size()) : true) &&
+                   ((other.type == TYPE_LIST) ? (other.listValue.size() >= listValue.size()) : true) &&
+                   ((other.type == TYPE_VAR) ? (other.stringValue.size() >= stringValue.size()) : true) &&
+                   ((other.type == TYPE_STRUCT) ? false : false);
+        }
+
+        // !(a==b)           would be a!=b
+        // !(a<b)            would be a>=b
+        // (a<b)||(a==b)     would be a<=b
+        // !(a<b)&&(!(a==b)) would be a>b
     };
     // custom type to create stacks and avoid to much verbosity
     typedef std::vector<Value> ValueStack_t;

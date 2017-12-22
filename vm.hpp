@@ -2,7 +2,7 @@
 #define kafe_vm
 
 #include "instructions.hpp"
-#include "bytecode.hpp"
+#include "types.hpp"
 #include "value.hpp"
 #include "utils.hpp"
 
@@ -52,7 +52,6 @@ namespace kafe
         void pushCallStack(const std::string& segmentName, std::size_t lastPos);
         std::string performJump(bytecode_t& bytecode);
         void retFromSegment(bytecode_t& bytecode);
-        bool canValueCompareTo(Value val, bool c=true);
 
         void builtins(inst_t instruction);
 

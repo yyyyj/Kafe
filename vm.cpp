@@ -177,23 +177,6 @@ namespace kafe
             { throw std::logic_error("Can not return from a non-segment"); }
     }
 
-    bool VM::canValueCompareTo(Value val, bool c)
-    {
-        // TODO : implement comparison operator in the struct kafe::Value
-
-        // utility to compare a value to a boolean
-        if (val.type == TYPE_STRUCT)
-            { return true; }  // convention
-        else if (val.type == TYPE_VAR || val.type == TYPE_STRUCT_DECL)
-            { throw std::logic_error("Malformed bytecode, trying to compare a boolean with an unfinished bytecode instruction"); }
-
-        return (val.type == TYPE_BOOL && val.boolValue == c) ||
-               (val.type == TYPE_INT && bool(val.intValue) == c) ||
-               (val.type == TYPE_DOUBLE && bool(val.doubleValue) == c) ||
-               (val.type == TYPE_LIST && bool(val.listValue.size()) == c) ||
-               (val.type == TYPE_STRING && bool(val.stringValue.size()) == c);
-    }
-
     void VM::builtins(inst_t instruction)
     {
         switch (instruction)
@@ -334,6 +317,7 @@ namespace kafe
                     break;
                 }
 
+                /// to implement
                 case INST_DOUBLE:
                 {
                     if (m_debug) std::cout << "double" << std::endl;
@@ -371,6 +355,7 @@ namespace kafe
                     break;
                 }
 
+                /// to implement
                 case INST_ADDR:
                 {
                     if (m_debug) std::cout << "addr" << std::endl;
@@ -412,6 +397,7 @@ namespace kafe
                     break;
                 }
 
+                /// to implement
                 case INST_STRUCT:
                 {
                     if (m_debug) std::cout << "structure" << std::endl;
@@ -445,6 +431,7 @@ namespace kafe
                     break;
                 }
 
+                /// to implement
                 case INST_DECL_STRUCT:
                 {
                     if (m_debug) std::cout << "declare structure" << std::endl;
@@ -589,7 +576,7 @@ namespace kafe
 
                     // get a value on the stack and try to compare it with true
                     Value a = pop();
-                    if (canValueCompareTo(a, true))
+                    if (a == Value(TYPE_BOOL, true))
                     {
                         std::string seg_name = performJump(bytecode);
                         if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;
@@ -603,7 +590,7 @@ namespace kafe
                     if (m_debug) std::cout << "jump if not" << std::endl;
 
                     Value a = pop();
-                    if (canValueCompareTo(a, false))
+                    if (a == Value(TYPE_BOOL, false))
                     {
                         std::string seg_name = performJump(bytecode);
                         if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;
