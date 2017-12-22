@@ -89,7 +89,7 @@ int main(int argc, char** argv)
         */
 
         kafe::bytecode_t bytecode4 = {
-            kafe::INST_DECL_SEG, 0x00, 0x03, 'v', 'a', 'r', 0x00, 0x14, // len:8
+            kafe::INST_DECL_SEG, 0x00, 0x03, 'v', 'a', 'r', 0x00, 0x17, // len:8
             kafe::INST_BOOL, 0x00,                                      // len:2 => 10
             kafe::INST_VAR, 0x00, 0x01, 'a',                            // len:3 => 14
             kafe::INST_STORE_VAR,                                       // len:1 => 15
