@@ -58,11 +58,18 @@ namespace kafe
 
     struct Call
     {
+        // we'll do something like a RLE to be able top optimize things like
+        // [context = main() =>] function() => function() => function() => ...
+        struct Pair
+        {
+            std::size_t cnt;
+            std::size_t pos;
+        };
+
         std::string segmentName;
         // all the positions from where the segment was called
         // in order to be able to go back
-        // TODO : possible memory error if using a recursive segment
-        std::vector<int> lastPosition;
+        std::vector<Pair> lastPositions;
     };
 
 }  // namespace kafe

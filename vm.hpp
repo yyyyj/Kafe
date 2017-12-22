@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <fstream>
 #include <exception>
 #include <stdexcept>
 
@@ -39,12 +40,18 @@ namespace kafe
         void clear();
 
         inst_t getByte(bytecode_t& bytecode, std::size_t i);
-        int getXBytesInt(bytecode_t& bytecode, unsigned bytesCount=2);
+        long getXBytesInt(bytecode_t& bytecode, unsigned bytesCount=2);
+        int get2BytesInt(bytecode_t& bytecode);
+        long get4BytesInt(bytecode_t& bytecode);
         std::string readString(bytecode_t& bytecode, std::size_t strSize);
+        bool readBool(bytecode_t& bytecode);
 
+        std::size_t getSegmentAddr(const std::string& segmentName);
         std::string getSegmentName(bytecode_t& bytecode);
         void goToSegmentPosition(const std::string& segmentName);
         void pushCallStack(const std::string& segmentName, std::size_t lastPos);
+        std::string performJump(bytecode_t& bytecode);
+        void retFromSegment(bytecode_t& bytecode);
         bool canValueCompareTo(Value val, bool c=true);
 
         void builtins(inst_t instruction);
@@ -53,8 +60,10 @@ namespace kafe
         VM();
         ~VM();
 
+        bytecode_t readFile(const std::string& filePath);
+
+        int execFromFile(const std::string& filePath);
         int exec(bytecode_t bytecode);
-        // int execSegment(char* bytecode, char* segment_name);
         void setDebug(bool debug);
 
         ValueStack_t& getStack();

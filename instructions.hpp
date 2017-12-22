@@ -11,14 +11,17 @@ namespace kafe
         // types
         INST_INT_2B      = 0x01,  // 0x01 [integer on 2 bytes]
         INST_INT_4B      = 0x02,  // 0x02 [integer on 4 bytes]
-        INST_DOUBLE      = 0x03,  // 0x03 [double on *I-don't-know-how-many-bytes*]
+        /// need to implement this :
+            INST_DOUBLE      = 0x03,  // 0x03 [double on *I-don't-know-how-many-bytes*]
         INST_STR         = 0x04,  // 0x04 [string size on 2 bytes] [text]
-        INST_BOOL        = 0x05,  // 0x05 [value] ; if value > 0x00 => true
-        INST_ADDR        = 0x06,  // 0x06 ; used to store the address of a segment (kind of pointer, only pointing on something in the bytecode)
-        INST_LIST        = 0x07,  // 0x07 [number of elements on 4 bytes = X] ; takes the X last elements putted on the stack and put them into a list
+        INST_BOOL        = 0x05,  // 0x05 [value on 1 byte] ; if value > 0x00 => true
+        /// need to implement this :
+            INST_ADDR        = 0x06,  // 0x06 [what-kind-of-argument] ; used to store the address of a segment (kind of pointer, only pointing on something in the bytecode)
+        INST_LIST        = 0x07,  // 0x07 [number of elements on 4 bytes = X] ; takes the X last elements put on the stack and put them into a list
         INST_VAR         = 0x08,  // 0x08 [var name size on 2 bytes] [name]
-        INST_STRUCT      = 0x09,  // 0x09 [struct name size on 2 bytes] [name] [number of arguments on 2 bytes = X] ; takes the X last value on the stack
-        INST_DECL_STRUCT = 0x0a,  // 0x0a [struct name size on 2 bytes] [name] [number of pair<string, Value> = X] ; read X pair from the stack, var_name=stack[-1], value=stack[-2]
+        /// need to implement these 2 :
+            INST_STRUCT      = 0x09,  // 0x09 [struct name size on 2 bytes] [name] [number of arguments on 2 bytes = X] ; takes the X last value on the stack
+            INST_DECL_STRUCT = 0x0a,  // 0x0a [struct name size on 2 bytes] [name] [number of pair<string, Value> = X] ; read X pair from the stack, var_name=stack[-1], value=stack[-2]
 
         // labels and blocs
         INST_SEGMENT     = 0x10,  // 0x10 [segment name size on 2 bytes] [name] [size (from the next byte after this 2, to the INST_RET included) on 2 bytes]
@@ -37,31 +40,32 @@ namespace kafe
 
     enum Procedure
     {
-        INST_ADD       = 0x00,  // 0x00 ; push the result of stack[-2] + stack[-1]
+        // [CODE] ; push the result of stack[-2] [OPERATOR] stack[-1]    OR    push the result of [OPERATOR] stack[-1]
+        INST_ADD       = 0x01,  // 0x01 ; push the result of stack[-2] + stack[-1]
         /// to implement !
-        INST_SUB       = 0x01,  // 0x01 ; push the result of stack[-2] - stack[-1]
-        INST_DIV       = 0x02,  // 0x02 ; push the result of stack[-2] / stack[-1]
-        INST_MUL       = 0x03,  // 0x03 ; push the result of stack[-2] * stack[-1]
-        INST_MOD       = 0x04,  // 0x04 ; push the result of stack[-2] % stack[-1]
-        INST_INC       = 0x05,  // 0x05 ; push the result of stack[-1]++
-        INST_DEC       = 0x06,  // 0x06 ; push the result of stack[-1]--
-        INST_NEG       = 0x07,  // 0x07 ; push the result of - stack[-1]
-        INST_BIN_AND   = 0x08,  // 0x08 ; push the result of stack[-2] & stack[-1]
-        INST_BIN_OR    = 0x09,  // 0x09 ; push the result of stack[-2] | stack[-1]
-        INST_BIN_NOT   = 0x0a,  // 0x0a ; push the result of ~ stack[-1]
-        INST_LSHIFT    = 0x0b,  // 0x0b ; push the result of stack[-2] << stack[-1]
-        INST_RSHIFT    = 0x0c,  // 0x0c ; push the result of stack[-2] >> stack[-1]
-        INST_BIN_XOR   = 0x0d,  // 0x0d ; push the result of stack[-2] ^ stack[-1]
-        INST_AND       = 0x0e,  // 0x0e ; push the result of stack[-2] && stack[-1]
-        INST_OR        = 0x0f,  // 0x0f ; push the result of stack[-2] || stack[-1]
-        INST_NOT       = 0x10,  // 0x10 ; push the result of ! stack[-1]
-        INST_LW        = 0x11,  // 0x11 ; push the result of stack[-2] < stack[-1]
-        INST_LE        = 0x12,  // 0x12 ; push the result of stack[-2] <= stack[-1]
-        INST_GR        = 0x13,  // 0x13 ; push the result of stack[-2] > stack[-1]
-        INST_GE        = 0x14,  // 0x14 ; push the result of stack[-2] >= stack[-1]
-        INST_EQ        = 0x15,  // 0x15 ; push the result of stack[-2] == stack[-1]
+            INST_SUB       = 0x02,  // 0x02 ; -
+            INST_DIV       = 0x03,  // 0x03 ; /
+            INST_MUL       = 0x04,  // 0x04 ; *
+            INST_MOD       = 0x05,  // 0x05 ; %
+            INST_INC       = 0x06,  // 0x06 ; ++
+            INST_DEC       = 0x07,  // 0x07 ; --
+            INST_NEG       = 0x08,  // 0x08 ; - (negate, not subtract)
+            INST_BIN_AND   = 0x09,  // 0x09 ; &
+            INST_BIN_OR    = 0x0a,  // 0x0a ; |
+            INST_BIN_NOT   = 0x0b,  // 0x0b ; ~
+            INST_LSHIFT    = 0x0c,  // 0x0c ; <<
+            INST_RSHIFT    = 0x0d,  // 0x0d ; >>
+            INST_BIN_XOR   = 0x0e,  // 0x0e ; ^
+            INST_AND       = 0x0f,  // 0x0f ; &&
+            INST_OR        = 0x10,  // 0x10 ; ||
+            INST_NOT       = 0x11,  // 0x11 ; !
+            INST_LW        = 0x12,  // 0x12 ; <
+            INST_LE        = 0x13,  // 0x13 ; <=
+            INST_GR        = 0x14,  // 0x14 ; >
+            INST_GE        = 0x15,  // 0x15 ; >=
+            INST_EQ        = 0x16,  // 0x16 ; ==
         // done :
-        INST_NE        = 0x16,  // 0x16 ; push the result of stack[-2] != stack[-1]
+        INST_NE        = 0x17,  // 0x17 ; !=
 
         // built-in functions
         /// to implement !

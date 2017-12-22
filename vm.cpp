@@ -46,12 +46,22 @@ namespace kafe
         throw std::runtime_error("Index out of range, can not get next byte ! => Malformed bytecode");
     }
 
-    int VM::getXBytesInt(bytecode_t& bytecode, unsigned bytesCount)
+    long VM::getXBytesInt(bytecode_t& bytecode, unsigned bytesCount)
     {
-        int v = getByte(bytecode, ++m_ip);
+        long v = getByte(bytecode, ++m_ip);
         for (unsigned k=1; k < bytesCount; ++k)
             { v = (v << 8) + getByte(bytecode, ++m_ip); }
         return v;
+    }
+
+    int VM::get2BytesInt(bytecode_t& bytecode)
+    {
+        return getXBytesInt(bytecode, 2);
+    }
+
+    long VM::get4BytesInt(bytecode_t& bytecode)
+    {
+        return getXBytesInt(bytecode, 4);
     }
 
     std::string VM::readString(bytecode_t& bytecode, std::size_t strSize)
@@ -64,9 +74,22 @@ namespace kafe
         return work;
     }
 
+    bool VM::readBool(bytecode_t& bytecode)
+    {
+        return (getByte(bytecode, ++m_ip) > 0);
+    }
+
+    std::size_t VM::getSegmentAddr(const std::string& segmentName)
+    {
+        if (m_segments.find(segmentName) != m_segments.end())
+            { return m_segments[segmentName]; }
+        else
+            { throw std::runtime_error("Can not get the position of an undefined segment"); }
+    }
+
     std::string VM::getSegmentName(bytecode_t& bytecode)
     {
-        std::size_t str_size = getByte(bytecode, ++m_ip);
+        std::size_t str_size = get2BytesInt(bytecode);
         if (str_size > 0)
             { return readString(bytecode, str_size); }
         else
@@ -75,27 +98,83 @@ namespace kafe
 
     void VM::goToSegmentPosition(const std::string& segmentName)
     {
-        if (m_segments.find(segmentName) != m_segments.end())
-            { m_ip = m_segments[segmentName] - 1; }  // -1 because we do that before an iteration end, so we will do ++m_ip just after
-        else
-            { throw std::runtime_error("Can not jump to an undefined segment"); }
+        m_ip = getSegmentAddr(segmentName) - 1; // -1 because we do that before an iteration end, so we will do ++m_ip just after
     }
 
     void VM::pushCallStack(const std::string& segmentName, std::size_t lastPos)
     {
         // we need to keep track of what segment we jumped to, from which position,
         // to be able to go able to the caller position easily, and continue the execution
-        if (m_call_stack.size() == 0 || m_call_stack[m_call_stack.size() - 1].segmentName != segmentName)
+        std::size_t cs_last_index = m_call_stack.size() - 1;
+
+        // if the stack is empty or the last element on the stack isn't a call of the same segment we are calling
+        if (m_call_stack.size() == 0 || m_call_stack[cs_last_index].segmentName != segmentName)
         {
+            Call::Pair bloc = {/* cnt= */ 1, /* pos= */ lastPos};
             Call call_element;
-            call_element.lastPosition.push_back(lastPos);
+
             call_element.segmentName = segmentName;
+            call_element.lastPositions.push_back(bloc);
+
             m_call_stack.push_back(call_element);
         }
         else
-            { m_call_stack[m_call_stack.size() - 1].lastPosition.push_back(lastPos); }
+        {
+            // the stack isn't empty and the last element is describing the same segment as the one which is being called
 
-        if (m_debug) std::cout << "    call stack: " << m_call_stack[m_call_stack.size() - 1].lastPosition[m_call_stack[m_call_stack.size() - 1].lastPosition.size() - 1] << " " << m_call_stack[m_call_stack.size() - 1].segmentName << std::endl;
+            std::size_t lp_last_index = m_call_stack[cs_last_index].lastPositions.size() - 1;
+            // if the last element on the stack of the call element is the same as the position
+            // from where we are calling this segment, add one to its counter `cnt`
+            if (m_call_stack[cs_last_index].lastPositions[lp_last_index].pos == lastPos)
+                { ++m_call_stack[cs_last_index].lastPositions[lp_last_index].cnt; }
+            else
+            {
+                Call::Pair bloc = {/* cnt= */ 1, /* pos= */ lastPos};
+                m_call_stack[cs_last_index].lastPositions.push_back(bloc);
+            }
+        }
+    }
+
+    std::string VM::performJump(bytecode_t& bytecode)
+    {
+        // read segment name
+        std::string seg_name = getSegmentName(bytecode);
+        // keep the last value of the instruction pointer, we'll need it
+        std::size_t last_pos = m_ip;
+        // jump to the segment
+        goToSegmentPosition(seg_name);
+        // refresh the call stack and register we've jumped to `seg_name`, from `last_pos`
+        // in order to be able to go back when the execution of the segment we'll end
+        pushCallStack(seg_name, last_pos);
+
+        return seg_name;
+    }
+
+    void VM::retFromSegment(bytecode_t& bytecode)
+    {
+        if (m_call_stack.size() > 0)
+        {
+            std::size_t cs_last_index = m_call_stack.size() - 1;
+            std::size_t lp_last_index = m_call_stack[cs_last_index].lastPositions.size() - 1;
+            std::size_t lp = m_call_stack[cs_last_index].lastPositions[lp_last_index].pos;
+
+            // going back to the position where the segment was called to continue the execution
+            m_ip = lp;
+            --m_call_stack[cs_last_index].lastPositions[lp_last_index].cnt;
+
+            // just checking we keep within bounds of the bytecode
+            if (m_ip >= bytecode.size())
+                { throw std::logic_error("Jumping back from a segment to an invalid position in the bytecode"); }
+
+            // the "pair" recording the multiples calls of the same segment from the same segment is now empty, pop it
+            if (m_call_stack[cs_last_index].lastPositions[lp_last_index].cnt == 0)
+                { abc::pop_no_return(m_call_stack[cs_last_index].lastPositions, -1); }
+            // the "call element" recording the multiples calls of the same segment is now empty, pop it
+            if (m_call_stack[cs_last_index].lastPositions.size() == 0)
+                { abc::pop_no_return(m_call_stack, -1); }
+        }
+        else
+            { throw std::logic_error("Can not return from a non-segment"); }
     }
 
     bool VM::canValueCompareTo(Value val, bool c)
@@ -196,6 +275,30 @@ namespace kafe
         }
     }
 
+    bytecode_t VM::readFile(const std::string& filePath)
+    {
+        // open the file and get its size
+        std::ifstream ifs(filePath, std::ios::binary | std::ios::ate);
+        std::ifstream::pos_type pos = ifs.tellg();
+        // reserve the appropriate size
+        std::vector<char> temp(pos);
+        // seek to the beginning of the file and read
+        ifs.seekg(0, std::ios::beg);
+        ifs.read(&temp[0], pos);
+
+        bytecode_t bytes(pos);
+        for (std::size_t i=0; i < pos; ++i)
+            { bytes[i] = (inst_t) temp[i]; }
+
+        return bytes;
+    }
+
+    int VM::execFromFile(const std::string& filePath)
+    {
+        bytecode_t bytecode = readFile(filePath);
+        return exec(bytecode);
+    }
+
     int VM::exec(bytecode_t bytecode)
     {
         clear();
@@ -207,13 +310,25 @@ namespace kafe
 
             switch (instruction)
             {
-                case INST_INT:
+                case INST_INT_2B:
                 {
-                    if (m_debug) std::cout << "int" << std::endl;
+                    if (m_debug) std::cout << "int 2B" << std::endl;
 
                     Value v;
                     v.type = TYPE_INT;
-                    v.intValue = getXBytesInt(bytecode);
+                    v.intValue = get2BytesInt(bytecode);
+                    push(v);
+
+                    break;
+                }
+
+                case INST_INT_4B:
+                {
+                    if (m_debug) std::cout << "int 4B" << std::endl;
+
+                    Value v;
+                    v.type = TYPE_INT;
+                    v.intValue = get4BytesInt(bytecode);
                     push(v);
 
                     break;
@@ -230,7 +345,7 @@ namespace kafe
                 {
                     if (m_debug)  std::cout << "str" << std::endl;
 
-                    std::size_t str_size = getXBytesInt(bytecode);
+                    std::size_t str_size = get2BytesInt(bytecode);
                     if (str_size > 0)
                     {
                         Value a;
@@ -246,12 +361,19 @@ namespace kafe
 
                 case INST_BOOL:
                 {
-                    if (m_debug)  std::cout << "bool" << std::endl;
+                    if (m_debug) std::cout << "bool" << std::endl;
 
                     Value a;
                     a.type = TYPE_BOOL;
-                    a.boolValue = getByte(bytecode, ++m_ip) > 0;
+                    a.boolValue = readBool(bytecode);
                     push(a);
+
+                    break;
+                }
+
+                case INST_ADDR:
+                {
+                    if (m_debug) std::cout << "addr" << std::endl;
 
                     break;
                 }
@@ -263,11 +385,9 @@ namespace kafe
                     std::size_t nb_elements = getXBytesInt(bytecode);
                     Value c;
                     c.type = TYPE_LIST;
-                    // TODO : possible problem with the order the elements are inserted
-                    // use insert(0, pop()) instead ?
                     while (nb_elements != 0)
                     {
-                        c.listValue.push_back(pop());
+                        c.listValue.insert(c.listValue.begin(), pop());
                         nb_elements--;
                     }
 
@@ -278,7 +398,7 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "var" << std::endl;
 
-                    std::size_t str_size = getByte(bytecode, ++m_ip);
+                    std::size_t str_size = get2BytesInt(bytecode);
                     if (str_size > 0)
                     {
                         Value a;
@@ -296,7 +416,7 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "structure" << std::endl;
 
-                    std::size_t str_size = getByte(bytecode, ++m_ip);
+                    std::size_t str_size = get2BytesInt(bytecode);
                     if (str_size > 0)
                     {
                         Value a;
@@ -358,18 +478,23 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "segment" << std::endl;
 
-                    std::size_t str_size = getByte(bytecode, ++m_ip);
+                    // we read the size of the name of the segment
+                    std::size_t str_size = get2BytesInt(bytecode);
                     std::string seg_name;
                     if (str_size > 0)
                         { seg_name = readString(bytecode, str_size); }
                     else
                         { throw std::logic_error("Invalid size for the segment name"); }
 
+                    // we try to add the segment position to the "segment register" if it wasn't registered before
+                    // (using a INST_DECL_SEG for example)
                     if (m_segments.find(seg_name) == m_segments.end())
                         { m_segments[seg_name] = m_ip; }
 
-                    std::size_t seg_size = getXBytesInt(bytecode);
-                    if (seg_size > 0)
+                    // we get the size of the segment and jump to the end of it, we don't want to execute it, it wasn't called,
+                    // only defined
+                    std::size_t seg_size = get2BytesInt(bytecode);
+                    if (seg_size > 0 && m_ip + seg_size < bytecode.size())
                         { m_ip += seg_size; }
                     else
                         { throw std::logic_error("Invalid bloc count for the segment"); }
@@ -381,14 +506,16 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "declare segment" << std::endl;
 
-                    std::size_t str_size = getByte(bytecode, ++m_ip);
+                    // we get the size of the name of the segment and read this name
+                    std::size_t str_size = get2BytesInt(bytecode);
                     std::string seg_name;
                     if (str_size > 0)
                         { seg_name = readString(bytecode, str_size); }
                     else
                         { throw std::logic_error("Invalid size for the segment name"); }
 
-                    m_segments[seg_name] = getXBytesInt(bytecode);
+                    // and we read its position in the bytecode
+                    m_segments[seg_name] = get2BytesInt(bytecode);
 
                     break;
                 }
@@ -412,10 +539,12 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "push var" << std::endl;
 
-                    std::size_t str_size = getByte(bytecode, ++m_ip);
+                    // we read the size of the var name and read it
+                    std::size_t str_size = get2BytesInt(bytecode);
                     if (str_size > 0)
                     {
                         std::string v = readString(bytecode, str_size);
+                        // if the variable can be found, push it on the stack
                         if (m_variables.find(v) != m_variables.end())
                             { push(m_variables[v]); }
                         else
@@ -434,6 +563,8 @@ namespace kafe
                     if (m_stack.size() > 0)
                     {
                         Value a = pop();
+                        // push a 2 times in a row, because we pop it from the stack and want to duplicate the value
+                        // stored at stack[-1]
                         push(a); push(a);
                     }
                     else
@@ -446,11 +577,7 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "jump" << std::endl;
 
-                    std::string seg_name = getSegmentName(bytecode);
-                    std::size_t last_pos = m_ip;
-                    goToSegmentPosition(seg_name);
-                    pushCallStack(seg_name, last_pos);
-
+                    std::string seg_name = performJump(bytecode);
                     if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;
 
                     break;
@@ -460,14 +587,11 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "jump if" << std::endl;
 
+                    // get a value on the stack and try to compare it with true
                     Value a = pop();
                     if (canValueCompareTo(a, true))
                     {
-                        std::string seg_name = getSegmentName(bytecode);
-                        std::size_t last_pos = m_ip;
-                        goToSegmentPosition(seg_name);
-                        pushCallStack(seg_name, last_pos);
-
+                        std::string seg_name = performJump(bytecode);
                         if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;
                     }
 
@@ -481,11 +605,7 @@ namespace kafe
                     Value a = pop();
                     if (canValueCompareTo(a, false))
                     {
-                        std::string seg_name = getSegmentName(bytecode);
-                        std::size_t last_pos = m_ip;
-                        goToSegmentPosition(seg_name);
-                        pushCallStack(seg_name, last_pos);
-
+                        std::string seg_name = performJump(bytecode);
                         if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;
                     }
 
@@ -496,15 +616,7 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "ret" << std::endl;
 
-                    if (m_call_stack.size() > 0)
-                    {
-                        // TODO : check the value of m_ip after the assignation to be sure we stay in the bounds of the bytecode
-                        m_ip = abc::pop(m_call_stack[m_call_stack.size() - 1].lastPosition, -1);
-                        if (m_call_stack[m_call_stack.size() - 1].lastPosition.size() == 0)
-                            abc::pop_no_return(m_call_stack, -1);
-                    }
-                    else
-                        { throw std::logic_error("Can not return from a non-segment !"); }
+                    retFromSegment(bytecode);
 
                     break;
                 }
@@ -519,6 +631,7 @@ namespace kafe
 
                 default:
                 {
+                    // 0x00 can be here to end the bytecode
                     if (instruction != 0x00)
                         { throw std::runtime_error("Can not identify the instruction " + abc::str((unsigned) instruction)); }
                 }
@@ -527,8 +640,6 @@ namespace kafe
 
         return 0;
     }
-
-    // int VM::execSegment(char* bytecode, char* segment_name) { return 0; }
 
     void VM::setDebug(bool debug)
     {
