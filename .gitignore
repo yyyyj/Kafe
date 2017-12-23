@@ -7,3 +7,4 @@ obj/*
 bin/*
 specs.txt
 *.diff
+antlr4/

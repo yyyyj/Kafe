@@ -1,8 +1,8 @@
 #include <iostream>
 #include <string>
 
-#include "vm.hpp"
-#include "utils.hpp"
+#include "sources/kafe/vm.hpp"
+#include "sources/kafe/utils.hpp"
 
 std::string format(int number, std::size_t sz)
 {
