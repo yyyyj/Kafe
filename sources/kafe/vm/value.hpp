@@ -93,12 +93,13 @@ namespace kafe
                    ((other.type == TYPE_VAR) ? (other.stringValue.size() >= stringValue.size()) : true) &&
                    ((other.type == TYPE_STRUCT) ? false : false);
         }
-
-        // !(a==b)           would be a!=b
-        // !(a<b)            would be a>=b
-        // (a<b)||(a==b)     would be a<=b
-        // !(a<b)&&(!(a==b)) would be a>b
     };
+
+    bool operator!=(const Value& a, const Value& b);
+    bool operator>=(const Value& a, const Value& b);
+    bool operator<=(const Value& a, const Value& b);
+    bool operator>(const Value& a, const Value& b);
+
     // custom type to create stacks and avoid to much verbosity
     typedef std::vector<Value> ValueStack_t;
 

@@ -9,6 +9,7 @@ namespace kafe
     VM::VM() :
         m_stack_size(0)
         , m_ip(0)
+        , m_debug_mode(0)
         , m_debug(false)
     {}
 
@@ -121,7 +122,6 @@ namespace kafe
         else
         {
             // the stack isn't empty and the last element is describing the same segment as the one which is being called
-
             std::size_t lp_last_index = m_call_stack[cs_last_index].lastPositions.size() - 1;
             // if the last element on the stack of the call element is the same as the position
             // from where we are calling this segment, add one to its counter `cnt`
@@ -262,12 +262,15 @@ namespace kafe
     {
         // open the file and get its size
         std::ifstream ifs(filePath, std::ios::binary | std::ios::ate);
+        if (!ifs.good())
+            { throw std::runtime_error("Can not open the given file"); }
         std::ifstream::pos_type pos = ifs.tellg();
         // reserve the appropriate size
         std::vector<char> temp(pos);
         // seek to the beginning of the file and read
         ifs.seekg(0, std::ios::beg);
         ifs.read(&temp[0], pos);
+        ifs.close();
 
         bytecode_t bytes(pos);
         for (std::size_t i=0; i < pos; ++i)
@@ -289,6 +292,7 @@ namespace kafe
         for (m_ip=0; m_ip < bytecode.size(); ++m_ip)
         {
             inst_t instruction = getByte(bytecode, m_ip);
+
             if (m_debug) std::cout << "[" << m_ip << "] " << (int)instruction << " ";
 
             switch (instruction)
@@ -628,9 +632,10 @@ namespace kafe
         return 0;
     }
 
-    void VM::setDebug(bool debug)
+    void VM::setMode(int mode)
     {
-        m_debug = debug;
+        m_debug_mode |= mode;
+        m_debug = m_debug_mode & VM::FLAG_BASIC_DEBUG;
     }
 
     ValueStack_t& VM::getStack()

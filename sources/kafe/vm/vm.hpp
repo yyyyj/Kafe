@@ -2,9 +2,9 @@
 #define kafe_vm
 
 #include "instructions.hpp"
-#include "types.hpp"
+#include "../types.hpp"
+#include "../utils.hpp"
 #include "value.hpp"
-#include "utils.hpp"
 
 #include <map>
 #include <string>
@@ -19,7 +19,7 @@ namespace kafe
     class VM
     {
     private:
-        int m_stack_size;
+        std::size_t m_stack_size;
         // instruction pointer
         std::size_t m_ip;
         ValueStack_t m_stack;
@@ -33,6 +33,7 @@ namespace kafe
         // name of the struct : object Structure (.elements => name of the var : default value)
         std::map<std::string, Structure> m_struct_definitions;
 
+        int m_debug_mode;
         bool m_debug;
 
         void push(Value value);
@@ -59,11 +60,14 @@ namespace kafe
         VM();
         ~VM();
 
+        // the debug flags for the VM
+        static const int FLAG_BASIC_DEBUG   = 1 << 0;
+
         bytecode_t readFile(const std::string& filePath);
 
         int execFromFile(const std::string& filePath);
         int exec(bytecode_t bytecode);
-        void setDebug(bool debug);
+        void setMode(int mode);
 
         ValueStack_t& getStack();
     };

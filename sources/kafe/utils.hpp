@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <fstream>
 #include <iostream>
 
 namespace kafe
@@ -53,6 +54,12 @@ namespace kafe
             T t; std::stringstream b(v);
             b >> t;
             return t;
+        }
+
+        inline bool check_if_file_exists(const std::string& name)
+        {
+            std::ifstream f(name.c_str());
+            return f.good();
         }
 
     }  // namespace abc

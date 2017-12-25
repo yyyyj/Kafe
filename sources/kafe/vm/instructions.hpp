@@ -1,6 +1,8 @@
 #ifndef kafe_inst
 #define kafe_inst
 
+#include "../types.hpp"
+
 namespace kafe
 {
 
