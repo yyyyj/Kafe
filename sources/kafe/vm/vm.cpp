@@ -192,20 +192,21 @@ namespace kafe
                 {
                     if (a.type == TYPE_INT)
                     {
-                        Value c;
-                        c.type = TYPE_INT;
-                        c.intValue = b.intValue + a.intValue;
+                        Value c(TYPE_INT, a.get<long>() + b.get<long>());
+                        push(c);
+                    }
+                    else if (a.type == TYPE_DOUBLE)
+                    {
+                        Value c(TYPE_DOUBLE, a.get<double>() + b.get<double>());
                         push(c);
                     }
                     else if (a.type == TYPE_STRING)
                     {
-                        Value c;
-                        c.type = TYPE_STRING;
-                        c.stringValue = std::string(a.stringValue) + std::string(b.stringValue);
+                        Value c(TYPE_STRING, a.get<std::string>() + b.get<std::string>());
                         push(c);
                     }
                     else
-                        { throw std::logic_error("Can not add two booleans"); }
+                        { throw std::logic_error("Can not add two " + convertTypeToString(a.type)); }
                 }
                 else
                     { throw std::logic_error("Can not add two variables of heterogeneous types"); }
@@ -222,29 +223,13 @@ namespace kafe
 
                 if (a.type != b.type)
                 {
-                    Value c;
-                    c.type = TYPE_BOOL;
-                    c.boolValue = true;
+                    Value c(TYPE_BOOL, true);
                     push(c);
                 }
                 else
                 {
-                    if ((a.type == TYPE_BOOL && a.boolValue != b.boolValue) ||
-                        (a.type == TYPE_INT && a.intValue != b.intValue) ||
-                        (a.type == TYPE_STRING && a.stringValue != b.stringValue))
-                    {
-                        Value c;
-                        c.type = TYPE_BOOL;
-                        c.boolValue = true;
-                        push(c);
-                    }
-                    else
-                    {
-                        Value c;
-                        c.type = TYPE_BOOL;
-                        c.boolValue = false;
-                        push(c);
-                    }
+                    Value c(TYPE_BOOL, (a != b));
+                    push(c);
                 }
 
                 break;
@@ -301,9 +286,8 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "int 2B" << std::endl;
 
-                    Value v;
-                    v.type = TYPE_INT;
-                    v.intValue = get2BytesInt(bytecode);
+                    Value v(TYPE_INT);
+                    v.set<long>(get2BytesInt(bytecode));
                     push(v);
 
                     break;
@@ -313,9 +297,8 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "int 4B" << std::endl;
 
-                    Value v;
-                    v.type = TYPE_INT;
-                    v.intValue = get4BytesInt(bytecode);
+                    Value v(TYPE_INT);
+                    v.set<long>(get4BytesInt(bytecode));
                     push(v);
 
                     break;
@@ -325,6 +308,9 @@ namespace kafe
                 case INST_DOUBLE:
                 {
                     if (m_debug) std::cout << "double" << std::endl;
+
+                    Value v(TYPE_DOUBLE);
+                    v.set<double>(0.0);
 
                     break;
                 }
@@ -336,9 +322,7 @@ namespace kafe
                     std::size_t str_size = get2BytesInt(bytecode);
                     if (str_size > 0)
                     {
-                        Value a;
-                        a.type = TYPE_STRING;
-                        a.stringValue = readString(bytecode, str_size);
+                        Value a(TYPE_STRING, readString(bytecode, str_size));
                         push(a);
                     }
                     else
@@ -351,9 +335,7 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "bool" << std::endl;
 
-                    Value a;
-                    a.type = TYPE_BOOL;
-                    a.boolValue = readBool(bytecode);
+                    Value a(TYPE_BOOL, readBool(bytecode));
                     push(a);
 
                     break;
@@ -372,11 +354,10 @@ namespace kafe
                     if (m_debug) std::cout << "list" << std::endl;
 
                     std::size_t nb_elements = getXBytesInt(bytecode);
-                    Value c;
-                    c.type = TYPE_LIST;
+                    Value c(TYPE_LIST);
                     while (nb_elements != 0)
                     {
-                        c.listValue.insert(c.listValue.begin(), pop());
+                        c.getRef<Value::list_t>().insert(c.getRef<Value::list_t>().begin(), pop());
                         nb_elements--;
                     }
 
@@ -390,9 +371,7 @@ namespace kafe
                     std::size_t str_size = get2BytesInt(bytecode);
                     if (str_size > 0)
                     {
-                        Value a;
-                        a.type = TYPE_VAR;
-                        a.stringValue = readString(bytecode, str_size);
+                        Value a(TYPE_VAR, readString(bytecode, str_size));
                         push(a);
                     }
                     else
@@ -409,8 +388,7 @@ namespace kafe
                     std::size_t str_size = get2BytesInt(bytecode);
                     if (str_size > 0)
                     {
-                        Value a;
-                        a.type = TYPE_STRUCT;
+                        Value a(TYPE_STRUCT);
                         // getting the structure name
                         std::string name = readString(bytecode, str_size);
                         /**
@@ -519,7 +497,7 @@ namespace kafe
                     Value val = pop();
 
                     if (var_name.type == TYPE_VAR)
-                        { m_variables[var_name.stringValue] = val; }
+                        { m_variables[var_name.get<std::string>()] = val; }
                     else
                         { throw std::logic_error("Can not store a value into a non-variable"); }
 

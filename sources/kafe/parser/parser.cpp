@@ -20,14 +20,14 @@ namespace kafe
             if (tok.getType() == KafeTokenType::Whitespace && tok.getValue() != "\n")
                 continue;
 
-            if (tok.getValue() in kw::bloc_opening_kw)
+            /*if (tok.getValue() in kw::bloc_opening_kw)
             {
                 // create bloc
             }
             else
             {
                 // create linear node or add to the last bloc/linear node (depending on the lines break)
-            }
+            }*/
         }
     }
 

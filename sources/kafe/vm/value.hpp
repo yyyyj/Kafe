@@ -7,6 +7,8 @@
 #include <exception>
 #include <stdexcept>
 
+#include "../libs/variant.hpp"
+
 namespace kafe
 {
 
@@ -22,6 +24,8 @@ namespace kafe
         TYPE_VAR         = 1 << 5,
         TYPE_STRUCT      = 1 << 6,
     };
+
+    std::string convertTypeToString(ValueType t);
 
     // forward declaration for Structure
     struct StructElem;
@@ -51,49 +55,43 @@ namespace kafe
     // a data holder for kafe values
     struct Value
     {
+        typedef std::vector<Value> list_t;
+
         ValueType type;
-
-        long intValue;
-        double doubleValue;
-        bool boolValue;
-        std::string stringValue;
-        std::vector<Value> listValue;
-
-        Structure structValue;
+        mpark::variant<long, double, bool, std::string, list_t, Structure> value;
 
         Value() {}
-        Value(ValueType t, long i)   : type(t), intValue(i)    {}
-        Value(ValueType t, double d) : type(t), doubleValue(d) {}
-        Value(ValueType t, bool b)   : type(t), boolValue(b)   {}
-        Value(ValueType t, const std::string& s) : type(t), stringValue(s) {}
-        Value(ValueType t, std::vector<Value> l) : type(t), listValue(l)   {}
-        Value(ValueType t, Structure st) : type(t), structValue(st) {}
+        Value(ValueType t) : type(t) {}
+        Value(ValueType t, long i)   : type(t) { mpark::get<long>(value) = i; }
+        Value(ValueType t, double d) : type(t) { mpark::get<double>(value) = d; }
+        Value(ValueType t, bool b)   : type(t), value(b) {}
+        Value(ValueType t, const std::string& s) : type(t), value(s) {}
+        Value(ValueType t, std::vector<Value> l) : type(t), value(l) {}
+        Value(ValueType t, Structure st) : type(t), value(st) {}
 
+        template <typename T> T get() const { return mpark::get<T>(value); }
+        template <typename T> T& getRef() { return mpark::get<T>(value); }
+        template <typename T> void set(T val) { mpark::get<T>(value) = val; }
 
         bool operator==(const Value& other) const
         {
-            return (other.type == type) &&
-                   ((other.type == TYPE_INT) ? (other.intValue == intValue) : true) &&
-                   ((other.type == TYPE_DOUBLE) ? (other.doubleValue == doubleValue) : true) &&
-                   ((other.type == TYPE_BOOL) ? (other.boolValue == boolValue) : true) &&
-                   ((other.type == TYPE_STRING) ? (other.stringValue == stringValue) : true) &&
-                   ((other.type == TYPE_LIST) ? (other.listValue == listValue) : true) &&
-                   ((other.type == TYPE_VAR) ? (other.stringValue == stringValue) : true) &&
-                   ((other.type == TYPE_STRUCT) ? (other.structValue == structValue) : true);
+            return (other.type == type) && (other.value == value);
         }
 
         bool operator<(const Value& other) const
         {
             return (other.type == type) &&
-                   ((other.type == TYPE_INT) ? (other.intValue >= intValue) : true) &&
-                   ((other.type == TYPE_DOUBLE) ? (other.doubleValue >= doubleValue) : true) &&
-                   ((other.type == TYPE_BOOL) ? (other.boolValue == true && boolValue == false) : true) &&
-                   ((other.type == TYPE_STRING) ? (other.stringValue.size() >= stringValue.size()) : true) &&
-                   ((other.type == TYPE_LIST) ? (other.listValue.size() >= listValue.size()) : true) &&
-                   ((other.type == TYPE_VAR) ? (other.stringValue.size() >= stringValue.size()) : true) &&
-                   ((other.type == TYPE_STRUCT) ? false : false);
+                   ((other.type == TYPE_INT) ? (other.get<long>() >= get<long>()) : true) &&
+                   ((other.type == TYPE_DOUBLE) ? (other.get<double>() >= get<double>()) : true) &&
+                   ((other.type == TYPE_BOOL) ? (other.get<bool>() == true && get<bool>() == false) : true) &&
+                   ((other.type == TYPE_STRING) ? (other.get<std::string>().size() >= get<std::string>().size()) : true) &&
+                   ((other.type == TYPE_LIST) ? (other.get<list_t>().size() >= get<list_t>().size()) : true) &&
+                   ((other.type == TYPE_VAR) ? (other.get<std::string>().size() >= get<std::string>().size()) : true) &&
+                   ((other.type == TYPE_STRUCT) ? false : true);
         }
     };
+
+    std::ostream& operator<<(std::ostream& os, const Value& v);
 
     bool operator!=(const Value& a, const Value& b);
     bool operator>=(const Value& a, const Value& b);
@@ -108,6 +106,8 @@ namespace kafe
         std::string name;
         Value val;
     };
+
+    std::ostream& operator<<(std::ostream& os, const Structure& st);
 
     struct Call
     {

@@ -3,6 +3,7 @@
 
 #include "vm/vm.hpp"
 #include "lexer/lexer.hpp"
+#include "parser/parser.hpp"
 #include "utils.hpp"
 #include "types.hpp"
 

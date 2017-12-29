@@ -50,14 +50,7 @@ void test_vm(const std::string& test_name, kafe::bytecode_t bytecode)
     for (std::size_t _i=vm.getStack().size(); _i > 0; --_i)
     {
         int i = _i - 1;
-        std::cout << "[" << i << "] ";
-        if (vm.getStack()[i].type == kafe::TYPE_INT)
-            std::cout << "INT " << vm.getStack()[i].intValue;
-        else if (vm.getStack()[i].type == kafe::TYPE_BOOL)
-            std::cout << "BOOL " << vm.getStack()[i].boolValue;
-        else if (vm.getStack()[i].type == kafe::TYPE_STRING)
-            std::cout << "STRING " << vm.getStack()[i].stringValue;
-        std::cout << std::endl;
+        std::cout << "[" << i << "] " << kafe::convertTypeToString(vm.getStack()[i].type) << " " << vm.getStack()[i] << std::endl;
     }
     std::cout << std::endl << "=================================" << std::endl << std::endl;
 }
