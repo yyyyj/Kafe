@@ -13,8 +13,7 @@ namespace kafe
         // types
         INST_INT_2B      = 0x01,  // 0x01 [integer on 2 bytes]
         INST_INT_4B      = 0x02,  // 0x02 [integer on 4 bytes]
-        /// need to implement this :
-            INST_DOUBLE      = 0x03,  // 0x03 [double on *I-don't-know-how-many-bytes*]
+        INST_DOUBLE      = 0x03,  // 0x03 [double on *I-don't-know-how-many-bytes*]
         INST_STR         = 0x04,  // 0x04 [string size on 2 bytes] [text]
         INST_BOOL        = 0x05,  // 0x05 [value on 1 byte] ; if value > 0x00 => true
         INST_ADDR        = 0x06,  // 0x06 [size of a segment name on 2 bytes] [name] ; used to store the address of a segment (kind of pointer, only pointing on something in the bytecode)

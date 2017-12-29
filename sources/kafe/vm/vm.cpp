@@ -57,7 +57,8 @@ namespace kafe
 
     int VM::get2BytesInt(bytecode_t& bytecode)
     {
-        return getXBytesInt(bytecode, 2);
+        int n = getXBytesInt(bytecode, 2);
+        return n * ((n & (1 << 15)) ? (-1) : (+1));
     }
 
     long VM::get4BytesInt(bytecode_t& bytecode)
@@ -304,13 +305,16 @@ namespace kafe
                     break;
                 }
 
-                /// to implement
                 case INST_DOUBLE:
                 {
                     if (m_debug) std::cout << "double" << std::endl;
 
                     Value v(TYPE_DOUBLE);
-                    v.set<double>(0.0);
+                    unsigned long int_part = get4BytesInt(bytecode);
+                    int exp = get2BytesInt(bytecode);
+                    exp = (exp > EXP_DOUBLE_LIMIT) ? EXP_DOUBLE_LIMIT : ((exp < -EXP_DOUBLE_LIMIT) ? -EXP_DOUBLE_LIMIT : exp);
+                    exp *= (exp & EXP_DOUBLE_LIMIT) ? (-1) : (+1);
+                    v.set<double>(int_part * std::pow(10, exp));
 
                     break;
                 }
