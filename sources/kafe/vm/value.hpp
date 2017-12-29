@@ -13,7 +13,6 @@ namespace kafe
 {
 
     // all the data types defined for kafe are listed below
-    // they probably won't change now (dec. 18 2017)
     enum ValueType
     {
         TYPE_INT         = 1 << 0,
@@ -23,6 +22,7 @@ namespace kafe
         TYPE_LIST        = 1 << 4,
         TYPE_VAR         = 1 << 5,
         TYPE_STRUCT      = 1 << 6,
+        TYPE_ADDR        = 1 << 7,
     };
 
     std::string convertTypeToString(ValueType t);
@@ -56,9 +56,11 @@ namespace kafe
     struct Value
     {
         typedef std::vector<Value> list_t;
+        typedef unsigned int addr_t;
 
         ValueType type;
-        mpark::variant<long, double, bool, std::string, list_t, Structure> value;
+        mpark::variant<long, double, bool, std::string,
+                       list_t, Structure, addr_t> value;
 
         Value() {}
         Value(ValueType t) : type(t) {}
@@ -68,6 +70,7 @@ namespace kafe
         Value(ValueType t, const std::string& s) : type(t), value(s) {}
         Value(ValueType t, std::vector<Value> l) : type(t), value(l) {}
         Value(ValueType t, Structure st) : type(t), value(st) {}
+        Value(ValueType t, addr_t u) : type(t) { mpark::get<addr_t>(value) = u; }
 
         template <typename T> T get() const { return mpark::get<T>(value); }
         template <typename T> T& getRef() { return mpark::get<T>(value); }
@@ -87,7 +90,9 @@ namespace kafe
                    ((other.type == TYPE_STRING) ? (other.get<std::string>().size() >= get<std::string>().size()) : true) &&
                    ((other.type == TYPE_LIST) ? (other.get<list_t>().size() >= get<list_t>().size()) : true) &&
                    ((other.type == TYPE_VAR) ? (other.get<std::string>().size() >= get<std::string>().size()) : true) &&
-                   ((other.type == TYPE_STRUCT) ? false : true);
+                   // we can not compare structures nor addresses
+                   ((other.type == TYPE_STRUCT) ? false : true) &&
+                   ((other.type == TYPE_ADDR) ? false : true);
         }
     };
 

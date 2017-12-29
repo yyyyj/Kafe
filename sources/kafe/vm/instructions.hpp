@@ -17,8 +17,7 @@ namespace kafe
             INST_DOUBLE      = 0x03,  // 0x03 [double on *I-don't-know-how-many-bytes*]
         INST_STR         = 0x04,  // 0x04 [string size on 2 bytes] [text]
         INST_BOOL        = 0x05,  // 0x05 [value on 1 byte] ; if value > 0x00 => true
-        /// need to implement this :
-            INST_ADDR        = 0x06,  // 0x06 [what-kind-of-argument] ; used to store the address of a segment (kind of pointer, only pointing on something in the bytecode)
+        INST_ADDR        = 0x06,  // 0x06 [size of a segment name on 2 bytes] [name] ; used to store the address of a segment (kind of pointer, only pointing on something in the bytecode)
         INST_LIST        = 0x07,  // 0x07 [number of elements on 4 bytes = X] ; takes the X last elements put on the stack and put them into a list
         INST_VAR         = 0x08,  // 0x08 [var name size on 2 bytes] [name]
         /// need to implement these 2 :

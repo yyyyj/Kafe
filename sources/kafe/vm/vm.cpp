@@ -341,10 +341,18 @@ namespace kafe
                     break;
                 }
 
-                /// to implement
                 case INST_ADDR:
                 {
                     if (m_debug) std::cout << "addr" << std::endl;
+
+                    std::size_t str_size = get2BytesInt(bytecode);
+                    if (str_size > 0)
+                    {
+                        Value a(TYPE_ADDR, getSegmentAddr(readString(bytecode, str_size)));
+                        push(a);
+                    }
+                    else
+                        { throw std::logic_error("Invalid size given for the segment name to take the address"); }
 
                     break;
                 }

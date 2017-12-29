@@ -13,6 +13,7 @@ namespace kafe
         else if (t == TYPE_LIST) return "LIST";
         else if (t == TYPE_VAR) return "VAR";
         else if (t == TYPE_STRUCT) return "STRUCT";
+        else if (t == TYPE_ADDR) return "ADDR";
         else return "???";
     }
 
@@ -48,6 +49,10 @@ namespace kafe
 
         case TYPE_STRUCT:
             os << v.get<Structure>();
+            break;
+
+        case TYPE_ADDR:
+            os << abc::str(v.get<std::size_t>());
             break;
 
         default:
