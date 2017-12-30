@@ -23,6 +23,8 @@ namespace kafe
         TYPE_VAR         = 1 << 5,
         TYPE_STRUCT      = 1 << 6,
         TYPE_ADDR        = 1 << 7,
+
+        TYPE_UNKNOW      = -1
     };
 
     std::string convertTypeToString(ValueType t);
@@ -68,7 +70,7 @@ namespace kafe
         Value(ValueType t, double d) : type(t) { mpark::get<double>(value) = d; }
         Value(ValueType t, bool b)   : type(t), value(b) {}
         Value(ValueType t, const std::string& s) : type(t), value(s) {}
-        Value(ValueType t, std::vector<Value> l) : type(t), value(l) {}
+        Value(ValueType t, list_t l) : type(t), value(l) {}
         Value(ValueType t, Structure st) : type(t), value(st) {}
         Value(ValueType t, addr_t u) : type(t) { mpark::get<addr_t>(value) = u; }
 
@@ -93,6 +95,12 @@ namespace kafe
                    // we can not compare structures nor addresses
                    ((other.type == TYPE_STRUCT) ? false : true) &&
                    ((other.type == TYPE_ADDR) ? false : true);
+        }
+
+        template <typename T>
+        static ValueType guessType()
+        {
+            return TYPE_UNKNOW;
         }
     };
 

@@ -93,7 +93,7 @@ int main(int argc, char** argv)
             kafe::INST_STORE_VAR,
             kafe::INST_LOAD_VAR, 0x00, 0x03, 'v', 'a', 'r',
             kafe::INST_INT_2B, 0x00, 0x09,
-            kafe::INST_PROCEDURE, kafe::INST_ADD,
+            kafe::INST_PROCEDURE, 0, kafe::INST_ADD,
             0x00
         };
         test_vm("var = 1; push(var); push(9); add", bytecode2);
@@ -113,13 +113,13 @@ int main(int argc, char** argv)
             kafe::INST_BOOL, 0x00,                                      // len:2 => 10
             kafe::INST_VAR, 0x00, 0x01, 'a',                            // len:3 => 14
             kafe::INST_STORE_VAR,                                       // len:1 => 15
-            kafe::INST_SEGMENT, 0x00, 0x03, 'v', 'a', 'r', 0x00, 0x09,  // len:8 => 23
+            kafe::INST_SEGMENT, 0x00, 0x03, 'v', 'a', 'r', 0x00, 0x0a,  // len:8 => 23
                 kafe::INST_LOAD_VAR, 0x00, 0x01, 'a',                   // len:4 => 27
                 kafe::INST_BOOL, 0x01,                                  // len:2 => 29
-                kafe::INST_PROCEDURE, kafe::INST_NE,                    // len:2 => 31
-                kafe::INST_RET,                                         // len:1 => 32
-            kafe::INST_JUMP, 0x00, 0x03, 'v', 'a', 'r',                 // len:6 => 38
-            0x00                                                        // len:1 => 39
+                kafe::INST_PROCEDURE, 0, kafe::INST_NE,                 // len:3 => 32
+                kafe::INST_RET,                                         // len:1 => 33
+            kafe::INST_JUMP, 0x00, 0x03, 'v', 'a', 'r',                 // len:6 => 39
+            0x00                                                        // len:1 => 40
         };
         test_vm("testing segments, jump and ret", bytecode4);
 

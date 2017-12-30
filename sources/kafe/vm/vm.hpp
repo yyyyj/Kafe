@@ -35,6 +35,9 @@ namespace kafe
         // name of the struct : object Structure (.elements => name of the var : default value)
         std::map<std::string, Structure> m_struct_definitions;
 
+        bytecode_t m_loaded_bytecode;
+        bool m_has_loaded_bytecode;
+
         int m_debug_mode;
         bool m_debug;
 
@@ -46,6 +49,7 @@ namespace kafe
         long long getXBytesInt(bytecode_t& bytecode, unsigned bytesCount=2);
         int get2BytesInt(bytecode_t& bytecode);
         long get4BytesInt(bytecode_t& bytecode);
+        double readDouble(bytecode_t& byteocde);
         std::string readString(bytecode_t& bytecode, std::size_t strSize);
         bool readBool(bytecode_t& bytecode);
 
@@ -56,7 +60,7 @@ namespace kafe
         std::string performJump(bytecode_t& bytecode);
         void retFromSegment(bytecode_t& bytecode);
 
-        void builtins(inst_t instruction);
+        void builtins(bytecode_t& bytecode);
 
     public:
         VM();
@@ -70,6 +74,18 @@ namespace kafe
         int execFromFile(const std::string& filePath);
         int exec(bytecode_t bytecode);
         void setMode(int mode);
+        void load(bytecode_t bytecode);
+        int exec();
+        void callSegment(const std::string& seg_name);
+
+        template <typename T> void push(T value)
+        {
+            ValueType t = Value::guessType<T>();
+            if (t == TYPE_UNKNOW)
+                { throw std::runtime_error("Can not guess value type when trying to push a value on the stack"); }
+            Value c(t, value);
+            push(c);
+        }
 
         ValueStack_t& getStack();
     };

@@ -11,6 +11,7 @@ namespace kafe
         , m_ip(0)
         , m_debug_mode(0)
         , m_debug(false)
+        , m_has_loaded_bytecode(false)
     {}
 
     VM::~VM()
@@ -63,6 +64,15 @@ namespace kafe
     long VM::get4BytesInt(bytecode_t& bytecode)
     {
         return abc::setSign((long)getXBytesInt(bytecode, 4), /* bytesCount */ 4);
+    }
+
+    double VM::readDouble(bytecode_t& bytecode)
+    {
+        unsigned long int_part = get4BytesInt(bytecode);
+        int exp = abc::abs(get2BytesInt(bytecode));
+        exp = (exp > EXP_DOUBLE_LIMIT) ? EXP_DOUBLE_LIMIT : ((exp < -EXP_DOUBLE_LIMIT) ? -EXP_DOUBLE_LIMIT : exp);
+        exp *= (exp & EXP_DOUBLE_LIMIT) ? (-1) : (+1);
+        return double(int_part) * std::pow(10, exp);
     }
 
     std::string VM::readString(bytecode_t& bytecode, std::size_t strSize)
@@ -177,8 +187,10 @@ namespace kafe
             { throw std::logic_error("Can not return from a non-segment"); }
     }
 
-    void VM::builtins(inst_t instruction)
+    void VM::builtins(bytecode_t& bytecode)
     {
+        unsigned instruction = get2BytesInt(bytecode);
+
         switch (instruction)
         {
             case INST_ADD:
@@ -309,11 +321,8 @@ namespace kafe
                     if (m_debug) std::cout << "double" << std::endl;
 
                     Value v(TYPE_DOUBLE);
-                    unsigned long int_part = get4BytesInt(bytecode);
-                    int exp = abc::abs(get2BytesInt(bytecode));
-                    exp = (exp > EXP_DOUBLE_LIMIT) ? EXP_DOUBLE_LIMIT : ((exp < -EXP_DOUBLE_LIMIT) ? -EXP_DOUBLE_LIMIT : exp);
-                    exp *= (exp & EXP_DOUBLE_LIMIT) ? (-1) : (+1);
-                    v.set<double>(int_part * std::pow(10, exp));
+                    v.set<double>(readDouble(bytecode));
+                    push(v);
 
                     break;
                 }
@@ -605,7 +614,7 @@ namespace kafe
                 {
                     // we implement the procedure in another function, using a special code
                     // in order to be able to have (1st) more procedures and (2nd) a cleaner code
-                    builtins(getByte(bytecode, ++m_ip));
+                    builtins(bytecode);
                     break;
                 }
 
@@ -625,6 +634,34 @@ namespace kafe
     {
         m_debug_mode |= mode;
         m_debug = m_debug_mode & VM::FLAG_BASIC_DEBUG;
+    }
+
+    void VM::load(bytecode_t bytecode)
+    {
+        clear();
+        m_loaded_bytecode = bytecode;
+        m_has_loaded_bytecode = true;
+    }
+
+    int VM::exec()
+    {
+        if (m_has_loaded_bytecode)
+            { return exec(m_loaded_bytecode); }
+        else
+            { throw std::logic_error("Can not run if no bytecode were given"); }
+    }
+
+    void VM::callSegment(const std::string& seg_name)
+    {
+        // keep the last value of the instruction pointer, we'll need it
+        std::size_t last_pos = m_ip;
+        // jump to the segment
+        goToSegmentPosition(seg_name);
+        // refresh the call stack and register we've jumped to `seg_name`, from `last_pos`
+        // in order to be able to go back when the execution of the segment we'll end
+        pushCallStack(seg_name, last_pos);
+
+        exec();
     }
 
     ValueStack_t& VM::getStack()

@@ -17,6 +17,14 @@ namespace kafe
         else return "???";
     }
 
+    template <> ValueType Value::guessType<long>() { return TYPE_INT; }
+    template <> ValueType Value::guessType<double>() { return TYPE_DOUBLE; }
+    template <> ValueType Value::guessType<bool>() { return TYPE_BOOL; }
+    template <> ValueType Value::guessType<std::string>() { return TYPE_STRING; }
+    template <> ValueType Value::guessType<Value::list_t>() { return TYPE_LIST; }
+    template <> ValueType Value::guessType<Structure>() { return TYPE_STRUCT; }
+    template <> ValueType Value::guessType<Value::addr_t>() { return TYPE_ADDR; }
+
     std::ostream& operator<<(std::ostream& os, const Value& v)
     {
         switch(v.type)
