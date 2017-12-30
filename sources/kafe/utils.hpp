@@ -12,6 +12,21 @@ namespace kafe
     namespace abc
     {
 
+        template <typename T>
+        T abs(T value)
+        {
+            return (value >= 0) ? value : -value;
+        }
+
+        template <typename T>
+        T setSign(T value, int bytesCount)
+        {
+            T msb = 1 << (8 * bytesCount - 1);
+            if (sizeof(T) > (unsigned)bytesCount && (value & msb))
+                { return msb - value; }
+            return value;
+        }
+
         template<typename T>
         T pop(std::vector<T>& obj, int i)
         {
@@ -32,7 +47,7 @@ namespace kafe
         }
 
         template<typename T>
-        void pop_no_return(std::vector<T>& obj, int i)
+        void popNoReturn(std::vector<T>& obj, int i)
         {
             if (0 <= i && (unsigned)i < obj.size())
                 obj.erase(obj.begin() + i);
@@ -49,14 +64,14 @@ namespace kafe
         }
 
         template<typename T>
-        T str_to(const std::string& v)
+        T strTo(const std::string& v)
         {
             T t; std::stringstream b(v);
             b >> t;
             return t;
         }
 
-        inline bool check_if_file_exists(const std::string& name)
+        inline bool checkIfFileExists(const std::string& name)
         {
             std::ifstream f(name.c_str());
             return f.good();

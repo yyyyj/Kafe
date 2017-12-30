@@ -43,7 +43,7 @@ namespace kafe
         void clear();
 
         inst_t getByte(bytecode_t& bytecode, std::size_t i);
-        long getXBytesInt(bytecode_t& bytecode, unsigned bytesCount=2);
+        long long getXBytesInt(bytecode_t& bytecode, unsigned bytesCount=2);
         int get2BytesInt(bytecode_t& bytecode);
         long get4BytesInt(bytecode_t& bytecode);
         std::string readString(bytecode_t& bytecode, std::size_t strSize);

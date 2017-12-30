@@ -124,14 +124,15 @@ int main(int argc, char** argv)
         test_vm("testing segments, jump and ret", bytecode4);
 
         kafe::bytecode_t bytecode5 = {
-            kafe::INST_INT_2B, 0x1a, 0x8b,
+            kafe::INST_INT_2B, 0b11111111, 0b11111111,
             kafe::INST_VAR, 0x00, 0x01, 'h',
             kafe::INST_STORE_VAR,
             kafe::INST_LOAD_VAR, 0x00, 0x01, 'h',
             kafe::INST_DUP,
+            kafe::INST_INT_2B, 0b01111111, 0b11111111,
             0x00
         };
-        test_vm("testing variable duplication", bytecode5);
+        test_vm("testing variable duplication and negatives numbers (-32767, 32767)", bytecode5);
 
         /// testing lexer
         test_lexer("fun update : int -- dt:double\n    print dt + 10.5\n    ret 0\nend");

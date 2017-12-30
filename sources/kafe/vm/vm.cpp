@@ -1,5 +1,5 @@
 #include <iostream>
-#include <string.h>
+#include <cmath>
 
 #include "vm.hpp"
 
@@ -47,9 +47,9 @@ namespace kafe
         throw std::runtime_error("Index out of range, can not get next byte ! => Malformed bytecode");
     }
 
-    long VM::getXBytesInt(bytecode_t& bytecode, unsigned bytesCount)
+    long long VM::getXBytesInt(bytecode_t& bytecode, unsigned bytesCount)
     {
-        long v = getByte(bytecode, ++m_ip);
+        long long v = getByte(bytecode, ++m_ip);
         for (unsigned k=1; k < bytesCount; ++k)
             { v = (v << 8) + getByte(bytecode, ++m_ip); }
         return v;
@@ -57,13 +57,12 @@ namespace kafe
 
     int VM::get2BytesInt(bytecode_t& bytecode)
     {
-        int n = getXBytesInt(bytecode, 2);
-        return n * ((n & (1 << 15)) ? (-1) : (+1));
+        return abc::setSign((int)getXBytesInt(bytecode, 2), /* bytesCount */ 2);
     }
 
     long VM::get4BytesInt(bytecode_t& bytecode)
     {
-        return getXBytesInt(bytecode, 4);
+        return abc::setSign((long)getXBytesInt(bytecode, 4), /* bytesCount */ 4);
     }
 
     std::string VM::readString(bytecode_t& bytecode, std::size_t strSize)
@@ -169,10 +168,10 @@ namespace kafe
 
             // the "pair" recording the multiples calls of the same segment from the same segment is now empty, pop it
             if (m_call_stack[cs_last_index].lastPositions[lp_last_index].cnt == 0)
-                { abc::pop_no_return(m_call_stack[cs_last_index].lastPositions, -1); }
+                { abc::popNoReturn(m_call_stack[cs_last_index].lastPositions, -1); }
             // the "call element" recording the multiples calls of the same segment is now empty, pop it
             if (m_call_stack[cs_last_index].lastPositions.size() == 0)
-                { abc::pop_no_return(m_call_stack, -1); }
+                { abc::popNoReturn(m_call_stack, -1); }
         }
         else
             { throw std::logic_error("Can not return from a non-segment"); }
@@ -311,7 +310,7 @@ namespace kafe
 
                     Value v(TYPE_DOUBLE);
                     unsigned long int_part = get4BytesInt(bytecode);
-                    int exp = get2BytesInt(bytecode);
+                    int exp = abc::abs(get2BytesInt(bytecode));
                     exp = (exp > EXP_DOUBLE_LIMIT) ? EXP_DOUBLE_LIMIT : ((exp < -EXP_DOUBLE_LIMIT) ? -EXP_DOUBLE_LIMIT : exp);
                     exp *= (exp & EXP_DOUBLE_LIMIT) ? (-1) : (+1);
                     v.set<double>(int_part * std::pow(10, exp));
