@@ -9,9 +9,9 @@ namespace kafe
     VM::VM() :
         m_stack_size(0)
         , m_ip(0)
+        , m_has_loaded_bytecode(false)
         , m_debug_mode(0)
         , m_debug(false)
-        , m_has_loaded_bytecode(false)
     {}
 
     VM::~VM()
