@@ -6,47 +6,48 @@ namespace kafe
 
     std::string convertTypeToString(ValueType t)
     {
-        if (t == TYPE_INT) return "INT";
-        else if (t == TYPE_DOUBLE) return "DOUBLE";
-        else if (t == TYPE_BOOL) return "BOOL";
-        else if (t == TYPE_STRING) return "STRING";
-        else if (t == TYPE_LIST) return "LIST";
-        else if (t == TYPE_VAR) return "VAR";
-        else if (t == TYPE_STRUCT) return "STRUCT";
-        else if (t == TYPE_ADDR) return "ADDR";
+        if (t == ValueType::Int) return "INT";
+        else if (t == ValueType::Double) return "DOUBLE";
+        else if (t == ValueType::Bool) return "BOOL";
+        else if (t == ValueType::String) return "STRING";
+        else if (t == ValueType::List) return "LIST";
+        else if (t == ValueType::Var) return "VAR";
+        else if (t == ValueType::Struct) return "STRUCT";
+        else if (t == ValueType::Addr) return "ADDR";
         else return "???";
     }
 
-    template <> ValueType Value::guessType<long>() { return TYPE_INT; }
-    template <> ValueType Value::guessType<double>() { return TYPE_DOUBLE; }
-    template <> ValueType Value::guessType<bool>() { return TYPE_BOOL; }
-    template <> ValueType Value::guessType<std::string>() { return TYPE_STRING; }
-    template <> ValueType Value::guessType<Value::list_t>() { return TYPE_LIST; }
-    template <> ValueType Value::guessType<Structure>() { return TYPE_STRUCT; }
-    template <> ValueType Value::guessType<Value::addr_t>() { return TYPE_ADDR; }
+    template <> ValueType Value::guessType<long>() { return ValueType::Int; }
+    template <> ValueType Value::guessType<double>() { return ValueType::Double; }
+    template <> ValueType Value::guessType<bool>() { return ValueType::Bool; }
+    template <> ValueType Value::guessType<std::string>() { return ValueType::String; }
+    template <> ValueType Value::guessType<Value::list_t>() { return ValueType::List; }
+    template <> ValueType Value::guessType<Structure>() { return ValueType::Struct; }
+    template <> ValueType Value::guessType<Value::addr_t>() { return ValueType::Addr; }
+    template <typename T> ValueType Value::guessType() { return ValueType::Unknown; }
 
     std::ostream& operator<<(std::ostream& os, const Value& v)
     {
         switch(v.type)
         {
-        case TYPE_INT:
+        case ValueType::Int:
             os << abc::str(v.get<long>());
             break;
 
-        case TYPE_DOUBLE:
+        case ValueType::Double:
             os << abc::str(v.get<double>());
             break;
 
-        case TYPE_BOOL:
+        case ValueType::Bool:
             os << abc::str(v.get<bool>());
             break;
 
-        case TYPE_STRING:
-        case TYPE_VAR:
+        case ValueType::String:
+        case ValueType::Var:
             os << v.get<std::string>();
             break;
 
-        case TYPE_LIST:
+        case ValueType::List:
         {
             for (std::size_t i=0; i < v.get<Value::list_t>().size(); ++i)
             {
@@ -55,11 +56,11 @@ namespace kafe
             break;
         }
 
-        case TYPE_STRUCT:
+        case ValueType::Struct:
             os << v.get<Structure>();
             break;
 
-        case TYPE_ADDR:
+        case ValueType::Addr:
             os << abc::str(v.get<std::size_t>());
             break;
 

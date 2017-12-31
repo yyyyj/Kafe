@@ -13,18 +13,18 @@ namespace kafe
 {
 
     // all the data types defined for kafe are listed below
-    enum ValueType
+    enum class ValueType
     {
-        TYPE_INT         = 1 << 0,
-        TYPE_DOUBLE      = 1 << 1,
-        TYPE_BOOL        = 1 << 2,
-        TYPE_STRING      = 1 << 3,
-        TYPE_LIST        = 1 << 4,
-        TYPE_VAR         = 1 << 5,
-        TYPE_STRUCT      = 1 << 6,
-        TYPE_ADDR        = 1 << 7,
+        Int     = 1 << 0,
+        Double  = 1 << 1,
+        Bool    = 1 << 2,
+        String  = 1 << 3,
+        List    = 1 << 4,
+        Var     = 1 << 5,
+        Struct  = 1 << 6,
+        Addr    = 1 << 7,
 
-        TYPE_UNKNOW      = -1
+        Unknown = -1
     };
 
     std::string convertTypeToString(ValueType t);
@@ -74,6 +74,13 @@ namespace kafe
         Value(ValueType t, Structure st) : type(t), value(st) {}
         Value(ValueType t, addr_t u) : type(t) { mpark::get<addr_t>(value) = u; }
 
+        template <typename T>
+        Value(T val)
+        {
+            type = Value::guessType<T>();
+            mpark::get<T>(value) = val;
+        }
+
         template <typename T> T get() const { return mpark::get<T>(value); }
         template <typename T> T& getRef() { return mpark::get<T>(value); }
         template <typename T> void set(T val) { mpark::get<T>(value) = val; }
@@ -86,22 +93,19 @@ namespace kafe
         bool operator<(const Value& other) const
         {
             return (other.type == type) &&
-                   ((other.type == TYPE_INT) ? (other.get<long>() >= get<long>()) : true) &&
-                   ((other.type == TYPE_DOUBLE) ? (other.get<double>() >= get<double>()) : true) &&
-                   ((other.type == TYPE_BOOL) ? (other.get<bool>() == true && get<bool>() == false) : true) &&
-                   ((other.type == TYPE_STRING) ? (other.get<std::string>().size() >= get<std::string>().size()) : true) &&
-                   ((other.type == TYPE_LIST) ? (other.get<list_t>().size() >= get<list_t>().size()) : true) &&
-                   ((other.type == TYPE_VAR) ? (other.get<std::string>().size() >= get<std::string>().size()) : true) &&
+                   ((other.type == ValueType::Int) ? (other.get<long>() >= get<long>()) : true) &&
+                   ((other.type == ValueType::Double) ? (other.get<double>() >= get<double>()) : true) &&
+                   ((other.type == ValueType::Bool) ? (other.get<bool>() == true && get<bool>() == false) : true) &&
+                   ((other.type == ValueType::String) ? (other.get<std::string>().size() >= get<std::string>().size()) : true) &&
+                   ((other.type == ValueType::List) ? (other.get<list_t>().size() >= get<list_t>().size()) : true) &&
+                   ((other.type == ValueType::Var) ? (other.get<std::string>().size() >= get<std::string>().size()) : true) &&
                    // we can not compare structures nor addresses
-                   ((other.type == TYPE_STRUCT) ? false : true) &&
-                   ((other.type == TYPE_ADDR) ? false : true);
+                   ((other.type == ValueType::Struct) ? false : true) &&
+                   ((other.type == ValueType::Addr) ? false : true);
         }
 
         template <typename T>
-        static ValueType guessType()
-        {
-            return TYPE_UNKNOW;
-        }
+        static ValueType guessType();
     };
 
     std::ostream& operator<<(std::ostream& os, const Value& v);

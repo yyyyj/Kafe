@@ -202,19 +202,19 @@ namespace kafe
 
                 if (a.type == b.type)
                 {
-                    if (a.type == TYPE_INT)
+                    if (a.type == ValueType::Int)
                     {
-                        Value c(TYPE_INT, a.get<long>() + b.get<long>());
+                        Value c(ValueType::Int, a.get<long>() + b.get<long>());
                         push(c);
                     }
-                    else if (a.type == TYPE_DOUBLE)
+                    else if (a.type == ValueType::Double)
                     {
-                        Value c(TYPE_DOUBLE, a.get<double>() + b.get<double>());
+                        Value c(ValueType::Double, a.get<double>() + b.get<double>());
                         push(c);
                     }
-                    else if (a.type == TYPE_STRING)
+                    else if (a.type == ValueType::String)
                     {
-                        Value c(TYPE_STRING, a.get<std::string>() + b.get<std::string>());
+                        Value c(ValueType::String, a.get<std::string>() + b.get<std::string>());
                         push(c);
                     }
                     else
@@ -235,12 +235,12 @@ namespace kafe
 
                 if (a.type != b.type)
                 {
-                    Value c(TYPE_BOOL, true);
+                    Value c(ValueType::Bool, true);
                     push(c);
                 }
                 else
                 {
-                    Value c(TYPE_BOOL, (a != b));
+                    Value c(ValueType::Bool, (a != b));
                     push(c);
                 }
 
@@ -298,8 +298,9 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "int 2B" << std::endl;
 
-                    Value v(TYPE_INT);
-                    v.set<long>(get2BytesInt(bytecode));
+                    /*Value v(ValueType::Int);
+                    v.set<long>(get2BytesInt(bytecode));*/
+                    Value v((long)get2BytesInt(bytecode));
                     push(v);
 
                     break;
@@ -309,7 +310,7 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "int 4B" << std::endl;
 
-                    Value v(TYPE_INT);
+                    Value v(ValueType::Int);
                     v.set<long>(get4BytesInt(bytecode));
                     push(v);
 
@@ -320,7 +321,7 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "double" << std::endl;
 
-                    Value v(TYPE_DOUBLE);
+                    Value v(ValueType::Double);
                     v.set<double>(readDouble(bytecode));
                     push(v);
 
@@ -334,7 +335,7 @@ namespace kafe
                     std::size_t str_size = get2BytesInt(bytecode);
                     if (str_size > 0)
                     {
-                        Value a(TYPE_STRING, readString(bytecode, str_size));
+                        Value a(ValueType::String, readString(bytecode, str_size));
                         push(a);
                     }
                     else
@@ -347,7 +348,7 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "bool" << std::endl;
 
-                    Value a(TYPE_BOOL, readBool(bytecode));
+                    Value a(ValueType::Bool, readBool(bytecode));
                     push(a);
 
                     break;
@@ -360,7 +361,7 @@ namespace kafe
                     std::size_t str_size = get2BytesInt(bytecode);
                     if (str_size > 0)
                     {
-                        Value a(TYPE_ADDR, getSegmentAddr(readString(bytecode, str_size)));
+                        Value a(ValueType::Addr, getSegmentAddr(readString(bytecode, str_size)));
                         push(a);
                     }
                     else
@@ -374,7 +375,7 @@ namespace kafe
                     if (m_debug) std::cout << "list" << std::endl;
 
                     std::size_t nb_elements = getXBytesInt(bytecode);
-                    Value c(TYPE_LIST);
+                    Value c(ValueType::List);
                     while (nb_elements != 0)
                     {
                         c.getRef<Value::list_t>().insert(c.getRef<Value::list_t>().begin(), pop());
@@ -391,7 +392,7 @@ namespace kafe
                     std::size_t str_size = get2BytesInt(bytecode);
                     if (str_size > 0)
                     {
-                        Value a(TYPE_VAR, readString(bytecode, str_size));
+                        Value a(ValueType::Var, readString(bytecode, str_size));
                         push(a);
                     }
                     else
@@ -408,7 +409,7 @@ namespace kafe
                     std::size_t str_size = get2BytesInt(bytecode);
                     if (str_size > 0)
                     {
-                        Value a(TYPE_STRUCT);
+                        Value a(ValueType::Struct);
                         // getting the structure name
                         std::string name = readString(bytecode, str_size);
                         /**
@@ -516,7 +517,7 @@ namespace kafe
                     Value var_name = pop();
                     Value val = pop();
 
-                    if (var_name.type == TYPE_VAR)
+                    if (var_name.type == ValueType::Var)
                         { m_variables[var_name.get<std::string>()] = val; }
                     else
                         { throw std::logic_error("Can not store a value into a non-variable"); }
@@ -578,7 +579,7 @@ namespace kafe
 
                     // get a value on the stack and try to compare it with true
                     Value a = pop();
-                    if (a == Value(TYPE_BOOL, true))
+                    if (a == Value(ValueType::Bool, true))
                     {
                         std::string seg_name = performJump(bytecode);
                         if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;
@@ -592,7 +593,7 @@ namespace kafe
                     if (m_debug) std::cout << "jump if not" << std::endl;
 
                     Value a = pop();
-                    if (a == Value(TYPE_BOOL, false))
+                    if (a == Value(ValueType::Bool, false))
                     {
                         std::string seg_name = performJump(bytecode);
                         if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;

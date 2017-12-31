@@ -22,7 +22,6 @@ namespace kafe
     {
     private:
         std::size_t m_stack_size;
-        // instruction pointer
         std::size_t m_ip;
         ValueStack_t m_stack;
         // variable name => Value
@@ -81,7 +80,7 @@ namespace kafe
         template <typename T> void push(T value)
         {
             ValueType t = Value::guessType<T>();
-            if (t == TYPE_UNKNOW)
+            if (t == ValueType::Unknown)
                 { throw std::runtime_error("Can not guess value type when trying to push a value on the stack"); }
             Value c(t, value);
             push(c);
