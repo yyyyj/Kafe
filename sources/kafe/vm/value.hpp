@@ -74,13 +74,6 @@ namespace kafe
         Value(ValueType t, Structure st) : type(t), value(st) {}
         Value(ValueType t, addr_t u) : type(t) { mpark::get<addr_t>(value) = u; }
 
-        template <typename T>
-        Value(T val)
-        {
-            type = Value::guessType<T>();
-            mpark::get<T>(value) = val;
-        }
-
         template <typename T> T get() const { return mpark::get<T>(value); }
         template <typename T> T& getRef() { return mpark::get<T>(value); }
         template <typename T> void set(T val) { mpark::get<T>(value) = val; }
