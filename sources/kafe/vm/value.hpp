@@ -61,8 +61,7 @@ namespace kafe
         typedef unsigned int addr_t;
 
         ValueType type;
-        mpark::variant<long, double, bool, std::string,
-                       list_t, Structure, addr_t> value;
+        mpark::variant<long, double, bool, std::string, list_t, Structure, addr_t> value;
 
         Value() {}
         Value(ValueType t) : type(t) {}

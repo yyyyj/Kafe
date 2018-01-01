@@ -14,6 +14,16 @@ namespace kafe
         , m_debug(false)
     {}
 
+    VM::VM(bytecode_t bytecode) :
+        m_stack_size(0)
+        , m_ip(0)
+        , m_has_loaded_bytecode(true)
+        , m_debug_mode(0)
+        , m_debug(false)
+    {
+        load(bytecode);
+    }
+
     VM::~VM()
     {
         clear();
@@ -34,6 +44,8 @@ namespace kafe
     void VM::clear()
     {
         // cleaning the VM to run it again without creating a new instance
+        m_bytecode.clear();
+        m_optimizer.clear();
         m_stack.clear();
         m_stack_size = 0;
         m_ip = 0;
@@ -41,35 +53,35 @@ namespace kafe
         m_segments.clear();
     }
 
-    inst_t VM::getByte(bytecode_t& bytecode, std::size_t i)
+    inst_t VM::readByte(bytecode_t& bytecode, std::size_t i)
     {
         if (i < bytecode.size())
             return bytecode[i];
         throw std::runtime_error("Index out of range, can not get next byte ! => Malformed bytecode");
     }
 
-    long long VM::getXBytesInt(bytecode_t& bytecode, unsigned bytesCount)
+    unsigned long long VM::readXBytesInt(bytecode_t& bytecode, unsigned bytesCount)
     {
-        long long v = getByte(bytecode, ++m_ip);
+        unsigned long long v = readByte(bytecode, ++m_ip);
         for (unsigned k=1; k < bytesCount; ++k)
-            { v = (v << 8) + getByte(bytecode, ++m_ip); }
+            { v = (v << 8) + readByte(bytecode, ++m_ip); }
         return v;
     }
 
-    int VM::get2BytesInt(bytecode_t& bytecode)
+    int VM::read2BytesInt(bytecode_t& bytecode)
     {
-        return abc::setSign((int)getXBytesInt(bytecode, 2), /* bytesCount */ 2);
+        return abc::setSign((int)readXBytesInt(bytecode, 2), /* bytesCount */ 2);
     }
 
-    long VM::get4BytesInt(bytecode_t& bytecode)
+    long VM::read4BytesInt(bytecode_t& bytecode)
     {
-        return abc::setSign((long)getXBytesInt(bytecode, 4), /* bytesCount */ 4);
+        return abc::setSign((long)readXBytesInt(bytecode, 4), /* bytesCount */ 4);
     }
 
     double VM::readDouble(bytecode_t& bytecode)
     {
-        unsigned long int_part = get4BytesInt(bytecode);
-        int exp = abc::abs(get2BytesInt(bytecode));
+        unsigned long int_part = read4BytesInt(bytecode);
+        int exp = abc::abs(read2BytesInt(bytecode));
         exp = (exp > EXP_DOUBLE_LIMIT) ? EXP_DOUBLE_LIMIT : ((exp < -EXP_DOUBLE_LIMIT) ? -EXP_DOUBLE_LIMIT : exp);
         exp *= (exp & EXP_DOUBLE_LIMIT) ? (-1) : (+1);
         return double(int_part) * std::pow(10, exp);
@@ -80,14 +92,14 @@ namespace kafe
         std::string work = "";
         ++m_ip;
         for (std::size_t j=m_ip; m_ip - j < strSize; ++m_ip)
-            { work += getByte(bytecode, m_ip); }
+            { work += readByte(bytecode, m_ip); }
         --m_ip;
         return work;
     }
 
     bool VM::readBool(bytecode_t& bytecode)
     {
-        return (getByte(bytecode, ++m_ip) > 0);
+        return (readByte(bytecode, ++m_ip) > 0);
     }
 
     std::size_t VM::getSegmentAddr(const std::string& segmentName)
@@ -100,7 +112,7 @@ namespace kafe
 
     std::string VM::getSegmentName(bytecode_t& bytecode)
     {
-        std::size_t str_size = get2BytesInt(bytecode);
+        std::size_t str_size = read2BytesInt(bytecode);
         if (str_size > 0)
             { return readString(bytecode, str_size); }
         else
@@ -187,7 +199,7 @@ namespace kafe
             { throw std::logic_error("Can not return from a non-segment"); }
     }
 
-    void VM::builtins(bytecode_t& bytecode)
+    /*void VM::builtins(bytecode_t& bytecode)
     {
         unsigned instruction = get2BytesInt(bytecode);
 
@@ -254,6 +266,12 @@ namespace kafe
             }
         }
     }
+    */
+
+    void VM::startOptimizer()
+    {
+        m_optimizer.run(m_bytecode);
+    }
 
     bytecode_t VM::readFile(const std::string& filePath)
     {
@@ -276,16 +294,22 @@ namespace kafe
         return bytes;
     }
 
-    int VM::execFromFile(const std::string& filePath)
+    int VM::loadFromFile(const std::string& filePath)
     {
-        bytecode_t bytecode = readFile(filePath);
-        return exec(bytecode);
+        load(readFile(filePath));
+        return exec();
+    }
+
+    void VM::load(bytecode_t bytecode)
+    {
+        clear();
+        m_bytecode = bytecode;
+        m_has_loaded_bytecode = true;
+        startOptimizer();
     }
 
     int VM::exec(bytecode_t bytecode)
     {
-        clear();
-
         for (m_ip=0; m_ip < bytecode.size(); ++m_ip)
         {
             inst_t instruction = getByte(bytecode, m_ip);
@@ -631,25 +655,13 @@ namespace kafe
         return 0;
     }
 
-    void VM::setMode(int mode)
-    {
-        m_debug_mode |= mode;
-        m_debug = m_debug_mode & VM::FLAG_BASIC_DEBUG;
-    }
-
-    void VM::load(bytecode_t bytecode)
-    {
-        clear();
-        m_loaded_bytecode = bytecode;
-        m_has_loaded_bytecode = true;
-    }
-
     int VM::exec()
     {
+        /// bof bof --------------------------------------------------------------------
         if (m_has_loaded_bytecode)
-            { return exec(m_loaded_bytecode); }
+            { return 0; }
         else
-            { throw std::logic_error("Can not run if no bytecode were given"); }
+            { throw std::logic_error("Can not run if no bytes code was given"); }
     }
 
     void VM::callSegment(const std::string& seg_name)
@@ -663,6 +675,12 @@ namespace kafe
         pushCallStack(seg_name, last_pos);
 
         exec();
+    }
+
+    void VM::setMode(int mode)
+    {
+        m_debug_mode |= mode;
+        m_debug = m_debug_mode & VM::FLAG_BASIC_DEBUG;
     }
 
     ValueStack_t& VM::getStack()

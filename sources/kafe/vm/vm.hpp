@@ -5,6 +5,8 @@
 #include "../types.hpp"
 #include "../utils.hpp"
 #include "value.hpp"
+#include "optimizer/optimizer.hpp"
+#include "../libs/functionsDB.hpp"
 
 #include <map>
 #include <string>
@@ -13,7 +15,7 @@
 #include <exception>
 #include <stdexcept>
 
-#define EXP_DOUBLE_LIMIT 0b100110100
+#define EXP_DOUBLE_LIMIT 0b100110100  // = 308 (exponent limit for doubles)
 
 namespace kafe
 {
@@ -21,6 +23,9 @@ namespace kafe
     class VM
     {
     private:
+        bytecode_t m_bytecode;
+        bool m_has_loaded_bytecode;
+        Optimizer::Main m_optimizer;
         std::size_t m_stack_size;
         std::size_t m_ip;
         ValueStack_t m_stack;
@@ -33,21 +38,19 @@ namespace kafe
         // keeping the signatures of the declared structures
         // name of the struct : object Structure (.elements => name of the var : default value)
         std::map<std::string, Structure> m_struct_definitions;
+        FunctionsDatabase m_fun_db;
 
-        bytecode_t m_loaded_bytecode;
-        bool m_has_loaded_bytecode;
-
-        int m_debug_mode;
+        int m_debug_modes;
         bool m_debug;
 
         void push(Value value);
         Value pop();
         void clear();
 
-        inst_t getByte(bytecode_t& bytecode, std::size_t i);
-        long long getXBytesInt(bytecode_t& bytecode, unsigned bytesCount=2);
-        int get2BytesInt(bytecode_t& bytecode);
-        long get4BytesInt(bytecode_t& bytecode);
+        inst_t readByte(bytecode_t& bytecode, std::size_t i);
+        unsigned long long readXBytesInt(bytecode_t& bytecode, unsigned bytesCount);
+        int readInt(bytecode_t& bytecode);
+        long readLong(bytecode_t& bytecode);
         double readDouble(bytecode_t& byteocde);
         std::string readString(bytecode_t& bytecode, std::size_t strSize);
         bool readBool(bytecode_t& bytecode);
@@ -61,21 +64,24 @@ namespace kafe
 
         void builtins(bytecode_t& bytecode);
 
+        void startOptimizer();
+
     public:
         VM();
+        VM(bytecode_t bytecode);
         ~VM();
 
         // the debug flags for the VM
-        static const int FLAG_BASIC_DEBUG   = 1 << 0;
+        static const int FLAG_BASIC_DEBUG = 1 << 0;
+        static const int FLAG_SAVE_OPTIMIZED_BYTECODE = 1 << 1;
 
         bytecode_t readFile(const std::string& filePath);
-
-        int execFromFile(const std::string& filePath);
-        int exec(bytecode_t bytecode);
-        void setMode(int mode);
+        int loadFromFile(const std::string& filePath);
         void load(bytecode_t bytecode);
         int exec();
         void callSegment(const std::string& seg_name);
+
+        void setMode(int mode);
 
         template <typename T> void push(T value)
         {
