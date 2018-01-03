@@ -12,6 +12,12 @@ namespace kafe
 
         Main::~Main() {}
 
+        void Main::clear()
+        {
+            m_current_block = 0;
+            m_blocks.clear();
+        }
+
         void Main::run(bytecode_t bytecode)
         {
             //

@@ -25,6 +25,8 @@ namespace kafe
             Main();
             ~Main();
 
+            void clear();
+
             void run(bytecode_t bytecode);
             const IntermediateValue& getNextBlock();
             std::size_t countBlocks() const;
