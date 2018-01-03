@@ -298,9 +298,8 @@ namespace kafe
                 {
                     if (m_debug) std::cout << "int 2B" << std::endl;
 
-                    /*Value v(ValueType::Int);
-                    v.set<long>(get2BytesInt(bytecode));*/
-                    Value v((long)get2BytesInt(bytecode));
+                    Value v(ValueType::Int);
+                    v.set<long>(get2BytesInt(bytecode));
                     push(v);
 
                     break;
