@@ -17,6 +17,33 @@ namespace kafe
         else return "???";
     }
 
+    std::size_t Structure::ID = 0;
+
+    void Structure::add(std::string name, Value val)
+    {
+        StructElem se = {/* name */ name, /* val */ val};
+        members.push_back(se);
+    }
+
+    void Structure::set(const std::string& name, Value val)
+    {
+        StructElem* pse = findMember(name);
+        if (pse != nullptr)
+            { pse->val = val; }
+        else
+            { add(name, val); }
+    }
+
+    StructElem* Structure::findMember(const std::string& name)
+    {
+        for (std::size_t i=0; i < members.size(); ++i)
+        {
+            if (members[i].name == name)
+                { return &members[i]; }
+        }
+        return nullptr;
+    }
+
     template <> ValueType Value::guessType<long>() { return ValueType::Int; }
     template <> ValueType Value::guessType<double>() { return ValueType::Double; }
     template <> ValueType Value::guessType<bool>() { return ValueType::Bool; }

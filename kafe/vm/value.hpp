@@ -31,10 +31,11 @@ namespace kafe
 
     // forward declaration for Structure
     struct StructElem;
+    struct Value;
 
     struct Structure
     {
-        static ID = 0;
+        static std::size_t ID;
 
         // name of the variable : default value
         std::vector<StructElem> members;
@@ -52,30 +53,9 @@ namespace kafe
             struct_id = other.struct_id;
         }
 
-        void add(std::string name, Value val)
-        {
-            StructElem se = {/* name */ name, /* val */ val};
-            members.push_back(se);
-        }
-
-        void set(const std::string& name, Value val)
-        {
-            StructElem* pse = findMember(name);
-            if (pse != nullptr)
-                { pse->val = val; }
-            else
-                { add(name, val); }
-        }
-
-        StructElem* findMember(const std::string& name)
-        {
-            for (auto e : members)
-            {
-                if (e.name == name)
-                    { return &e; }
-            }
-            return nullptr;
-        }
+        void add(std::string name, Value val);
+        void set(const std::string& name, Value val);
+        StructElem* findMember(const std::string& name);
 
         bool operator==(const Structure& other) const
         {

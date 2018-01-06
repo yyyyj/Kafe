@@ -414,7 +414,7 @@ namespace kafe
                         if (m_struct_definitions.find(struct_name) != m_struct_definitions.end())
                         {
                             // init the newly created structure from its "parent"
-                            a.set<Structure>(m_struct_definitions.find(struct_name));
+                            a.set<Structure>(m_struct_definitions[struct_name]);
                             // push the given arguments
                             std::size_t nb_args = get2BytesInt(bytecode);
                             for (std::size_t j=0; j < nb_args; ++j)
@@ -467,7 +467,7 @@ namespace kafe
                             Value val = pop();
 
                             if (name.type == ValueType::Var)
-                                { m_struct_definitions[name].add(name.get<std::string>(), val); }
+                                { m_struct_definitions[name.get<std::string>()].add(name.get<std::string>(), val); }
                             else
                                 { throw std::logic_error("Expecting a variable when declaring a structure's member"); }
                         }
@@ -490,7 +490,7 @@ namespace kafe
                             std::size_t member_sz = get2BytesInt(bytecode);
                             if (member_sz > 0)
                             {
-                                std::string member = readString(bytecode);
+                                std::string member = readString(bytecode, member_sz);
                                 StructElem* pse = m_variables[name].getRef<Structure>().findMember(member);
                                 if (pse != nullptr)
                                     { push(pse->val); }
@@ -522,7 +522,7 @@ namespace kafe
                             std::size_t member_sz = get2BytesInt(bytecode);
                             if (member_sz > 0)
                             {
-                                std::string member = readString(bytecode);
+                                std::string member = readString(bytecode, member_sz);
                                 m_variables[name].getRef<Structure>().set(member, pop());
                             }
                             else
@@ -550,7 +550,7 @@ namespace kafe
                             std::size_t member_sz = get2BytesInt(bytecode);
                             if (member_sz > 0)
                             {
-                                std::string member = readString(bytecode);
+                                std::string member = readString(bytecode, member_sz);
                                 if (m_variables[name].getRef<Structure>().findMember(member) != nullptr)
                                     { push(Value(ValueType::Bool, true)); }
                                 else
