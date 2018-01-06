@@ -34,18 +34,47 @@ namespace kafe
 
     struct Structure
     {
+        static ID = 0;
+
         // name of the variable : default value
         std::vector<StructElem> members;
         // in order to be able to identify a structure
         // each structure has the same struct_id as its base structure
         int struct_id;
 
-        Structure() {}
+        Structure() :
+            struct_id(Structure::ID++)
+        {}
 
         Structure(const Structure& other)
         {
             members = other.members;
             struct_id = other.struct_id;
+        }
+
+        void add(std::string name, Value val)
+        {
+            StructElem se = {/* name */ name, /* val */ val};
+            members.push_back(se);
+        }
+
+        void set(const std::string& name, Value val)
+        {
+            StructElem* pse = findMember(name);
+            if (pse != nullptr)
+                { pse->val = val; }
+            else
+                { add(name, val); }
+        }
+
+        StructElem* findMember(const std::string& name)
+        {
+            for (auto e : members)
+            {
+                if (e.name == name)
+                    { return &e; }
+            }
+            return nullptr;
         }
 
         bool operator==(const Structure& other) const

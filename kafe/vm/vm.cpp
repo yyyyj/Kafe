@@ -400,7 +400,6 @@ namespace kafe
                     break;
                 }
 
-                /// to implement
                 case INST_STRUCT:
                 {
                     if (m_debug) std::cout << "structure" << std::endl;
@@ -410,22 +409,41 @@ namespace kafe
                     {
                         Value a(ValueType::Struct);
                         // getting the structure name
-                        std::string name = readString(bytecode, str_size);
-                        /**
+                        std::string struct_name = readString(bytecode, str_size);
                         // to take the default data in it and fill the new object with those
-                        if (m_struct_definitions.find(name) != m_struct_definitions.end())
+                        if (m_struct_definitions.find(struct_name) != m_struct_definitions.end())
                         {
-                            for (std::size_t j=0; j < m_struct_definitions[name].size(); ++j)
-                                { a.structValue[m_struct_definitions[name][j].name] = m_struct_definitions[name][j].val; }
-                            /// TODO: read arguments given if there are any
-                            std::size_t arg_nb = getByte(bytecode, ++i);
-                            ///for (std::size_t j=0; j < arg_nb; ++j)
-                            ///    {  }
+                            // init the newly created structure from its "parent"
+                            a.set<Structure>(m_struct_definitions.find(struct_name));
+                            // push the given arguments
+                            std::size_t nb_args = get2BytesInt(bytecode);
+                            for (std::size_t j=0; j < nb_args; ++j)
+                            {
+                                Value name = pop();
+                                Value val = pop();
+
+                                // we check that the given "name" is a valid variable name
+                                if (name.type == ValueType::Var)
+                                {
+                                    // and we perform some type checking
+                                    StructElem* pse = a.getRef<Structure>().findMember(name.get<std::string>());
+                                    if (pse != nullptr)
+                                    {
+                                        if (pse->val.type == val.type)
+                                            { a.getRef<Structure>().add(name.get<std::string>(), val); }
+                                        else
+                                            { throw std::logic_error("Type error while trying to set an argument of a structure"); }
+                                    }
+                                    else
+                                        { throw std::runtime_error("Can not set a non-member of a structure using a structure declaration"); }
+                                }
+                                else
+                                    { throw std::logic_error("The name of the member to set in the given structure isn't a string"); }
+                            }
                         }
                         else
                             { throw std::runtime_error("Can not use an undefined structure"); }
                         push(a);
-                        */
                     }
                     else
                         { throw std::logic_error("Invalid size given for the structure name to store"); }
@@ -433,33 +451,120 @@ namespace kafe
                     break;
                 }
 
-                /// to implement
                 case INST_DECL_STRUCT:
                 {
                     if (m_debug) std::cout << "declare structure" << std::endl;
 
-                    /**std::size_t str_size = getByte(bytecode, ++i);
+                    std::size_t str_size = get2BytesInt(bytecode);
                     if (str_size > 0)
                     {
-                        std::string name = readString(bytecode, i, str_size);
-                        std::size_t data_quantity = getXBytesInt(bytecode, i);
-                        m_struct_definitions[data_quantity] = Structure();
-                        ++i;
-                        for (std::size_t j=0; j < data_quantity; ++j)
+                        std::string name = readString(bytecode, str_size);
+                        std::size_t pairs_nb = get2BytesInt(bytecode);
+                        m_struct_definitions[name] = Structure();
+                        for (std::size_t j=0; j < pairs_nb; ++j)
                         {
-                            std::size_t str_size = getByte(bytecode, i);
-                            std::string name = readString(bytecode, i, str_size);
-                            Value val;
-                            StructElem se;
-                            se.name = name;
-                            se.val = val;
-                            m_struct_definitions[data_quantity] = se;
+                            Value name = pop();
+                            Value val = pop();
+
+                            if (name.type == ValueType::Var)
+                                { m_struct_definitions[name].add(name.get<std::string>(), val); }
+                            else
+                                { throw std::logic_error("Expecting a variable when declaring a structure's member"); }
                         }
-                        --i;
                     }
                     else
                         { throw std::logic_error("Invalid size given for the structure name to store"); }
-                    **/
+                    break;
+                }
+
+                case INST_STRUCT_GETM:
+                {
+                    if (m_debug) std::cout << "structure get member" << std::endl;
+
+                    std::size_t str_size = get2BytesInt(bytecode);
+                    if (str_size > 0)
+                    {
+                        std::string name = readString(bytecode, str_size);
+                        if (m_variables.find(name) != m_variables.end())
+                        {
+                            std::size_t member_sz = get2BytesInt(bytecode);
+                            if (member_sz > 0)
+                            {
+                                std::string member = readString(bytecode);
+                                StructElem* pse = m_variables[name].getRef<Structure>().findMember(member);
+                                if (pse != nullptr)
+                                    { push(pse->val); }
+                                else
+                                    { throw std::runtime_error("Can not get a non-existing member of a structure"); }
+                            }
+                            else
+                                { throw std::logic_error("Invalid size given for the member name to get"); }
+                        }
+                        else
+                            { throw std::logic_error("Can not get a member of a non-existing structure"); }
+                    }
+                    else
+                        { throw std::logic_error("Invalid size for the structure name (getm)"); }
+
+                    break;
+                }
+
+                case INST_STRUCT_SETM:
+                {
+                    if (m_debug) std::cout << "structure set member" << std::endl;
+
+                    std::size_t str_size = get2BytesInt(bytecode);
+                    if (str_size > 0)
+                    {
+                        std::string name = readString(bytecode, str_size);
+                        if (m_variables.find(name) != m_variables.end())
+                        {
+                            std::size_t member_sz = get2BytesInt(bytecode);
+                            if (member_sz > 0)
+                            {
+                                std::string member = readString(bytecode);
+                                m_variables[name].getRef<Structure>().set(member, pop());
+                            }
+                            else
+                                { throw std::logic_error("Invalid size given for the member name to get"); }
+                        }
+                        else
+                            { throw std::logic_error("Can not set a member of a non-existing structure"); }
+                    }
+                    else
+                        { throw std::logic_error("Invalid size for the structure name (setm)"); }
+
+                    break;
+                }
+
+                case INST_STRUCT_HASM:
+                {
+                    if (m_debug) std::cout << "structure has member" << std::endl;
+
+                    std::size_t str_size = get2BytesInt(bytecode);
+                    if (str_size > 0)
+                    {
+                        std::string name = readString(bytecode, str_size);
+                        if (m_variables.find(name) != m_variables.end())
+                        {
+                            std::size_t member_sz = get2BytesInt(bytecode);
+                            if (member_sz > 0)
+                            {
+                                std::string member = readString(bytecode);
+                                if (m_variables[name].getRef<Structure>().findMember(member) != nullptr)
+                                    { push(Value(ValueType::Bool, true)); }
+                                else
+                                    { push(Value(ValueType::Bool, false)); }
+                            }
+                            else
+                                { throw std::logic_error("Invalid size given for the member name to get"); }
+                        }
+                        else
+                            { throw std::logic_error("Can not get a member of a non-existing structure"); }
+                    }
+                    else
+                        { throw std::logic_error("Invalid size for the structure name (hasm)"); }
+
                     break;
                 }
 
