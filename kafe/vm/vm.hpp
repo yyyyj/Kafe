@@ -87,6 +87,7 @@ namespace kafe
         }
 
         ValueStack_t& getStack();
+        void saveBytecode(const std::string& filename, bytecode_t);
     };
 
 }  // namespace kafe

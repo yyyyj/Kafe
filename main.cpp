@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 
 #include "kafe/kafe.hpp"
@@ -79,13 +80,14 @@ int main(int argc, char** argv)
         cxxopts::Options options(argv[0], " - The Kafe programming language interpreter");
         options.add_options()
             ("f,file", "Input file", cxxopts::value<std::string>())
+            ("b,bytecode", "Bytecode file", cxxopts::value<std::string>())
             ("d,debug", "VM debug mode", cxxopts::value<int>())
             ("ast,display-ast", "Display the AST generated")
             ("tests", "Start all the tests")
             ("test", "Start a specific kind of test : bytecode, lexer, parser", cxxopts::value<std::string>())
             ("help", "Print help")
             ;
-        options.parse_positional({"file", "debug", "test"});
+        options.parse_positional({"file", "bytecode", "debug", "test"});
         cxxopts::ParseResult result = options.parse(argc, argv);
 
         if (result.count("help"))
@@ -97,6 +99,11 @@ int main(int argc, char** argv)
         {
             auto& ff = result["f"].as<std::string>();
             std::cout << "File : " << ff << std::endl;
+        }
+        if (result.count("b"))
+        {
+            auto& ff = result["b"].ast<std::string>();
+            std::cout << "Binary file : " << ff << std::endl;
         }
         if (result.count("d"))
         {
@@ -123,7 +130,6 @@ int main(int argc, char** argv)
         std::cout << "Error parsing options : " << e.what() << std::endl;
         exit(1);
     }
-
     return 0;
     */
 
@@ -177,6 +183,14 @@ int main(int argc, char** argv)
             kafe::INST_JUMP, 0x00, 0x03, 'v', 'a', 'r',                 // len:6 => 39
             0x00                                                        // len:1 => 40
         };
+        /* equivalent :
+        dyn a : bool = false
+        fun var : void
+            true != a  # pushed onto the stack, BUT IT SHOULDN'T BE !
+            ret
+        end
+        var  # calling the function var
+        */
         test_vm("testing segments, jump and ret", bytecode4);
 
         kafe::bytecode_t bytecode5 = {

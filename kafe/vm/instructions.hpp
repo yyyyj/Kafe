@@ -25,6 +25,8 @@ namespace kafe
         INST_STRUCT_SETM = 0x0c,  // 0x0c [struct name size on 2 bytes] [name] [member name on 2 bytes] [name] ; takes the last value on the stack and put it into the member (if it exists or not)
         INST_STRUCT_HASM = 0x0d,  // 0x0d [struct name size on 2 bytes] [name] [member name on 2 bytes] [name] ; check if the struct has a member "name" : push true or false
 
+        INST_DEL_VAR     = 0x0f,  // 0x0f [var name size on 2 bytes] [name]
+
         // labels and blocs
         INST_SEGMENT     = 0x10,  // 0x10 [segment name size on 2 bytes] [name] [size (from the next byte after this 2, to the INST_RET included) on 2 bytes]
         INST_DECL_SEG    = 0x11,  // 0x11 [segment name size on 2 bytes] [name] [position on 2 bytes]

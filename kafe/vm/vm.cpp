@@ -568,6 +568,25 @@ namespace kafe
                     break;
                 }
 
+                case INST_DEL_VAR:
+                {
+                    if (m_debug) std::cout << "delete variable" << std::endl;
+
+                    std::size_t str_size = get2BytesInt(bytecode);
+                    if (str_size > 0)
+                    {
+                        std::string var_name = readString(bytecode, str_size);
+                        if (m_variables.find(var_name) != m_variables.end())
+                            { m_variables.erase(m_variables.find(var_name)); }
+                        else
+                            { throw std::logic_error("Can not delete a non-existing variable"); }
+                    }
+                    else
+                        { throw std::logic_error("Invalid size for the variable name to delete"); }
+
+                    break;
+                }
+
                 case INST_SEGMENT:
                 {
                     if (m_debug) std::cout << "segment" << std::endl;
@@ -772,6 +791,13 @@ namespace kafe
     ValueStack_t& VM::getStack()
     {
         return m_stack;
+    }
+
+    void VM::saveBytecode(const std::string& filename, bytecode_t bytecode)
+    {
+        std::ofstream output(filename, ios::binary);
+        output.write((char*)&bytecode[0], bytecode.size());
+        output.close();
     }
 
 }  // namespace kafe
