@@ -44,14 +44,14 @@ namespace kafe
         return nullptr;
     }
 
-    template <> ValueType Value::guessType<long>() { return ValueType::Int; }
-    template <> ValueType Value::guessType<double>() { return ValueType::Double; }
-    template <> ValueType Value::guessType<bool>() { return ValueType::Bool; }
-    template <> ValueType Value::guessType<std::string>() { return ValueType::String; }
+    template <> ValueType Value::guessType<long>()          { return ValueType::Int; }
+    template <> ValueType Value::guessType<double>()        { return ValueType::Double; }
+    template <> ValueType Value::guessType<bool>()          { return ValueType::Bool; }
+    template <> ValueType Value::guessType<std::string>()   { return ValueType::String; }
     template <> ValueType Value::guessType<Value::list_t>() { return ValueType::List; }
-    template <> ValueType Value::guessType<Structure>() { return ValueType::Struct; }
+    template <> ValueType Value::guessType<Structure>()     { return ValueType::Struct; }
     template <> ValueType Value::guessType<Value::addr_t>() { return ValueType::Addr; }
-    template <typename T> ValueType Value::guessType() { return ValueType::Unknown; }
+    template <typename T> ValueType Value::guessType()      { return ValueType::Unknown; }
 
     std::ostream& operator<<(std::ostream& os, const Value& v)
     {

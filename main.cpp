@@ -2,6 +2,7 @@
 #include <string>
 
 #include "kafe/kafe.hpp"
+#include "kafe/libs/cxxopts.hpp"
 
 std::string replaceAll(std::string str, const std::string& from, const std::string& to)
 {
@@ -71,6 +72,61 @@ void test_lexer(const std::string& code)
 
 int main(int argc, char** argv)
 {
+    /*
+    try
+    {
+        // see https://github.com/jarro2783/cxxopts/blob/master/src/example.cpp
+        cxxopts::Options options(argv[0], " - The Kafe programming language interpreter");
+        options.add_options()
+            ("f,file", "Input file", cxxopts::value<std::string>())
+            ("d,debug", "VM debug mode", cxxopts::value<int>())
+            ("ast,display-ast", "Display the AST generated")
+            ("tests", "Start all the tests")
+            ("test", "Start a specific kind of test : bytecode, lexer, parser", cxxopts::value<std::string>())
+            ("help", "Print help")
+            ;
+        options.parse_positional({"file", "debug", "test"});
+        cxxopts::ParseResult result = options.parse(argc, argv);
+
+        if (result.count("help"))
+        {
+            std::cout << options.help({""}) << std::endl;
+            exit(0);
+        }
+        if (result.count("f"))
+        {
+            auto& ff = result["f"].as<std::string>();
+            std::cout << "File : " << ff << std::endl;
+        }
+        if (result.count("d"))
+        {
+            auto& d = result["d"].as<int>();
+            std::cout << "Debug mode : " << d << std::endl;
+        }
+        if (result.count("ast"))
+        {
+            std::cout << "Display AST" << std::endl;
+        }
+        if (result.count("tests"))
+        {
+            // start the tests
+        }
+        if (result.count("test"))
+        {
+            auto& test_name = result["test"].as<std::string>();
+            // check if test is in `bytecode, lexer, parser`
+            std::cout << "Wanted set of tests : " << test_name << std::endl;
+        }
+    }
+    catch (const cxxopts::OptionException& e)
+    {
+        std::cout << "Error parsing options : " << e.what() << std::endl;
+        exit(1);
+    }
+
+    return 0;
+    */
+
     if (argc == 1)
     {
         /// testing area
