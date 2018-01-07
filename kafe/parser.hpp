@@ -3,12 +3,21 @@
 
 #include "constants.hpp"
 
-#include <cstdio>
+#ifdef __STRICT_ANSI__
+    #undef __STRICT_ANSI__
+#endif // __STRICT_ANSI__
+
+#include <stdio.h>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <array>
+
+#ifdef RUNNING_WIN
+    #define popen _popen
+    #define pclose _pclose
+#endif // RUNNING_WIN
 
 namespace kafe
 {
@@ -18,10 +27,10 @@ namespace kafe
 
         // well don't do this at home because I am not really sure it will work on any system with python installed but hmmf
         #ifdef RUNNING_POSIX
-        constexpr std::string pythonCMD = "python3";
+        constexpr const char* pythonCMD = "python3";
         #endif
         #ifdef RUNNING_WIN
-        constexpr std::string pythonCMD = "python";
+        constexpr const char* pythonCMD = "python";
         #endif
 
         std::string exec(const char* cmd);

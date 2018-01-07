@@ -1,6 +1,5 @@
 #include "parser.hpp"
 
-
 namespace kafe
 {
 
@@ -24,7 +23,7 @@ namespace kafe
 
         std::string execScript(const std::string& cmd)
         {
-            return exec((pythonCMD + " " + cmd).c_str());
+            return exec((std::string(pythonCMD) + " " + cmd).c_str());
         }
 
     }  // namespace internal

@@ -278,480 +278,8 @@ namespace kafe
 
     int VM::execFromFile(const std::string& filePath)
     {
-        bytecode_t bytecode = readFile(filePath);
-        return exec(bytecode);
-    }
-
-    int VM::exec(bytecode_t bytecode)
-    {
-        clear();
-
-        for (m_ip=0; m_ip < bytecode.size(); ++m_ip)
-        {
-            inst_t instruction = getByte(bytecode, m_ip);
-
-            if (m_debug) std::cout << "[" << m_ip << "] " << (int)instruction << " ";
-
-            switch (instruction)
-            {
-                case INST_INT_2B:
-                {
-                    if (m_debug) std::cout << "int 2B" << std::endl;
-
-                    Value v(ValueType::Int);
-                    v.set<long>(get2BytesInt(bytecode));
-                    push(v);
-
-                    break;
-                }
-
-                case INST_INT_4B:
-                {
-                    if (m_debug) std::cout << "int 4B" << std::endl;
-
-                    Value v(ValueType::Int);
-                    v.set<long>(get4BytesInt(bytecode));
-                    push(v);
-
-                    break;
-                }
-
-                case INST_DOUBLE:
-                {
-                    if (m_debug) std::cout << "double" << std::endl;
-
-                    Value v(ValueType::Double);
-                    v.set<double>(readDouble(bytecode));
-                    push(v);
-
-                    break;
-                }
-
-                case INST_STR:
-                {
-                    if (m_debug)  std::cout << "str" << std::endl;
-
-                    std::size_t str_size = get2BytesInt(bytecode);
-                    if (str_size > 0)
-                    {
-                        Value a(ValueType::String, readString(bytecode, str_size));
-                        push(a);
-                    }
-                    else
-                        { throw std::logic_error("Invalid size given for the string to store"); }
-
-                    break;
-                }
-
-                case INST_BOOL:
-                {
-                    if (m_debug) std::cout << "bool" << std::endl;
-
-                    Value a(ValueType::Bool, readBool(bytecode));
-                    push(a);
-
-                    break;
-                }
-
-                case INST_ADDR:
-                {
-                    if (m_debug) std::cout << "addr" << std::endl;
-
-                    std::size_t str_size = get2BytesInt(bytecode);
-                    if (str_size > 0)
-                    {
-                        Value a(ValueType::Addr, getSegmentAddr(readString(bytecode, str_size)));
-                        push(a);
-                    }
-                    else
-                        { throw std::logic_error("Invalid size given for the segment name to take the address"); }
-
-                    break;
-                }
-
-                case INST_LIST:
-                {
-                    if (m_debug) std::cout << "list" << std::endl;
-
-                    std::size_t nb_elements = getXBytesInt(bytecode);
-                    Value c(ValueType::List);
-                    while (nb_elements != 0)
-                    {
-                        c.getRef<Value::list_t>().insert(c.getRef<Value::list_t>().begin(), pop());
-                        nb_elements--;
-                    }
-
-                    break;
-                }
-
-                case INST_VAR:
-                {
-                    if (m_debug) std::cout << "var" << std::endl;
-
-                    std::size_t str_size = get2BytesInt(bytecode);
-                    if (str_size > 0)
-                    {
-                        Value a(ValueType::Var, readString(bytecode, str_size));
-                        push(a);
-                    }
-                    else
-                        { throw std::logic_error("Invalid size given for the variable name to store"); }
-
-                    break;
-                }
-
-                case INST_STRUCT:
-                {
-                    if (m_debug) std::cout << "structure" << std::endl;
-
-                    std::size_t str_size = get2BytesInt(bytecode);
-                    if (str_size > 0)
-                    {
-                        Value a(ValueType::Struct);
-                        // getting the structure name
-                        std::string struct_name = readString(bytecode, str_size);
-                        // to take the default data in it and fill the new object with those
-                        if (m_struct_definitions.find(struct_name) != m_struct_definitions.end())
-                        {
-                            // init the newly created structure from its "parent"
-                            a.set<Structure>(m_struct_definitions[struct_name]);
-                            // push the given arguments
-                            std::size_t nb_args = get2BytesInt(bytecode);
-                            for (std::size_t j=0; j < nb_args; ++j)
-                            {
-                                Value name = pop();
-                                Value val = pop();
-
-                                // we check that the given "name" is a valid variable name
-                                if (name.type == ValueType::Var)
-                                {
-                                    // and we perform some type checking
-                                    StructElem* pse = a.getRef<Structure>().findMember(name.get<std::string>());
-                                    if (pse != nullptr)
-                                    {
-                                        if (pse->val.type == val.type)
-                                            { a.getRef<Structure>().add(name.get<std::string>(), val); }
-                                        else
-                                            { throw std::logic_error("Type error while trying to set an argument of a structure"); }
-                                    }
-                                    else
-                                        { throw std::runtime_error("Can not set a non-member of a structure using a structure declaration"); }
-                                }
-                                else
-                                    { throw std::logic_error("The name of the member to set in the given structure isn't a string"); }
-                            }
-                        }
-                        else
-                            { throw std::runtime_error("Can not use an undefined structure"); }
-                        push(a);
-                    }
-                    else
-                        { throw std::logic_error("Invalid size given for the structure name to store"); }
-
-                    break;
-                }
-
-                case INST_DECL_STRUCT:
-                {
-                    if (m_debug) std::cout << "declare structure" << std::endl;
-
-                    std::size_t str_size = get2BytesInt(bytecode);
-                    if (str_size > 0)
-                    {
-                        std::string name = readString(bytecode, str_size);
-                        std::size_t pairs_nb = get2BytesInt(bytecode);
-                        m_struct_definitions[name] = Structure();
-                        for (std::size_t j=0; j < pairs_nb; ++j)
-                        {
-                            Value name = pop();
-                            Value val = pop();
-
-                            if (name.type == ValueType::Var)
-                                { m_struct_definitions[name.get<std::string>()].add(name.get<std::string>(), val); }
-                            else
-                                { throw std::logic_error("Expecting a variable when declaring a structure's member"); }
-                        }
-                    }
-                    else
-                        { throw std::logic_error("Invalid size given for the structure name to store"); }
-                    break;
-                }
-
-                case INST_STRUCT_GETM:
-                {
-                    if (m_debug) std::cout << "structure get member" << std::endl;
-
-                    std::size_t str_size = get2BytesInt(bytecode);
-                    if (str_size > 0)
-                    {
-                        std::string name = readString(bytecode, str_size);
-                        if (m_variables.find(name) != m_variables.end())
-                        {
-                            std::size_t member_sz = get2BytesInt(bytecode);
-                            if (member_sz > 0)
-                            {
-                                std::string member = readString(bytecode, member_sz);
-                                StructElem* pse = m_variables[name].getRef<Structure>().findMember(member);
-                                if (pse != nullptr)
-                                    { push(pse->val); }
-                                else
-                                    { throw std::runtime_error("Can not get a non-existing member of a structure"); }
-                            }
-                            else
-                                { throw std::logic_error("Invalid size given for the member name to get"); }
-                        }
-                        else
-                            { throw std::logic_error("Can not get a member of a non-existing structure"); }
-                    }
-                    else
-                        { throw std::logic_error("Invalid size for the structure name (getm)"); }
-
-                    break;
-                }
-
-                case INST_STRUCT_SETM:
-                {
-                    if (m_debug) std::cout << "structure set member" << std::endl;
-
-                    std::size_t str_size = get2BytesInt(bytecode);
-                    if (str_size > 0)
-                    {
-                        std::string name = readString(bytecode, str_size);
-                        if (m_variables.find(name) != m_variables.end())
-                        {
-                            std::size_t member_sz = get2BytesInt(bytecode);
-                            if (member_sz > 0)
-                            {
-                                std::string member = readString(bytecode, member_sz);
-                                m_variables[name].getRef<Structure>().set(member, pop());
-                            }
-                            else
-                                { throw std::logic_error("Invalid size given for the member name to get"); }
-                        }
-                        else
-                            { throw std::logic_error("Can not set a member of a non-existing structure"); }
-                    }
-                    else
-                        { throw std::logic_error("Invalid size for the structure name (setm)"); }
-
-                    break;
-                }
-
-                case INST_STRUCT_HASM:
-                {
-                    if (m_debug) std::cout << "structure has member" << std::endl;
-
-                    std::size_t str_size = get2BytesInt(bytecode);
-                    if (str_size > 0)
-                    {
-                        std::string name = readString(bytecode, str_size);
-                        if (m_variables.find(name) != m_variables.end())
-                        {
-                            std::size_t member_sz = get2BytesInt(bytecode);
-                            if (member_sz > 0)
-                            {
-                                std::string member = readString(bytecode, member_sz);
-                                if (m_variables[name].getRef<Structure>().findMember(member) != nullptr)
-                                    { push(Value(ValueType::Bool, true)); }
-                                else
-                                    { push(Value(ValueType::Bool, false)); }
-                            }
-                            else
-                                { throw std::logic_error("Invalid size given for the member name to get"); }
-                        }
-                        else
-                            { throw std::logic_error("Can not get a member of a non-existing structure"); }
-                    }
-                    else
-                        { throw std::logic_error("Invalid size for the structure name (hasm)"); }
-
-                    break;
-                }
-
-                case INST_DEL_VAR:
-                {
-                    if (m_debug) std::cout << "delete variable" << std::endl;
-
-                    std::size_t str_size = get2BytesInt(bytecode);
-                    if (str_size > 0)
-                    {
-                        std::string var_name = readString(bytecode, str_size);
-                        if (m_variables.find(var_name) != m_variables.end())
-                            { m_variables.erase(m_variables.find(var_name)); }
-                        else
-                            { throw std::logic_error("Can not delete a non-existing variable"); }
-                    }
-                    else
-                        { throw std::logic_error("Invalid size for the variable name to delete"); }
-
-                    break;
-                }
-
-                case INST_SEGMENT:
-                {
-                    if (m_debug) std::cout << "segment" << std::endl;
-
-                    // we read the size of the name of the segment
-                    std::size_t str_size = get2BytesInt(bytecode);
-                    std::string seg_name;
-                    if (str_size > 0)
-                        { seg_name = readString(bytecode, str_size); }
-                    else
-                        { throw std::logic_error("Invalid size for the segment name"); }
-
-                    // we try to add the segment position to the "segment register" if it wasn't registered before
-                    // (using a INST_DECL_SEG for example)
-                    if (m_segments.find(seg_name) == m_segments.end())
-                        { m_segments[seg_name] = m_ip; }
-
-                    // we get the size of the segment and jump to the end of it, we don't want to execute it, it wasn't called,
-                    // only defined
-                    std::size_t seg_size = get2BytesInt(bytecode);
-                    if (seg_size > 0 && m_ip + seg_size < bytecode.size())
-                        { m_ip += seg_size; }
-                    else
-                        { throw std::logic_error("Invalid bloc count for the segment"); }
-
-                    break;
-                }
-
-                case INST_DECL_SEG:
-                {
-                    if (m_debug) std::cout << "declare segment" << std::endl;
-
-                    // we get the size of the name of the segment and read this name
-                    std::size_t str_size = get2BytesInt(bytecode);
-                    std::string seg_name;
-                    if (str_size > 0)
-                        { seg_name = readString(bytecode, str_size); }
-                    else
-                        { throw std::logic_error("Invalid size for the segment name"); }
-
-                    // and we read its position in the bytecode
-                    m_segments[seg_name] = get2BytesInt(bytecode);
-
-                    break;
-                }
-
-                case INST_STORE_VAR:
-                {
-                    if (m_debug) std::cout << "store var" << std::endl;
-
-                    Value var_name = pop();
-                    Value val = pop();
-
-                    if (var_name.type == ValueType::Var)
-                        { m_variables[var_name.get<std::string>()] = val; }
-                    else
-                        { throw std::logic_error("Can not store a value into a non-variable"); }
-
-                    break;
-                }
-
-                case INST_LOAD_VAR:
-                {
-                    if (m_debug) std::cout << "push var" << std::endl;
-
-                    // we read the size of the var name and read it
-                    std::size_t str_size = get2BytesInt(bytecode);
-                    if (str_size > 0)
-                    {
-                        std::string v = readString(bytecode, str_size);
-                        // if the variable can be found, push it on the stack
-                        if (m_variables.find(v) != m_variables.end())
-                            { push(m_variables[v]); }
-                        else
-                            { throw std::runtime_error("Can not push an undefined variable onto the stack"); }
-                    }
-                    else
-                        { throw std::logic_error("Invalid size given for the variable name to fetch"); }
-
-                    break;
-                }
-
-                case INST_DUP:
-                {
-                    if (m_debug) std::cout << "duplicate" << std::endl;
-
-                    if (m_stack.size() > 0)
-                    {
-                        Value a = pop();
-                        // push a 2 times in a row, because we pop it from the stack and want to duplicate the value
-                        // stored at stack[-1]
-                        push(a); push(a);
-                    }
-                    else
-                        { throw std::logic_error("Can not duplicate the last value of the stack if there isn't any"); }
-
-                    break;
-                }
-
-                case INST_JUMP:
-                {
-                    if (m_debug) std::cout << "jump" << std::endl;
-
-                    std::string seg_name = performJump(bytecode);
-                    if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;
-
-                    break;
-                }
-
-                case INST_JUMP_IF:
-                {
-                    if (m_debug) std::cout << "jump if" << std::endl;
-
-                    // get a value on the stack and try to compare it with true
-                    Value a = pop();
-                    if (a == Value(ValueType::Bool, true))
-                    {
-                        std::string seg_name = performJump(bytecode);
-                        if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;
-                    }
-
-                    break;
-                }
-
-                case INST_JUMP_IFN:
-                {
-                    if (m_debug) std::cout << "jump if not" << std::endl;
-
-                    Value a = pop();
-                    if (a == Value(ValueType::Bool, false))
-                    {
-                        std::string seg_name = performJump(bytecode);
-                        if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;
-                    }
-
-                    break;
-                }
-
-                case INST_RET:
-                {
-                    if (m_debug) std::cout << "ret" << std::endl;
-
-                    retFromSegment(bytecode);
-
-                    break;
-                }
-
-                case INST_PROCEDURE:
-                {
-                    // we implement the procedure in another function, using a special code
-                    // in order to be able to have (1st) more procedures and (2nd) a cleaner code
-                    builtins(bytecode);
-                    break;
-                }
-
-                default:
-                {
-                    // 0x00 can be here to end the bytecode
-                    if (instruction != 0x00)
-                        { throw std::runtime_error("Can not identify the instruction " + abc::str((unsigned) instruction)); }
-                }
-            }
-        }
-
-        return 0;
+        load(readFile(filePath));
+        return exec();
     }
 
     void VM::setMode(int mode)
@@ -770,7 +298,476 @@ namespace kafe
     int VM::exec()
     {
         if (m_has_loaded_bytecode)
-            { return exec(m_loaded_bytecode); }
+        {
+            clear();
+            /// do a bit of cleaning : it's too big
+            for (m_ip=0; m_ip < m_loaded_bytecode.size(); ++m_ip)
+            {
+                inst_t instruction = getByte(m_loaded_bytecode, m_ip);
+
+                if (m_debug) std::cout << "[" << m_ip << "] " << (int)instruction << " ";
+
+                switch (instruction)
+                {
+                    case INST_INT_2B:
+                    {
+                        if (m_debug) std::cout << "int 2B" << std::endl;
+
+                        Value v(ValueType::Int);
+                        v.set<long>(get2BytesInt(m_loaded_bytecode));
+                        push(v);
+
+                        break;
+                    }
+
+                    case INST_INT_4B:
+                    {
+                        if (m_debug) std::cout << "int 4B" << std::endl;
+
+                        Value v(ValueType::Int);
+                        v.set<long>(get4BytesInt(m_loaded_bytecode));
+                        push(v);
+
+                        break;
+                    }
+
+                    case INST_DOUBLE:
+                    {
+                        if (m_debug) std::cout << "double" << std::endl;
+
+                        Value v(ValueType::Double);
+                        v.set<double>(readDouble(m_loaded_bytecode));
+                        push(v);
+
+                        break;
+                    }
+
+                    case INST_STR:
+                    {
+                        if (m_debug)  std::cout << "str" << std::endl;
+
+                        std::size_t str_size = get2BytesInt(m_loaded_bytecode);
+                        if (str_size > 0)
+                        {
+                            Value a(ValueType::String, readString(m_loaded_bytecode, str_size));
+                            push(a);
+                        }
+                        else
+                            { throw std::logic_error("Invalid size given for the string to store"); }
+
+                        break;
+                    }
+
+                    case INST_BOOL:
+                    {
+                        if (m_debug) std::cout << "bool" << std::endl;
+
+                        Value a(ValueType::Bool, readBool(m_loaded_bytecode));
+                        push(a);
+
+                        break;
+                    }
+
+                    case INST_ADDR:
+                    {
+                        if (m_debug) std::cout << "addr" << std::endl;
+
+                        std::size_t str_size = get2BytesInt(m_loaded_bytecode);
+                        if (str_size > 0)
+                        {
+                            Value a(ValueType::Addr, getSegmentAddr(readString(m_loaded_bytecode, str_size)));
+                            push(a);
+                        }
+                        else
+                            { throw std::logic_error("Invalid size given for the segment name to take the address"); }
+
+                        break;
+                    }
+
+                    case INST_LIST:
+                    {
+                        if (m_debug) std::cout << "list" << std::endl;
+
+                        std::size_t nb_elements = getXBytesInt(m_loaded_bytecode);
+                        Value c(ValueType::List);
+                        while (nb_elements != 0)
+                        {
+                            c.getRef<Value::list_t>().insert(c.getRef<Value::list_t>().begin(), pop());
+                            nb_elements--;
+                        }
+
+                        break;
+                    }
+
+                    case INST_VAR:
+                    {
+                        if (m_debug) std::cout << "var" << std::endl;
+
+                        std::size_t str_size = get2BytesInt(m_loaded_bytecode);
+                        if (str_size > 0)
+                        {
+                            Value a(ValueType::Var, readString(m_loaded_bytecode, str_size));
+                            push(a);
+                        }
+                        else
+                            { throw std::logic_error("Invalid size given for the variable name to store"); }
+
+                        break;
+                    }
+
+                    case INST_STRUCT:
+                    {
+                        if (m_debug) std::cout << "structure" << std::endl;
+
+                        std::size_t str_size = get2BytesInt(m_loaded_bytecode);
+                        if (str_size > 0)
+                        {
+                            Value a(ValueType::Struct);
+                            // getting the structure name
+                            std::string struct_name = readString(m_loaded_bytecode, str_size);
+                            // to take the default data in it and fill the new object with those
+                            if (m_struct_definitions.find(struct_name) != m_struct_definitions.end())
+                            {
+                                // init the newly created structure from its "parent"
+                                a.set<Structure>(m_struct_definitions[struct_name]);
+                                // push the given arguments
+                                std::size_t nb_args = get2BytesInt(m_loaded_bytecode);
+                                for (std::size_t j=0; j < nb_args; ++j)
+                                {
+                                    Value name = pop();
+                                    Value val = pop();
+
+                                    // we check that the given "name" is a valid variable name
+                                    if (name.type == ValueType::Var)
+                                    {
+                                        // and we perform some type checking
+                                        StructElem* pse = a.getRef<Structure>().findMember(name.get<std::string>());
+                                        if (pse != nullptr)
+                                        {
+                                            if (pse->val.type == val.type)
+                                                { a.getRef<Structure>().add(name.get<std::string>(), val); }
+                                            else
+                                                { throw std::logic_error("Type error while trying to set an argument of a structure"); }
+                                        }
+                                        else
+                                            { throw std::runtime_error("Can not set a non-member of a structure using a structure declaration"); }
+                                    }
+                                    else
+                                        { throw std::logic_error("The name of the member to set in the given structure isn't a string"); }
+                                }
+                            }
+                            else
+                                { throw std::runtime_error("Can not use an undefined structure"); }
+                            push(a);
+                        }
+                        else
+                            { throw std::logic_error("Invalid size given for the structure name to store"); }
+
+                        break;
+                    }
+
+                    case INST_DECL_STRUCT:
+                    {
+                        if (m_debug) std::cout << "declare structure" << std::endl;
+
+                        std::size_t str_size = get2BytesInt(m_loaded_bytecode);
+                        if (str_size > 0)
+                        {
+                            std::string name = readString(m_loaded_bytecode, str_size);
+                            std::size_t pairs_nb = get2BytesInt(m_loaded_bytecode);
+                            m_struct_definitions[name] = Structure();
+                            for (std::size_t j=0; j < pairs_nb; ++j)
+                            {
+                                Value name = pop();
+                                Value val = pop();
+
+                                if (name.type == ValueType::Var)
+                                    { m_struct_definitions[name.get<std::string>()].add(name.get<std::string>(), val); }
+                                else
+                                    { throw std::logic_error("Expecting a variable when declaring a structure's member"); }
+                            }
+                        }
+                        else
+                            { throw std::logic_error("Invalid size given for the structure name to store"); }
+                        break;
+                    }
+
+                    case INST_STRUCT_GETM:
+                    {
+                        if (m_debug) std::cout << "structure get member" << std::endl;
+
+                        std::size_t str_size = get2BytesInt(m_loaded_bytecode);
+                        if (str_size > 0)
+                        {
+                            std::string name = readString(m_loaded_bytecode, str_size);
+                            if (m_variables.find(name) != m_variables.end())
+                            {
+                                std::size_t member_sz = get2BytesInt(m_loaded_bytecode);
+                                if (member_sz > 0)
+                                {
+                                    std::string member = readString(m_loaded_bytecode, member_sz);
+                                    StructElem* pse = m_variables[name].getRef<Structure>().findMember(member);
+                                    if (pse != nullptr)
+                                        { push(pse->val); }
+                                    else
+                                        { throw std::runtime_error("Can not get a non-existing member of a structure"); }
+                                }
+                                else
+                                    { throw std::logic_error("Invalid size given for the member name to get"); }
+                            }
+                            else
+                                { throw std::logic_error("Can not get a member of a non-existing structure"); }
+                        }
+                        else
+                            { throw std::logic_error("Invalid size for the structure name (getm)"); }
+
+                        break;
+                    }
+
+                    case INST_STRUCT_SETM:
+                    {
+                        if (m_debug) std::cout << "structure set member" << std::endl;
+
+                        std::size_t str_size = get2BytesInt(m_loaded_bytecode);
+                        if (str_size > 0)
+                        {
+                            std::string name = readString(m_loaded_bytecode, str_size);
+                            if (m_variables.find(name) != m_variables.end())
+                            {
+                                std::size_t member_sz = get2BytesInt(m_loaded_bytecode);
+                                if (member_sz > 0)
+                                {
+                                    std::string member = readString(m_loaded_bytecode, member_sz);
+                                    m_variables[name].getRef<Structure>().set(member, pop());
+                                }
+                                else
+                                    { throw std::logic_error("Invalid size given for the member name to get"); }
+                            }
+                            else
+                                { throw std::logic_error("Can not set a member of a non-existing structure"); }
+                        }
+                        else
+                            { throw std::logic_error("Invalid size for the structure name (setm)"); }
+
+                        break;
+                    }
+
+                    case INST_STRUCT_HASM:
+                    {
+                        if (m_debug) std::cout << "structure has member" << std::endl;
+
+                        std::size_t str_size = get2BytesInt(m_loaded_bytecode);
+                        if (str_size > 0)
+                        {
+                            std::string name = readString(m_loaded_bytecode, str_size);
+                            if (m_variables.find(name) != m_variables.end())
+                            {
+                                std::size_t member_sz = get2BytesInt(m_loaded_bytecode);
+                                if (member_sz > 0)
+                                {
+                                    std::string member = readString(m_loaded_bytecode, member_sz);
+                                    if (m_variables[name].getRef<Structure>().findMember(member) != nullptr)
+                                        { push(Value(ValueType::Bool, true)); }
+                                    else
+                                        { push(Value(ValueType::Bool, false)); }
+                                }
+                                else
+                                    { throw std::logic_error("Invalid size given for the member name to get"); }
+                            }
+                            else
+                                { throw std::logic_error("Can not get a member of a non-existing structure"); }
+                        }
+                        else
+                            { throw std::logic_error("Invalid size for the structure name (hasm)"); }
+
+                        break;
+                    }
+
+                    case INST_DEL_VAR:
+                    {
+                        if (m_debug) std::cout << "delete variable" << std::endl;
+
+                        std::size_t str_size = get2BytesInt(m_loaded_bytecode);
+                        if (str_size > 0)
+                        {
+                            std::string var_name = readString(m_loaded_bytecode, str_size);
+                            if (m_variables.find(var_name) != m_variables.end())
+                                { m_variables.erase(m_variables.find(var_name)); }
+                            else
+                                { throw std::logic_error("Can not delete a non-existing variable"); }
+                        }
+                        else
+                            { throw std::logic_error("Invalid size for the variable name to delete"); }
+
+                        break;
+                    }
+
+                    case INST_SEGMENT:
+                    {
+                        if (m_debug) std::cout << "segment" << std::endl;
+
+                        // we read the size of the name of the segment
+                        std::size_t str_size = get2BytesInt(m_loaded_bytecode);
+                        std::string seg_name;
+                        if (str_size > 0)
+                            { seg_name = readString(m_loaded_bytecode, str_size); }
+                        else
+                            { throw std::logic_error("Invalid size for the segment name"); }
+
+                        // we try to add the segment position to the "segment register" if it wasn't registered before
+                        // (using a INST_DECL_SEG for example)
+                        if (m_segments.find(seg_name) == m_segments.end())
+                            { m_segments[seg_name] = m_ip; }
+
+                        // we get the size of the segment and jump to the end of it, we don't want to execute it, it wasn't called,
+                        // only defined
+                        std::size_t seg_size = get2BytesInt(m_loaded_bytecode);
+                        if (seg_size > 0 && m_ip + seg_size < m_loaded_bytecode.size())
+                            { m_ip += seg_size; }
+                        else
+                            { throw std::logic_error("Invalid bloc count for the segment"); }
+
+                        break;
+                    }
+
+                    case INST_DECL_SEG:
+                    {
+                        if (m_debug) std::cout << "declare segment" << std::endl;
+
+                        // we get the size of the name of the segment and read this name
+                        std::size_t str_size = get2BytesInt(m_loaded_bytecode);
+                        std::string seg_name;
+                        if (str_size > 0)
+                            { seg_name = readString(m_loaded_bytecode, str_size); }
+                        else
+                            { throw std::logic_error("Invalid size for the segment name"); }
+
+                        // and we read its position in the m_loaded_bytecode
+                        m_segments[seg_name] = get2BytesInt(m_loaded_bytecode);
+
+                        break;
+                    }
+
+                    case INST_STORE_VAR:
+                    {
+                        if (m_debug) std::cout << "store var" << std::endl;
+
+                        Value var_name = pop();
+                        Value val = pop();
+
+                        if (var_name.type == ValueType::Var)
+                            { m_variables[var_name.get<std::string>()] = val; }
+                        else
+                            { throw std::logic_error("Can not store a value into a non-variable"); }
+
+                        break;
+                    }
+
+                    case INST_LOAD_VAR:
+                    {
+                        if (m_debug) std::cout << "push var" << std::endl;
+
+                        // we read the size of the var name and read it
+                        std::size_t str_size = get2BytesInt(m_loaded_bytecode);
+                        if (str_size > 0)
+                        {
+                            std::string v = readString(m_loaded_bytecode, str_size);
+                            // if the variable can be found, push it on the stack
+                            if (m_variables.find(v) != m_variables.end())
+                                { push(m_variables[v]); }
+                            else
+                                { throw std::runtime_error("Can not push an undefined variable onto the stack"); }
+                        }
+                        else
+                            { throw std::logic_error("Invalid size given for the variable name to fetch"); }
+
+                        break;
+                    }
+
+                    case INST_DUP:
+                    {
+                        if (m_debug) std::cout << "duplicate" << std::endl;
+
+                        if (m_stack.size() > 0)
+                        {
+                            Value a = pop();
+                            // push a 2 times in a row, because we pop it from the stack and want to duplicate the value
+                            // stored at stack[-1]
+                            push(a); push(a);
+                        }
+                        else
+                            { throw std::logic_error("Can not duplicate the last value of the stack if there isn't any"); }
+
+                        break;
+                    }
+
+                    case INST_JUMP:
+                    {
+                        if (m_debug) std::cout << "jump" << std::endl;
+
+                        std::string seg_name = performJump(m_loaded_bytecode);
+                        if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;
+
+                        break;
+                    }
+
+                    case INST_JUMP_IF:
+                    {
+                        if (m_debug) std::cout << "jump if" << std::endl;
+
+                        // get a value on the stack and try to compare it with true
+                        Value a = pop();
+                        if (a == Value(ValueType::Bool, true))
+                        {
+                            std::string seg_name = performJump(m_loaded_bytecode);
+                            if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;
+                        }
+
+                        break;
+                    }
+
+                    case INST_JUMP_IFN:
+                    {
+                        if (m_debug) std::cout << "jump if not" << std::endl;
+
+                        Value a = pop();
+                        if (a == Value(ValueType::Bool, false))
+                        {
+                            std::string seg_name = performJump(m_loaded_bytecode);
+                            if (m_debug) std::cout << "    jumping to : " << seg_name << std::endl;
+                        }
+
+                        break;
+                    }
+
+                    case INST_RET:
+                    {
+                        if (m_debug) std::cout << "ret" << std::endl;
+
+                        retFromSegment(m_loaded_bytecode);
+
+                        break;
+                    }
+
+                    case INST_PROCEDURE:
+                    {
+                        // we implement the procedure in another function, using a special code
+                        // in order to be able to have (1st) more procedures and (2nd) a cleaner code
+                        builtins(m_loaded_bytecode);
+                        break;
+                    }
+
+                    default:
+                    {
+                        // 0x00 can be here to end the m_loaded_bytecode
+                        if (instruction != 0x00)
+                            { throw std::runtime_error("Can not identify the instruction " + abc::str((unsigned) instruction)); }
+                    }
+                }
+            }
+
+            return 0;
+        }
         else
             { throw std::logic_error("Can not run if no bytecode were given"); }
     }
@@ -793,10 +790,10 @@ namespace kafe
         return m_stack;
     }
 
-    void VM::saveBytecode(const std::string& filename, bytecode_t bytecode)
+    void VM::saveBytecode(const std::string& filename)
     {
         std::ofstream output(filename, std::ios::binary);
-        output.write((char*)&bytecode[0], bytecode.size());
+        output.write((char*)&m_loaded_bytecode[0], m_loaded_bytecode.size());
         output.close();
     }
 

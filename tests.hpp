@@ -1,5 +1,5 @@
-#ifndef tests
-#define tests
+#ifndef kafe_tests
+#define kafe_tests
 
 #include "kafe/kafe.hpp"
 
@@ -10,4 +10,4 @@ std::string format(int number, std::size_t sz);
 void test_vm(const std::string& test_name, kafe::bytecode_t bytecode, int debug_mode);
 int start_tests(int debug_mode);
 
-#endif // tests
+#endif // kafe_tests

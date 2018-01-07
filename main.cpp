@@ -1,47 +1,39 @@
 #include <iostream>
-#include <fstream>
 #include <string>
 
 #include "kafe/kafe.hpp"
 #include "tests.hpp"
 
-int main(int argc, char** argv)
+int main(int argc, char* argv[])
 {
-    try
+    std::cout << argc << " ";
+    for (int i=0; i < argc; ++i)
+        { std::cout << argv[i] << " "; }
+    std::cout << std::endl;
+
+    using namespace clipp;
+
+    bool help = false;
+    bool tests = false;
+    int debug_mode = 0;
+    std::string fname = "";
+
+    auto cli = (
+                option("-f", "--file")  & value("Input file", fname)      % "Input file to execute",
+                option("-d", "--debug") & value("Debug mode", debug_mode) % "Debug mode for the VM",
+                option("--tests").set(tests)                              % "Start all the tests",
+                option("-h", "--help").set(help)                          % "Display help"
+                );
+
+    if (parse(argc, argv, cli))
     {
-        // see https://github.com/jarro2783/cxxopts/blob/master/src/example.cpp
-        cxxopts::Options options(argv[0], " - The Kafe programming language interpreter");
-        options.add_options()
-            ("f,file", "Input file", cxxopts::value<std::string>())
-            ("d,debug", "VM debug mode", cxxopts::value<int>())
-            ("tests", "Start all the tests")
-            ("help", "Print help")
-            ;
-        options.parse_positional({"file", "debug"});
-        cxxopts::ParseResult result = options.parse(argc, argv);
-
-        int debug_mode = 0;
-        std::string fname = "";
-
-        if (result.count("help"))
+        if (help)
         {
-            std::cout << options.help({""}) << std::endl;
+            std::cout << make_man_page(cli, argv[0]) << std::endl;
             exit(0);
         }
-        if (result.count("tests"))
-        {
-            start_tests(debug_mode);
-            exit(0);
-        }
-        if (result.count("f"))
-            { fname = result["f"].as<std::string>(); }
-        if (result.count("d"))
-            { debug_mode = result["d"].as<int>(); }
-    }
-    catch (const cxxopts::OptionException& e)
-    {
-        std::cout << "Error parsing options : " << e.what() << std::endl;
-        exit(1);
+        if (tests)
+            { exit(start_tests(debug_mode)); }
     }
 
     return 0;

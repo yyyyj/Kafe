@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#define TEST_VM(name, obj, mode) test_vm( name , #obj , obj , mode )
+
 std::string replaceAll(std::string str, const std::string& from, const std::string& to)
 {
     if (from.empty())
@@ -23,7 +25,7 @@ std::string format(int number, std::size_t sz)
     return text;
 }
 
-void test_vm(const std::string& test_name, kafe::bytecode_t bytecode, int debug_mode)
+void test_vm(const std::string& test_name, const std::string& filename, kafe::bytecode_t bytecode, int debug_mode)
 {
     kafe::VM vm;
     vm.setMode(debug_mode);
@@ -39,7 +41,8 @@ void test_vm(const std::string& test_name, kafe::bytecode_t bytecode, int debug_
 
     std::cout << "Calling order" << std::endl
               << "-------------" << std::endl;
-    vm.exec(bytecode);
+    vm.load(bytecode);
+    vm.exec();
     std::cout << std::endl << std::endl
               << "Stack"   << std::endl
               << "-------------" << std::endl
@@ -52,6 +55,8 @@ void test_vm(const std::string& test_name, kafe::bytecode_t bytecode, int debug_
         std::cout << "[" << i << "] " << kafe::convertTypeToString(vm.getStack()[i].type) << " " << vm.getStack()[i] << std::endl;
     }
     std::cout << std::endl << "=================================" << std::endl << std::endl;
+
+    vm.saveBytecode("examples/" + filename);
 }
 
 int start_tests(int debug_mode)
@@ -63,7 +68,7 @@ int start_tests(int debug_mode)
         kafe::INST_BOOL, 'A',
         0x00
     };
-    test_vm("int:18768, str:hello, bool:true", bytecode1, debug_mode);
+    TEST_VM("int:18768, str:hello, bool:true", bytecode1, debug_mode);
 
     // put the integer 1 into `var`, then put `var` at the top of the stack
     // then push the int 9 on the stack and perform an addition, push the result on the stack
@@ -76,7 +81,7 @@ int start_tests(int debug_mode)
         kafe::INST_PROCEDURE, 0, kafe::INST_ADD,
         0x00
     };
-    test_vm("var = 1; push(var); push(9); add", bytecode2, debug_mode);
+    TEST_VM("var = 1; push(var); push(9); add", bytecode2, debug_mode);
 
     // jump to the beginning ... until the world burns out in flame
     /*
@@ -85,7 +90,7 @@ int start_tests(int debug_mode)
         kafe::INST_JUMP, 0x00, 0x05, 'l', 'a', 'b', 'e', 'l',
         0x00
     };
-    test_vm("jump to `label` until the world burns", bytecode3, debug_mode);
+    TEST_VM("jump to `label` until the world burns", bytecode3, debug_mode);
     */
 
     kafe::bytecode_t bytecode4 = {
@@ -109,7 +114,7 @@ int start_tests(int debug_mode)
     end
     var  # calling the function var
     */
-    test_vm("testing segments, jump and ret", bytecode4, debug_mode);
+    TEST_VM("testing segments, jump and ret", bytecode4, debug_mode);
 
     kafe::bytecode_t bytecode5 = {
         kafe::INST_INT_2B, 0b11111111, 0b11111111,
@@ -120,7 +125,7 @@ int start_tests(int debug_mode)
         kafe::INST_INT_2B, 0b01111111, 0b11111111,
         0x00
     };
-    test_vm("testing variable duplication and negatives numbers (-32767, 32767)", bytecode5, debug_mode);
+    TEST_VM("testing variable duplication and negatives numbers (-32767, 32767)", bytecode5, debug_mode);
 
     return 0;
 }
