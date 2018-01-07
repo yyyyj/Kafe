@@ -5,6 +5,8 @@
 #include "utils.hpp"
 #include "types.hpp"
 #include "libs/cxxopts.hpp"
+#include "parser.hpp"
+#include "constants.hpp"
 
 namespace kafe
 {

@@ -13,7 +13,7 @@ namespace kafe
         // types
         INST_INT_2B      = 0x01,  // 0x01 [integer on 2 bytes]
         INST_INT_4B      = 0x02,  // 0x02 [integer on 4 bytes]
-        INST_DOUBLE      = 0x03,  // 0x03 [double on *I-don't-know-how-many-bytes*]
+        INST_DOUBLE      = 0x03,  // 0x03 [integer part on 4 bytes] [exponent on 2 bytes (max value is +/- 308)]
         INST_STR         = 0x04,  // 0x04 [string size on 2 bytes] [text]
         INST_BOOL        = 0x05,  // 0x05 [value on 1 byte] ; if value > 0x00 => true
         INST_ADDR        = 0x06,  // 0x06 [size of a segment name on 2 bytes] [name] ; used to store the address of a segment (kind of pointer, only pointing on something in the bytecode)
@@ -27,7 +27,7 @@ namespace kafe
 
         INST_DEL_VAR     = 0x0f,  // 0x0f [var name size on 2 bytes] [name]
 
-        // labels and blocs
+        // segments and blocs
         INST_SEGMENT     = 0x10,  // 0x10 [segment name size on 2 bytes] [name] [size (from the next byte after this 2, to the INST_RET included) on 2 bytes]
         INST_DECL_SEG    = 0x11,  // 0x11 [segment name size on 2 bytes] [name] [position on 2 bytes]
         INST_STORE_VAR   = 0x12,  // 0x12 ; store the value at stack[-2] in stack[-1]
