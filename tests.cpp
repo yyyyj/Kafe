@@ -56,7 +56,7 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
     }
     std::cout << std::endl << "=================================" << std::endl << std::endl;
 
-    vm.saveBytecode("examples/" + filename);
+    vm.saveBytecode("examples/bytecode/" + filename);
 }
 
 int start_tests(int debug_mode)
