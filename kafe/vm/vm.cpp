@@ -795,7 +795,7 @@ namespace kafe
 
     void VM::saveBytecode(const std::string& filename, bytecode_t bytecode)
     {
-        std::ofstream output(filename, ios::binary);
+        std::ofstream output(filename, std::ios::binary);
         output.write((char*)&bytecode[0], bytecode.size());
         output.close();
     }

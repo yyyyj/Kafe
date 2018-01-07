@@ -3,7 +3,6 @@
 #include <string>
 
 #include "kafe/kafe.hpp"
-#include "kafe/libs/cxxopts.hpp"
 
 std::string replaceAll(std::string str, const std::string& from, const std::string& to)
 {
@@ -57,37 +56,21 @@ void test_vm(const std::string& test_name, kafe::bytecode_t bytecode)
     std::cout << std::endl << "=================================" << std::endl << std::endl;
 }
 
-void test_lexer(const std::string& code)
-{
-    kafe::Lexer lexer(code);
-
-    while (true)
-    {
-        auto tok = lexer.getNextToken();
-        std::cout << "[" << tok.getType() << "] `" << replaceAll(tok.getValue(), "\n", "\\n") << "`" << std::endl;
-
-        if (tok == kafe::Lexer::EndOfFile)
-            break;
-    }
-}
-
 int main(int argc, char** argv)
 {
-    /*
     try
     {
         // see https://github.com/jarro2783/cxxopts/blob/master/src/example.cpp
         cxxopts::Options options(argv[0], " - The Kafe programming language interpreter");
         options.add_options()
             ("f,file", "Input file", cxxopts::value<std::string>())
-            ("b,bytecode", "Bytecode file", cxxopts::value<std::string>())
             ("d,debug", "VM debug mode", cxxopts::value<int>())
             ("ast,display-ast", "Display the AST generated")
             ("tests", "Start all the tests")
             ("test", "Start a specific kind of test : bytecode, lexer, parser", cxxopts::value<std::string>())
             ("help", "Print help")
             ;
-        options.parse_positional({"file", "bytecode", "debug", "test"});
+        options.parse_positional({"file", "debug", "test"});
         cxxopts::ParseResult result = options.parse(argc, argv);
 
         if (result.count("help"))
@@ -99,11 +82,6 @@ int main(int argc, char** argv)
         {
             auto& ff = result["f"].as<std::string>();
             std::cout << "File : " << ff << std::endl;
-        }
-        if (result.count("b"))
-        {
-            auto& ff = result["b"].ast<std::string>();
-            std::cout << "Binary file : " << ff << std::endl;
         }
         if (result.count("d"))
         {
@@ -131,12 +109,9 @@ int main(int argc, char** argv)
         exit(1);
     }
     return 0;
-    */
 
     if (argc == 1)
     {
-        /// testing area
-
         /// testing VM
         // int:18768, str:hello, bool:true
         kafe::bytecode_t bytecode1 = {
@@ -203,9 +178,6 @@ int main(int argc, char** argv)
             0x00
         };
         test_vm("testing variable duplication and negatives numbers (-32767, 32767)", bytecode5);
-
-        /// testing lexer
-        test_lexer("fun update : int -- dt:double\n    print dt + 10.5\n    ret 0\nend");
     }
 
     return 0;

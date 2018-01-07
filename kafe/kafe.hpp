@@ -2,18 +2,12 @@
 #define kafe_kafe
 
 #include "vm/vm.hpp"
-#include "lexer/lexer.hpp"
-#include "parser/parser.hpp"
 #include "utils.hpp"
 #include "types.hpp"
-
-#include <string>
+#include "libs/cxxopts.hpp"
 
 namespace kafe
 {
-
-    void runString(const std::string& code);
-    void execFile(const std::string& filename);
 
 }  // namespace kafe
 
