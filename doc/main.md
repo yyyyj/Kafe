@@ -1,5 +1,5 @@
 # Documentation
-*official documentation for the programming language Kafe*
+*Official documentation for the programming language Kafe*
 
 [Installing](installing.md)
 
@@ -7,4 +7,4 @@
 
 [How the VM works](vm.md)
 
-[Examples](examples.md)
+[Code examples](examples.md)
