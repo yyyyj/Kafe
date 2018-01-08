@@ -3,7 +3,7 @@
 Here are some examples of Kafe code before turning it into bytecode (if you want to learn how the bytecode works, check [this](vm.md) out) :
 
 ```
-fun mafonction : int
+fun myfunction : int
     dyn value : int = 15
     ret value  // push value on the stack
 end
@@ -15,7 +15,7 @@ end
 dyn var : int
 dyn var2 : int = 10
 const var3 : int = 12
-dyn truc : int = mafonction
+dyn truc : int = myfunction
 dyn machin : int = other 1 "hello"
 
 struct car_without_arg

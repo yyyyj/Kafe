@@ -8,4 +8,12 @@ Now you know everything.
 
 # Pre-requisites
 
-A C++14 compiler. Nothing else.
+* C++14 compiler
+
+* Python (>= 3.4)
+
+* Cmake (to build the project)
+
+# Documentation
+
+See [this](doc/main.md)
