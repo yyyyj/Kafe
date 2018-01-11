@@ -8,6 +8,12 @@ KEYWORDS = (
     "in",
 )
 
+BLOC_OPENING = (
+    "fun",
+    "while", "for",
+    "if",
+)
+
 SPECIALS = (
     ":",
     "--",
