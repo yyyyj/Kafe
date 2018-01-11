@@ -30,12 +30,12 @@ namespace kafe
 
     void generateAndSaveAST(const std::string& filename)
     {
-        internal::execScript("ast.py " + filename + " --save");
+        internal::execScript("parser/generateAST.py " + filename + " --save");
     }
 
     void generateBytecode(const std::string& filename)
     {
-        internal::execScript("generateBytecode.py " + filename);
+        internal::execScript("parser/generateBytecode.py " + filename);
     }
 
 }  // namespace kafe

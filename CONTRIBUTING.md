@@ -1,6 +1,11 @@
 # Coding guidelines
 
 ```cpp
+#include <iostream>
+
+#include "lib.hpp"
+#include "other.hpp"
+
 namespace ns
 {
 
