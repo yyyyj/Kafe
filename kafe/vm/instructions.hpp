@@ -45,7 +45,7 @@ namespace kafe
     enum Procedure
     {
         // [CODE] ; push the result of stack[-2] [OPERATOR] stack[-1]    OR    push the result of [OPERATOR] stack[-1]
-        INST_ADD       = 0x01,  // 0x01 ; push the result of stack[-2] + stack[-1]
+        INST_ADD       = 0x01,  // 0x01 ; +
         /// to implement !
             INST_SUB       = 0x02,  // 0x02 ; -
             INST_DIV       = 0x03,  // 0x03 ; /

@@ -1,30 +1,45 @@
 # coding : utf-8
 
-KEYWORDS = [
+KEYWORDS = (
     "fun", "ret", "end",
     "while", "for",
     "if", "elif", "else",
     "dyn",
     "in",
-]
+)
 
-SPECIALS = [
+SPECIALS = (
     ":",
     "--",
-    "."
-]
+    ".",
+    "[", "]",
+    "(", ")"
+)
 
-DATA_TYPES = [
+LIST_DELIMITERS = ("[", "]")
+
+DATA_TYPES = (
     "int",
     "double",
     "str",
     "bool",
+    "list",
     "void"
-]
+)
 
-BOOLEANS = ["true", "false"]
+BOOLEANS = ("true", "false")
 
-COMMENTS = ["#"]
+STRING_DELIMITERS = ("\"", "'")
+
+OPERATORS = (
+    "+", "-", "*", "/", "%",
+    "++", "--",
+    "&", "|", "~", "<<", ">>", "^",
+    "&&", "||", "!",
+    "<", "<=", ">", ">=", "==", "!="
+)
+
+COMMENTS = ("#", )
 
 
 if __name__ == '__main__':
