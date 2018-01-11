@@ -22,7 +22,9 @@ DATA_TYPES = [
     "void"
 ]
 
-COMMENT = "#"
+BOOLEANS = ["true", "false"]
+
+COMMENTS = ["#"]
 
 
 if __name__ == '__main__':

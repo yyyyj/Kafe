@@ -1,13 +1,19 @@
 # coding : utf-8
 
 import _ast as kafeAST
+import _tokenizer as kafeTokenizer
 from _keywords import *
 
 
 class Parser:
     def __init__(self, filename):
         self.program = kafeAST.AST()
-        self.file_content = open(filename).read()
+        self.file_content = open(filename).readlines()
+        self.tokens = None
+
+    def tokenize(self):
+        # call the tokenizer
+        self.tokens = kafeTokenizer.tokenize(self.file_content)
 
     def optimizeBytecode(self):
         # currently doing nothing
@@ -19,7 +25,7 @@ class Parser:
             file.write(self.program.getBytecode())
 
     def parse(self):
-        pass
+        self.tokenize()
 
     def getRepr(self):
         return self.program.getRepr()
