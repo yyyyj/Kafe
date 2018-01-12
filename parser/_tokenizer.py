@@ -90,6 +90,12 @@ def tokenize(content):
                     tok = Token("", "unknown", (char_nb, line_nb))
                     pass
                 if tokenize.debug: print("found special token `{}`".format(tokens_list[-1].content))
+            elif char in COMMENTS:
+                if tok.content:
+                    tok.kind = guessKind(tok.content)
+                    tokens_list.append(tok)
+                # we skip the whole line because from now it's a comment
+                break
             elif not in_string and char != " ":
                 tok.content += char
                 if tokenize.debug: print("not in string, adding a char `{}`".format(char))

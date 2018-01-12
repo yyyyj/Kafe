@@ -10,7 +10,8 @@ struct car
     end
 end
 
-dyn i : int = 10
+# this is a comment which should be skipped
+dyn i : int = 10#same here
 dyn v : list = [0 2 4 6 8]
 
 if 1 + 1 == 2
