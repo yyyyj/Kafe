@@ -12,15 +12,19 @@ fun other : int -- arg:int truc:string
     ret arg * (len truc) + arg
 end
 
-dyn var : int
+dyn var : int  # will be declared using a default value
 dyn var2 : int = 10
-const var3 : int = 12
 dyn truc : int = myfunction
 dyn machin : int = other 1 "hello"
 
 struct car_without_arg
     dyn size : int = 5
     dyn weight : int = 10
+
+    fun doStuff : void -- me:car
+        print "hello world" me.size " " me.weight
+        ret
+    end
 end
 
 struct car -- _size:int _weight:int
@@ -29,17 +33,7 @@ struct car -- _size:int _weight:int
 end
 
 dyn car1 : car_without_arg
-dyn car2 : car = 22 37
-
-struct car
-    dyn size : int = 10
-    dyn weight : double = 1250.25
-
-    fun doStuff : int -- me:car
-        print "hello world" me.size " " me.weight
-        ret 0
-    end
-end
+dyn car2 : car = 22 37  # implicit constructor call
 
 fun createCar : car -- s:int w:double
     dyn mycar : car
@@ -48,15 +42,15 @@ fun createCar : car -- s:int w:double
     ret mycar
 end
 
-dyn renaud20 : car = createCar 1000 765.12
+dyn renaud20 : car = createCar 1000 765.12  # implicit function call
 
 while renaud20.size <= 20
     renaud20.size ++
 end
 
-for i in range 0 10
+for i in (range 0 10)
     print i
 end
 
-renaud20.doStuff # calling the function doStuff on renaud20
+renaud20.doStuff  # calling the function doStuff on renaud20
 ```
