@@ -8,7 +8,7 @@ def main(argv):
     fn, output_fn = "", ""
     if argv:
         fn = argv[0]
-        output_fn = fn.split(".")[0] + ".kfb"
+        output_fn = fn + ".kfb"
 
     if not filename:
         raise ValueError("Need a valid file to parse")
