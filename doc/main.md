@@ -36,3 +36,9 @@ OPTIONS
 ```
 
 The options `-f`, `-c`, `--ast` and `-d` can be cumulated, but the options `-h` and `--tests` terminate the program when they are done.
+
+In the background, the options `-c` and `--ast` are short cuts for those two commands :
+
+`python parser/generateBytecode.py [filename]` and `python parser/generateAST.py [filename] --save`
+
+(depending on your system, it's either `python` or `python3` which will be used to run the scripts)
