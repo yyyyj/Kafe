@@ -33,9 +33,18 @@ namespace kafe
         internal::execScript("parser/generateAST.py " + filename + " --save");
     }
 
-    void generateBytecode(const std::string& filename)
+    void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool optimize, bool ast)
     {
-        internal::execScript("parser/generateBytecode.py " + filename);
+        std::string command = "parser/generateBytecode.py ";
+        for (std::size_t i=0; i < files.size(); ++i)
+        {
+            command += files[i] + " ";
+        }
+        command += std::string("--out ") + output_fn;
+        command += (optimize ? std::string(" -O") : std::string(""));
+        command += (ast ? std::string(" --ast") : std::string(""));
+
+        internal::execScript(command);
     }
 
 }  // namespace kafe

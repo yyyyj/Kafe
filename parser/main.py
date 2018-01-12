@@ -5,8 +5,8 @@ import os, sys
 import _parser as kafeParser
 
 
-def parse(filename):
-    parser = kafeParser.Parser(filename)
+def parse(files):
+    parser = kafeParser.Parser(files)
     parser.parse()
     return parser
 

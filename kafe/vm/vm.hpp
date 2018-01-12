@@ -67,6 +67,7 @@ namespace kafe
 
         // the debug flags for the VM
         static const int FLAG_BASIC_DEBUG = 1 << 0;
+        static const int FLAG_INTERACTIVE = 1 << 1;
 
         bytecode_t readFile(const std::string& filePath);
 

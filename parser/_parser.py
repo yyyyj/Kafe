@@ -6,10 +6,18 @@ from _keywords import *
 
 
 class Parser:
-    def __init__(self, filename=None, file_content=None):
+    def __init__(self, files=None, file_content=None):
         self.program = kafeAST.AST()
-        self.file_content = open(filename).readlines() if filename is not None else file_content
-        assert self.file_content is not None, "Need either a filename or a file content"
+        self.files = [open(filename).readlines() for filename in files]
+        self.file_content = file_content if file_content is not None else []
+
+        if self.file_content == [] and self.files:
+            for data in self.files:
+                for line in data:
+                    self.file_content.append(line)
+
+        assert self.files != [] or file_content != [], "Need either a filename or a file content"
+
         self.tokens = None
         self.token_pointer = 0
         self.errors = []
@@ -39,6 +47,10 @@ class Parser:
             if self.tokens_list[self.token_pointer].content in BLOC_OPENING:
                 new_blocs += 1
             self.token_pointer += 1
+
+    def doTheForwardDecl(self):
+        # decl the structures and all
+        pass
 
     def parseMatching(self, keyword=None):
         assert keyword.content != "" and keyword.content in KEYWORDS, \
@@ -89,6 +101,7 @@ class Parser:
 
     def parse(self):
         self.tokenize()
+        self.doTheForwardDecl()
 
         while self.token_pointer < len(self.tokens_list):
             if self.tokens_list[self.token_pointer].kind == "keyword":
