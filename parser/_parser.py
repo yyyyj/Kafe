@@ -6,12 +6,12 @@ from _keywords import *
 
 
 class Parser:
-    def __init__(self, filename):
+    def __init__(self, filename=None, file_content=None):
         self.program = kafeAST.AST()
-        self.file_content = open(filename).readlines()
+        self.file_content = open(filename).readlines() if filename is not None else file_content
+        assert self.file_content is not None, "Need either a filename or a file content"
         self.tokens = None
         self.token_pointer = 0
-
         self.errors = []
 
     def addError(self, message, pos):
@@ -99,4 +99,5 @@ class Parser:
 
 
 if __name__ == '__main__':
-    raise NotImplementedError("This script isn't meant to be run directly")
+    import _examples as kafeExamples
+    parser = Parser(file_content=kafeExamples.EVERY_KW_EX)

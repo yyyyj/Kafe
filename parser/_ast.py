@@ -5,6 +5,9 @@ class Node:
         self.head = None
         self.blocs = []
 
+    def getBytecode(self):
+        raise NotImplementedError("This functionnality isn't implemented for a basic node")
+
     def optimize(self):
         raise NotImplementedError("This functionnality isn't implemented for a basic node")
 
@@ -15,6 +18,13 @@ class StructureNode(Node):
 
         self.name = ""
         self.members = []
+
+    def getBytecode(self):
+        pass
+
+    def optimize(self):
+        for node in self.members:
+            node.optimize()
 
 
 class FunctionNode(Node):
@@ -28,6 +38,13 @@ class FunctionNode(Node):
         self.body = []
         self.ret = None
 
+    def getBytecode(self):
+        pass
+
+    def optimize(self):
+        for node in self.body:
+            node.optimize()
+
 
 class ValueNode(Node):
     def __init__(self):
@@ -35,6 +52,13 @@ class ValueNode(Node):
 
         self.var_type = ""
         self.value = []
+
+    def getBytecode(self):
+        pass
+
+    def optimize(self):
+        for node in self.value:
+            node.optimize()
 
 
 class VarNode(Node):
@@ -44,12 +68,24 @@ class VarNode(Node):
         self.name = ""
         self.value = None
 
+    def getBytecode(self):
+        pass
+
+    def optimize(self):
+        pass
+
 
 class ConditionNode(Node):
     def __init__(self):
         super().__init__()
 
         self.lhs, self.op, self.rhs = [], None, []
+
+    def getBytecode(self):
+        pass
+
+    def optimize(self):
+        pass
 
 
 class IfNode(Node):
@@ -64,6 +100,12 @@ class IfNode(Node):
         # `IfNode` with no condition
         self.else_clause = None
 
+    def getBytecode(self):
+        pass
+
+    def optimize(self):
+        pass
+
 
 class WhileNode(Node):
     def __init__(self):
@@ -72,6 +114,12 @@ class WhileNode(Node):
         self.condition = None
         # list of instructions
         self.body = []
+
+    def getBytecode(self):
+        pass
+
+    def optimize(self):
+        pass
 
 
 class ForNode(Node):
@@ -83,6 +131,12 @@ class ForNode(Node):
         # list of instructions
         self.body = []
 
+    def getBytecode(self):
+        pass
+
+    def optimize(self):
+        pass
+
 
 class FunctionCallNode(Node):
     def __init__(self):
@@ -91,12 +145,24 @@ class FunctionCallNode(Node):
         self.function_name = ""
         self.args_list = []
 
+    def getBytecode(self):
+        pass
+
+    def optimize(self):
+        pass
+
 
 class RetNode(Node):
     def __init__(self):
         super().__init__()
 
         self.ret = []
+
+    def getBytecode(self):
+        pass
+
+    def optimize(self):
+        pass
 
 
 class AST:

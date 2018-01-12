@@ -27,5 +27,6 @@ else
 end
 """.split("\n")
 
+
 if __name__ == '__main__':
     raise NotImplementedError("This script isn't meant to be run directly")

@@ -5,17 +5,17 @@ import main as kafe
 
 
 def main(argv):
-    filename, save, output_fn = "", False, ".ast"
+    fn, save, output_fn = "", False, ".ast"
     if argv:
-        filename = argv[0]
+        fn = argv[0]
         if "--save" in argv:
             save = True
-            output_fn = filename + output_fn
+            output_fn = fn + output_fn
 
-    if not filename:
+    if not fn:
         raise ValueError("Need a valid file to parse")
 
-    ast = kafe.parse(filename)
+    ast = kafe.parse(filename=fn)
     if save:
         with open(output_fn, "w") as file:
             file.write(ast.getRepr())
