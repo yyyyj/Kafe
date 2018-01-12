@@ -5,6 +5,9 @@ class Node:
         self.head = None
         self.blocs = []
 
+    def getRepr(self, level=0):
+        raise NotImplementedError("This functionnality isn't implemented for a basic node")
+
     def getBytecode(self):
         raise NotImplementedError("This functionnality isn't implemented for a basic node")
 
@@ -18,6 +21,14 @@ class StructureNode(Node):
 
         self.name = ""
         self.members = []
+
+    def getRepr(self, level=0):
+        output = "{}<StructureNode `{}`>\n".format("\t" * level, self.name)
+        for node in self.members:
+            output += node.getRepr(level + 1) + "\n"
+        output += "{}</StructureNode>".format("\t" * level)
+
+        return output
 
     def getBytecode(self):
         pass
@@ -38,6 +49,17 @@ class FunctionNode(Node):
         self.body = []
         self.ret = None
 
+    def getRepr(self, level=0):
+        output = "{}<FunctionNode `{}` -> {}>\n".format("\t" * level, self.name, self.ret_type)
+        for node in self.args_list:
+            output += node.getRepr(level + 1) + "\n"
+        output += "\n"
+        for node in self.body:
+            output += node.getRepr(level + 1) + "\n"
+        output += "{}</FunctionNode>".format("\t" * level)
+
+        return output
+
     def getBytecode(self):
         pass
 
@@ -52,6 +74,14 @@ class ValueNode(Node):
 
         self.var_type = ""
         self.value = []
+
+    def getRepr(self, level=0):
+        output = "{}<ValueNode ({})>\n".format("\t" * level, self.var_type)
+        for node in self.value:
+            output += node.getRepr(level + 1) + "\n"
+        output += "{}</ValueNode>".format("\t" * level)
+
+        return output
 
     def getBytecode(self):
         pass
@@ -68,6 +98,13 @@ class VarNode(Node):
         self.name = ""
         self.value = None
 
+    def getRepr(self, level=0):
+        output = "{}<VarNode `{}`>\n".format("\t" * level, self.name)
+        output += self.value.getRepr(level + 1)
+        output += "{}</ValueNode>".format("\t" * level)
+
+        return output
+
     def getBytecode(self):
         pass
 
@@ -80,6 +117,19 @@ class ConditionNode(Node):
         super().__init__()
 
         self.lhs, self.op, self.rhs = [], None, []
+
+    def getRepr(self, level=0):
+        output = "{}<ConditionNode>\n".format("\t" * level)
+        for node in self.lhs:
+            output += node.getRepr(level + 1) + "\n"
+        output += "\n"
+        output += self.op.getRepr(level + 1)
+        output += "\n"
+        for node in self.rhs:
+            output += node.getRepr(level + 1) + "\n"
+        output += "{}</ConditionNode>".format("\t" * level)
+
+        return output
 
     def getBytecode(self):
         pass
@@ -100,6 +150,19 @@ class IfNode(Node):
         # `IfNode` with no condition
         self.else_clause = None
 
+    def getRepr(self, level=0):
+        output = "{}<IfNode>\n".format("\t" * level)
+        output += self.condition.getRepr(level + 1)
+        output += "\n"
+        for node in self.body:
+            output += node.getRepr(level + 1) + "\n"
+        for node in self.elifs_clause:
+            output += node.getRepr(level + 1) + "\n"
+        output += self.else_clause.getRepr(level + 1) + "\n"
+        output += "{}</IfNode>".format("\t" * level)
+
+        return output
+
     def getBytecode(self):
         pass
 
@@ -114,6 +177,14 @@ class WhileNode(Node):
         self.condition = None
         # list of instructions
         self.body = []
+
+    def getRepr(self, level=0):
+        output = "{}<WhileNode>\n".format("\t" * level)
+        for node in self.body:
+            output += node.getRepr(level + 1) + "\n"
+        output += "{}</WhileNode>".format("\t" * level)
+
+        return output
 
     def getBytecode(self):
         pass
@@ -131,6 +202,22 @@ class ForNode(Node):
         # list of instructions
         self.body = []
 
+    def getRepr(self, level=0):
+        output = "{}<ForNode>\n".format("\t" * level)
+        output += "{}<Var>\n".format("\t" * (level + 1))
+        output += self.var.getRepr(level + 2)
+        output += "\n"
+        output += "{}</Var>\n".format("\t" * (level + 1))
+        output += "{}<Container>\n".format("\t" * (level + 1))
+        output += self.container.getRepr(level + 2)
+        output += "\n"
+        output += "{}</Container>\n".format("\t" * (level + 1))
+        for node in self.body:
+            output += node.getRepr(level + 1) + "\n"
+        output += "{}</ForNode>".format("\t" * level)
+
+        return output
+
     def getBytecode(self):
         pass
 
@@ -145,6 +232,14 @@ class FunctionCallNode(Node):
         self.function_name = ""
         self.args_list = []
 
+    def getRepr(self, level=0):
+        output = "{}<FunctionCallNode `{}`>\n".format("\t" * level, self.function_name)
+        for node in self.args_list:
+            output += node.getRepr(level + 1) + "\n"
+        output += "{}</FunctionCallNode>".format("\t" * level)
+
+        return output
+
     def getBytecode(self):
         pass
 
@@ -158,6 +253,14 @@ class RetNode(Node):
 
         self.ret = []
 
+    def getRepr(self, level=0):
+        output = "{}<RetNode>\n".format("\t" * level)
+        for node in self.ret:
+            output += node.getRepr(level + 1) + "\n"
+        output += "{}</RetNode>".format("\t" * level)
+
+        return output
+
     def getBytecode(self):
         pass
 
@@ -165,8 +268,10 @@ class RetNode(Node):
         pass
 
 
-class AST:
+class AST(Node):
     def __init__(self):
+        super().__init__()
+        
         self.nodes = []
 
     def __iter__(self):
@@ -176,11 +281,21 @@ class AST:
     def addNode(self, node):
         self.nodes.append(node)
 
-    def getBytecode(self):
-        return b""
-
     def getRepr(self):
-        return ""
+        output = "<Program with {} nodes>\n".format(len(self.nodes))
+        for node in self:
+            output += node.getRepr(1) + "\n"
+        output += "</Program>"
+
+        return output
+
+    def getBytecode(self):
+        bytecode = b""
+        return bytecode
+
+    def optimize(self):
+        for node in self:
+            node.optimize()
 
 
 if __name__ == '__main__':
