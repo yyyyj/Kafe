@@ -12,6 +12,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <vector>
 #include <array>
 
 #ifdef RUNNING_WIN
