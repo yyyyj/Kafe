@@ -36,8 +36,11 @@ class Parser:
             node.optimize()
 
     def saveBytecode(self, filename):
-        with open(filename, "wb") as file:
-            file.write(self.program.getBytecode())
+        if not self.errors:
+            with open(filename, "wb") as file:
+                file.write(self.program.getBytecode())
+        else:
+            print("Some errors were reported during the compilation process, please fix them before doing anything else")
 
     def jumpToEndOfAGroupOfBlocs(self):
         new_blocs = 1
@@ -106,6 +109,9 @@ class Parser:
         while self.token_pointer < len(self.tokens_list):
             if self.tokens_list[self.token_pointer].kind == "keyword":
                 self.parseMatching(keyword=self.tokens_list[self.token_pointer])
+
+        for error in self.errors:
+            print("At line {}, character {} : {}".format(error[1][1], error[1][0], error[0]))
 
     def getRepr(self):
         return self.program.getRepr()
