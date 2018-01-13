@@ -28,11 +28,6 @@ namespace kafe
 
     }  // namespace internal
 
-    void generateAndSaveAST(const std::string& filename)
-    {
-        internal::execScript("parser/generateAST.py " + filename + " --save");
-    }
-
     void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool optimize, bool ast)
     {
         std::string command = "parser/generateBytecode.py ";

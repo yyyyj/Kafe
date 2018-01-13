@@ -39,7 +39,6 @@ namespace kafe
 
     }  // namespace internal
 
-    void generateAndSaveAST(const std::string& filename);
     void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool optimize=false, bool ast=false);
 
 }  // namespace kafe
