@@ -1,5 +1,7 @@
 # coding : utf-8
 
+# probably missing a few more nodes
+
 class Node:
     def __init__(self):
         self.head = None
