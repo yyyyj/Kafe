@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.5)
 cmake_policy(SET CMP0015 NEW)
 
 project(Kafe)
 
 if(CMAKE_COMPILER_IS_GNUCC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -O3")
+  set(CMAKE_CXX_FLAGS "-std=c++14 -fpermissive -O3")
 endif()
 
 file(GLOB_RECURSE PG_UN "${Kafe_SOURCE_DIR}/kafe/*.hpp" "${Kafe_SOURCE_DIR}/tests.hpp")
