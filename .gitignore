@@ -1,10 +1,26 @@
+# output folders for binary files
+bin/
+build/
+obj/
+out/
+
+# binary files
 *.o
 *.exe
-*.cbp
-*.depend
+*.lib
+*.so
+*.a
+
+# projects files
+.vs/
 *.layout
-obj/*
-bin/*
-specs.txt
-*.diff
+*.depend
+*.cbp
+
+# python precompiled files
 *.pyc
+*.pyo
+*.pyu
+
+# just some personnal notes
+specs.txt

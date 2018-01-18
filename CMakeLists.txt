@@ -7,8 +7,8 @@ if(CMAKE_COMPILER_IS_GNUCC)
   set(CMAKE_CXX_FLAGS "-std=c++14 -fpermissive -O3")
 endif()
 
-file(GLOB_RECURSE PG_UN "${Kafe_SOURCE_DIR}/kafe/*.hpp" "${Kafe_SOURCE_DIR}/tests.hpp")
-file(GLOB_RECURSE HD_UN "${Kafe_SOURCE_DIR}/kafe/*.cpp" "${Kafe_SOURCE_DIR}/tests.cpp" "${Kafe_SOURCE_DIR}/main.cpp")
+file(GLOB_RECURSE PG_UN "./kafe/*.hpp" "./tests.hpp")
+file(GLOB_RECURSE HD_UN "./kafe/*.cpp" "./tests.cpp" "./main.cpp")
 
 set_property(GLOBAL APPEND_STRING PROPERTY COMPILE_FLAGS -Wall)
 
