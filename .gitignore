@@ -13,11 +13,13 @@ out/
 
 # projects files
 .vs/
+.vscode/
 *.layout
 *.depend
 *.cbp
 
 # python precompiled files
+__pycache__/
 *.pyc
 *.pyo
 *.pyu

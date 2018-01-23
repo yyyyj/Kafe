@@ -1,7 +1,5 @@
 # coding : utf-8
 
-# probably missing a few more nodes
-
 class Node:
     def __init__(self):
         self.head = None
@@ -293,6 +291,8 @@ class AST(Node):
 
     def getBytecode(self):
         bytecode = b""
+        for node in self:
+            bytecode += node.getBytecode()
         return bytecode
 
     def optimize(self):
