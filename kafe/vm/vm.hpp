@@ -13,7 +13,8 @@
 #include <exception>
 #include <stdexcept>
 
-#define EXP_DOUBLE_LIMIT 0b100110100
+#define EXP_DOUBLE_LIMIT 0b0100110100
+#define EXP_DOUBLE_SIGN  0b1000000000
 
 namespace kafe
 {

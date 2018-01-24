@@ -141,6 +141,8 @@ namespace kafe
         // all the positions from where the segment was called
         // in order to be able to go back
         std::vector<Pair> lastPositions;
+        // internal variables stack
+        std::map<std::string, Value> vars;
     };
 
 }  // namespace kafe

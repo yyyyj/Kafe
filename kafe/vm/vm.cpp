@@ -48,7 +48,7 @@ namespace kafe
     uint8B_t VM::readXBytesInt(unsigned char bytesCount)
     {
         uint8B_t v = readByte(++m_ip);
-        for (unsigned k=1; k < bytesCount; ++k)
+        for (unsigned char k=1; k < bytesCount; ++k)
             { v = (v << 8) + readByte(++m_ip); }
         return v;
     }
@@ -73,7 +73,7 @@ namespace kafe
         uint4B_t int_part = read4BytesInt();
         int2B_t exp = abc::abs(read2BytesInt());
         exp = (exp > EXP_DOUBLE_LIMIT) ? EXP_DOUBLE_LIMIT : ((exp < -EXP_DOUBLE_LIMIT) ? -EXP_DOUBLE_LIMIT : exp);
-        exp *= (exp & EXP_DOUBLE_LIMIT) ? (-1) : (+1);
+        exp *= (exp & EXP_DOUBLE_SIGN) ? (-1) : (+1);
         return double(int_part) * std::pow(10, exp);
     }
 
@@ -440,9 +440,8 @@ namespace kafe
 
                 // we read the size of the name of the segment
                 std::string seg_name = readString();
-                // we get the size of the segment and jump to the end of it, we don't want to execute it, it wasn't called,
-                // only defined
-                uint2B_t seg_size = read2BytesInt();
+                // we get the size of the segment and jump to the end of it, we don't want to execute it, it wasn't called
+                uint4B_t seg_size = read4BytesInt();
                 // we try to add the segment position to the "segment register" if it wasn't registered before
                 if (m_segments.find(seg_name) == m_segments.end())
                     { m_segments[seg_name] = m_ip + 1; }  // +1 because we want the next byte, not the current one
@@ -450,18 +449,6 @@ namespace kafe
                     { m_ip += seg_size; }
                 else
                     { throw std::logic_error("Invalid bloc count for the segment"); }
-
-                break;
-            }
-
-            case INST_DECL_SEG:
-            {
-                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "declare segment" << std::endl;
-
-                // we get the size of the name of the segment and read this name
-                std::string seg_name = readString();
-                // and we read its position in the m_bytecode
-                m_segments[seg_name] = read2BytesInt();
 
                 break;
             }
@@ -513,12 +500,23 @@ namespace kafe
                 break;
             }
 
+            case INST_CALL:
+            {
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "call" << std::endl;
+
+                std::string seg_name = performJump();
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << seg_name << std::endl;
+
+                break;
+            }
+
             case INST_JUMP:
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "jump" << std::endl;
 
-                std::string seg_name = performJump();
+                std::string seg_name = readString();
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << seg_name << std::endl;
+                goToSegmentPosition(seg_name);
 
                 break;
             }
@@ -531,8 +529,9 @@ namespace kafe
                 Value a = pop();
                 if (a == Value(ValueType::Bool, true))
                 {
-                    std::string seg_name = performJump();
+                    std::string seg_name = readString();
                     if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << seg_name << std::endl;
+                    goToSegmentPosition(seg_name);
                 }
 
                 break;
@@ -545,9 +544,11 @@ namespace kafe
                 Value a = pop();
                 if (a == Value(ValueType::Bool, false))
                 {
-                    std::string seg_name = performJump();
+                    std::string seg_name = readString();
                     if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << seg_name << std::endl;
+                    goToSegmentPosition(seg_name);
                 }
+
                 break;
             }
 
@@ -556,6 +557,33 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "ret" << std::endl;
 
                 retFromSegment();
+
+                break;
+            }
+
+            case INST_GET_CWA:
+            {
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "get cwa" << std::endl;
+
+                Value a(ValueType::Addr, m_ip);
+                push(a);
+
+                break;
+            }
+
+            case INST_GOTO:
+            {
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "goto" << std::endl;
+
+                Value a = pop();
+                if (a.type == ValueType::Addr)
+                {
+                    if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    ->" << a.get<addr_t>() << std::endl;
+                    m_ip = a.get<addr_t>();
+                }
+                else
+                    { throw std::logic_error("Can not use a non-address to find where to jump"); }
+
                 break;
             }
         }
@@ -607,16 +635,8 @@ namespace kafe
                 Value b = pop();
                 Value a = pop();
 
-                if (a.type != b.type)
-                {
-                    Value c(ValueType::Bool, true);
-                    push(c);
-                }
-                else
-                {
-                    Value c(ValueType::Bool, (a != b));
-                    push(c);
-                }
+                Value c(ValueType::Bool, (a != b));
+                push(c);
 
                 break;
             }

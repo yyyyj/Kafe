@@ -86,7 +86,7 @@ int start_tests(int debug_mode)
     // jumps
     kafe::bytecode_t bytecode3 = {
         kafe::INST_BOOL, 0x01,
-        kafe::INST_SEGMENT, 0x00, 0x05, 'l', 'a', 'b', 'e', 'l', 0x00, 0x03,
+        kafe::INST_SEGMENT, 0x00, 0x05, 'l', 'a', 'b', 'e', 'l', 0x00, 0x00, 0x00, 0x03,
             kafe::INST_BOOL, 0x00,
             kafe::INST_RET,
         kafe::INST_JUMP_IF, 0x00, 0x05, 'l', 'a', 'b', 'e', 'l',
@@ -96,17 +96,16 @@ int start_tests(int debug_mode)
     TEST_VM("jump if true to label [push false], jump if false to label [push false]", bytecode3, debug_mode);
 
     kafe::bytecode_t bytecode4 = {
-        kafe::INST_DECL_SEG, 0x00, 0x03, 'v', 'a', 'r', 0x00, 0x17, // len:8
-        kafe::INST_BOOL, 0x00,                                      // len:2 => 10
-        kafe::INST_VAR, 0x00, 0x01, 'a',                            // len:3 => 14
-        kafe::INST_STORE_VAR,                                       // len:1 => 15
-        kafe::INST_SEGMENT, 0x00, 0x03, 'v', 'a', 'r', 0x00, 0x0a,  // len:8 => 23
-            kafe::INST_LOAD_VAR, 0x00, 0x01, 'a',                   // len:4 => 27
-            kafe::INST_BOOL, 0x01,                                  // len:2 => 29
-            kafe::INST_PROCEDURE, 0x0, kafe::INST_NE,               // len:3 => 32
-            kafe::INST_RET,                                         // len:1 => 33
-        kafe::INST_JUMP, 0x00, 0x03, 'v', 'a', 'r',                 // len:6 => 39
-        0x00                                                        // len:1 => 40
+        kafe::INST_BOOL, 0x00,
+        kafe::INST_VAR, 0x00, 0x01, 'a',
+        kafe::INST_STORE_VAR,
+        kafe::INST_SEGMENT, 0x00, 0x03, 'v', 'a', 'r', 0x00, 0x00, 0x00, 0x0a,
+            kafe::INST_LOAD_VAR, 0x00, 0x01, 'a',
+            kafe::INST_BOOL, 0x01,
+            kafe::INST_PROCEDURE, 0x0, kafe::INST_NE,
+            kafe::INST_RET,
+        kafe::INST_CALL, 0x00, 0x03, 'v', 'a', 'r',
+        0x00
     };
     /* equivalent :
     dyn a : bool = false
