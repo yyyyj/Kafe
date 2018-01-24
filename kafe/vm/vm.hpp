@@ -47,11 +47,10 @@ namespace kafe
         int4B_t     read4BytesInt();
         int8B_t     read8BytesInt();
         double      readDouble   ();
-        std::string readString   (uint2B_t strSize);
+        std::string readString   ();
         bool        readBool     ();
         // about segments and jumps
         addr_t      getSegmentAddr     (const std::string& segmentName);
-        std::string getSegmentName     ();
         void        goToSegmentPosition(const std::string& segmentName);
         void        pushCallStack      (const std::string& segmentName, addr_t lastPos);
         std::string performJump        ();

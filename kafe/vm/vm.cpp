@@ -63,6 +63,11 @@ namespace kafe
         return abc::setSign((int4B_t) readXBytesInt(4), /* bytesCount */ 4);
     }
 
+    int8B_t VM::read8BytesInt()
+    {
+        return abc::setSign((int8B_t) readXBytesInt(8), /* bytesCount */ 8);
+    }
+
     double VM::readDouble()
     {
         uint4B_t int_part = read4BytesInt();
@@ -72,14 +77,20 @@ namespace kafe
         return double(int_part) * std::pow(10, exp);
     }
 
-    std::string VM::readString(uint2B_t strSize)
+    std::string VM::readString()
     {
-        std::string work = "";
-        ++m_ip;
-        for (uint2B_t j=m_ip; m_ip - j < strSize; ++m_ip)
-            { work += readByte(m_ip); }
-        --m_ip;
-        return work;
+        uint2B_t strSize = read2BytesInt();
+        if (strSize > 0)
+        {
+            std::string work = "";
+            ++m_ip;
+            for (uint2B_t j=m_ip; m_ip - j < strSize; ++m_ip)
+                { work += readByte(m_ip); }
+            --m_ip;
+            return work;
+        }
+        else
+            { throw std::logic_error("Invalid size given when trying to read a string"); }
     }
 
     bool VM::readBool()
@@ -93,15 +104,6 @@ namespace kafe
             { return m_segments[segmentName]; }
         else
             { throw std::runtime_error("Can not get the position of an undefined segment"); }
-    }
-
-    std::string VM::getSegmentName()
-    {
-        uint2B_t str_size = read2BytesInt();
-        if (str_size > 0)
-            { return readString(str_size); }
-        else
-            { throw std::logic_error("Invalid size given for the segment name to fetch"); }
     }
 
     void VM::goToSegmentPosition(const std::string& segmentName)
@@ -225,14 +227,8 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG)  std::cerr << "str" << std::endl;
 
-                uint2B_t str_size = read2BytesInt();
-                if (str_size > 0)
-                {
-                    Value a(ValueType::String, readString(str_size));
-                    push(a);
-                }
-                else
-                    { throw std::logic_error("Invalid size given for the string to store"); }
+                Value a(ValueType::String, readString());
+                push(a);
 
                 break;
             }
@@ -251,14 +247,8 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "addr" << std::endl;
 
-                uint2B_t str_size = read2BytesInt();
-                if (str_size > 0)
-                {
-                    Value a(ValueType::Addr, getSegmentAddr(readString(str_size)));
-                    push(a);
-                }
-                else
-                    { throw std::logic_error("Invalid size given for the segment name to take the address"); }
+                Value a(ValueType::Addr, getSegmentAddr(readString()));
+                push(a);
 
                 break;
             }
@@ -267,7 +257,7 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "list" << std::endl;
 
-                std::size_t nb_elements = read4BytesInt();
+                uint4B_t nb_elements = read4BytesInt();
                 Value c(ValueType::List);
                 while (nb_elements != 0)
                 {
@@ -282,14 +272,8 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "var" << std::endl;
 
-                uint2B_t str_size = read2BytesInt();
-                if (str_size > 0)
-                {
-                    Value a(ValueType::Var, readString(str_size));
-                    push(a);
-                }
-                else
-                    { throw std::logic_error("Invalid size given for the variable name to store"); }
+                Value a(ValueType::Var, readString());
+                push(a);
 
                 break;
             }
@@ -308,17 +292,11 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "delete variable" << std::endl;
 
-                uint2B_t str_size = read2BytesInt();
-                if (str_size > 0)
-                {
-                    std::string var_name = readString(str_size);
-                    if (m_variables.find(var_name) != m_variables.end())
-                        { m_variables.erase(m_variables.find(var_name)); }
-                    else
-                        { throw std::logic_error("Can not delete a non-existing variable"); }
-                }
+                std::string var_name = readString();
+                if (m_variables.find(var_name) != m_variables.end())
+                    { m_variables.erase(m_variables.find(var_name)); }
                 else
-                    { throw std::logic_error("Invalid size for the variable name to delete"); }
+                    { throw std::logic_error("Can not delete a non-existing variable"); }
 
                 break;
             }
@@ -333,49 +311,43 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure" << std::endl;
 
-                uint2B_t str_size = read2BytesInt();
-                if (str_size > 0)
+                Value a(ValueType::Struct);
+                // getting the structure name
+                std::string struct_name = readString();
+                // to take the default data in it and fill the new object with those
+                if (m_struct_definitions.find(struct_name) != m_struct_definitions.end())
                 {
-                    Value a(ValueType::Struct);
-                    // getting the structure name
-                    std::string struct_name = readString(str_size);
-                    // to take the default data in it and fill the new object with those
-                    if (m_struct_definitions.find(struct_name) != m_struct_definitions.end())
+                    // init the newly created structure from its "parent"
+                    a.set<Structure>(m_struct_definitions[struct_name]);
+                    // push the given arguments
+                    uint2B_t nb_args = read2BytesInt();
+                    for (uint2B_t j=0; j < nb_args; ++j)
                     {
-                        // init the newly created structure from its "parent"
-                        a.set<Structure>(m_struct_definitions[struct_name]);
-                        // push the given arguments
-                        uint2B_t nb_args = read2BytesInt();
-                        for (uint2B_t j=0; j < nb_args; ++j)
-                        {
-                            Value name = pop();
-                            Value val = pop();
+                        Value name = pop();
+                        Value val = pop();
 
-                            // we check that the given "name" is a valid variable name
-                            if (name.type == ValueType::Var)
+                        // we check that the given "name" is a valid variable name
+                        if (name.type == ValueType::Var)
+                        {
+                            // and we perform some type checking
+                            StructElem* pse = a.getRef<Structure>().findMember(name.get<std::string>());
+                            if (pse != nullptr)
                             {
-                                // and we perform some type checking
-                                StructElem* pse = a.getRef<Structure>().findMember(name.get<std::string>());
-                                if (pse != nullptr)
-                                {
-                                    if (pse->val.type == val.type)
-                                        { a.getRef<Structure>().add(name.get<std::string>(), val); }
-                                    else
-                                        { throw std::logic_error("Type error while trying to set an argument of a structure"); }
-                                }
+                                if (pse->val.type == val.type)
+                                    { a.getRef<Structure>().add(name.get<std::string>(), val); }
                                 else
-                                    { throw std::runtime_error("Can not set a non-member of a structure using a structure declaration"); }
+                                    { throw std::logic_error("Type error while trying to set an argument of a structure"); }
                             }
                             else
-                                { throw std::logic_error("The name of the member to set in the given structure isn't a string"); }
+                                { throw std::runtime_error("Can not set a non-member of a structure using a structure declaration"); }
                         }
+                        else
+                            { throw std::logic_error("The name of the member to set in the given structure isn't a string"); }
                     }
-                    else
-                        { throw std::runtime_error("Can not use an undefined structure"); }
-                    push(a);
                 }
                 else
-                    { throw std::logic_error("Invalid size given for the structure name to store"); }
+                    { throw std::runtime_error("Can not use an undefined structure"); }
+                push(a);
 
                 break;
             }
@@ -384,25 +356,20 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "declare structure" << std::endl;
 
-                uint2B_t str_size = read2BytesInt();
-                if (str_size > 0)
+                std::string name = readString();
+                uint2B_t pairs_nb = read2BytesInt();
+                m_struct_definitions[name] = Structure();
+                for (uint2B_t j=0; j < pairs_nb; ++j)
                 {
-                    std::string name = readString(str_size);
-                    uint2B_t pairs_nb = read2BytesInt();
-                    m_struct_definitions[name] = Structure();
-                    for (uint2B_t j=0; j < pairs_nb; ++j)
-                    {
-                        Value name = pop();
-                        Value val = pop();
+                    Value name = pop();
+                    Value val = pop();
 
-                        if (name.type == ValueType::Var)
-                            { m_struct_definitions[name.get<std::string>()].add(name.get<std::string>(), val); }
-                        else
-                            { throw std::logic_error("Expecting a variable when declaring a structure's member"); }
-                    }
+                    if (name.type == ValueType::Var)
+                        { m_struct_definitions[name.get<std::string>()].add(name.get<std::string>(), val); }
+                    else
+                        { throw std::logic_error("Expecting a variable when declaring a structure's member"); }
                 }
-                else
-                    { throw std::logic_error("Invalid size given for the structure name to store"); }
+
                 break;
             }
 
@@ -410,30 +377,18 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure get member" << std::endl;
 
-                uint2B_t str_size = read2BytesInt();
-                if (str_size > 0)
+                std::string name = readString();
+                if (m_variables.find(name) != m_variables.end())
                 {
-                    std::string name = readString(str_size);
-                    if (m_variables.find(name) != m_variables.end())
-                    {
-                        uint2B_t member_sz = read2BytesInt();
-                        if (member_sz > 0)
-                        {
-                            std::string member = readString(member_sz);
-                            StructElem* pse = m_variables[name].getRef<Structure>().findMember(member);
-                            if (pse != nullptr)
-                                { push(pse->val); }
-                            else
-                                { throw std::runtime_error("Can not get a non-existing member of a structure"); }
-                        }
-                        else
-                            { throw std::logic_error("Invalid size given for the member name to get"); }
-                    }
+                    std::string member = readString();
+                    StructElem* pse = m_variables[name].getRef<Structure>().findMember(member);
+                    if (pse != nullptr)
+                        { push(pse->val); }
                     else
-                        { throw std::logic_error("Can not get a member of a non-existing structure"); }
+                        { throw std::runtime_error("Can not get a non-existing member of a structure"); }
                 }
                 else
-                    { throw std::logic_error("Invalid size for the structure name (getm)"); }
+                    { throw std::logic_error("Can not get a member of a non-existing structure"); }
 
                 break;
             }
@@ -442,26 +397,14 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure set member" << std::endl;
 
-                uint2B_t str_size = read2BytesInt();
-                if (str_size > 0)
+                std::string name = readString();
+                if (m_variables.find(name) != m_variables.end())
                 {
-                    std::string name = readString(str_size);
-                    if (m_variables.find(name) != m_variables.end())
-                    {
-                        uint2B_t member_sz = read2BytesInt();
-                        if (member_sz > 0)
-                        {
-                            std::string member = readString(member_sz);
-                            m_variables[name].getRef<Structure>().set(member, pop());
-                        }
-                        else
-                            { throw std::logic_error("Invalid size given for the member name to get"); }
-                    }
-                    else
-                        { throw std::logic_error("Can not set a member of a non-existing structure"); }
+                    std::string member = readString();
+                    m_variables[name].getRef<Structure>().set(member, pop());
                 }
                 else
-                    { throw std::logic_error("Invalid size for the structure name (setm)"); }
+                    { throw std::logic_error("Can not set a member of a non-existing structure"); }
 
                 break;
             }
@@ -470,29 +413,17 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure has member" << std::endl;
 
-                uint2B_t str_size = read2BytesInt();
-                if (str_size > 0)
+                std::string name = readString();
+                if (m_variables.find(name) != m_variables.end())
                 {
-                    std::string name = readString(str_size);
-                    if (m_variables.find(name) != m_variables.end())
-                    {
-                        uint2B_t member_sz = read2BytesInt();
-                        if (member_sz > 0)
-                        {
-                            std::string member = readString(member_sz);
-                            if (m_variables[name].getRef<Structure>().findMember(member) != nullptr)
-                                { push(Value(ValueType::Bool, true)); }
-                            else
-                                { push(Value(ValueType::Bool, false)); }
-                        }
-                        else
-                            { throw std::logic_error("Invalid size given for the member name to get"); }
-                    }
+                    std::string member = readString();
+                    if (m_variables[name].getRef<Structure>().findMember(member) != nullptr)
+                        { push(Value(ValueType::Bool, true)); }
                     else
-                        { throw std::logic_error("Can not get a member of a non-existing structure"); }
+                        { push(Value(ValueType::Bool, false)); }
                 }
                 else
-                    { throw std::logic_error("Invalid size for the structure name (hasm)"); }
+                    { throw std::logic_error("Can not get a member of a non-existing structure"); }
 
                 break;
             }
@@ -508,18 +439,11 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "segment" << std::endl;
 
                 // we read the size of the name of the segment
-                uint2B_t str_size = read2BytesInt();
-                std::string seg_name;
-                if (str_size > 0)
-                    { seg_name = readString(str_size); }
-                else
-                    { throw std::logic_error("Invalid size for the segment name"); }
-
+                std::string seg_name = readString();
                 // we try to add the segment position to the "segment register" if it wasn't registered before
                 // (using a INST_DECL_SEG for example)
                 if (m_segments.find(seg_name) == m_segments.end())
                     { m_segments[seg_name] = m_ip; }
-
                 // we get the size of the segment and jump to the end of it, we don't want to execute it, it wasn't called,
                 // only defined
                 uint2B_t seg_size = read2BytesInt();
@@ -536,13 +460,7 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "declare segment" << std::endl;
 
                 // we get the size of the name of the segment and read this name
-                uint2B_t str_size = read2BytesInt();
-                std::string seg_name;
-                if (str_size > 0)
-                    { seg_name = readString(str_size); }
-                else
-                    { throw std::logic_error("Invalid size for the segment name"); }
-
+                std::string seg_name = readString();
                 // and we read its position in the m_bytecode
                 m_segments[seg_name] = read2BytesInt();
 
@@ -569,18 +487,12 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "push var" << std::endl;
 
                 // we read the size of the var name and read it
-                uint2B_t str_size = read2BytesInt();
-                if (str_size > 0)
-                {
-                    std::string v = readString(str_size);
-                    // if the variable can be found, push it on the stack
-                    if (m_variables.find(v) != m_variables.end())
-                        { push(m_variables[v]); }
-                    else
-                        { throw std::runtime_error("Can not push an undefined variable onto the stack"); }
-                }
+                std::string v = readString();
+                // if the variable can be found, push it on the stack
+                if (m_variables.find(v) != m_variables.end())
+                    { push(m_variables[v]); }
                 else
-                    { throw std::logic_error("Invalid size given for the variable name to fetch"); }
+                    { throw std::runtime_error("Can not push an undefined variable onto the stack"); }
 
                 break;
             }
