@@ -4,9 +4,11 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <cstdint>
 #include <exception>
 #include <stdexcept>
 
+#include "../types.hpp"
 #include "../libs/variant.hpp"
 
 namespace kafe
@@ -35,23 +37,22 @@ namespace kafe
 
     struct Structure
     {
-        static std::size_t ID;
+        static uint8B_t ID;
 
         // name of the variable : default value
         std::vector<StructElem> members;
         // in order to be able to identify a structure
         // each structure has the same struct_id as its base structure
-        int struct_id;
+        uint8B_t struct_id;
 
         Structure() :
             struct_id(Structure::ID++)
         {}
 
-        Structure(const Structure& other)
-        {
-            members = other.members;
-            struct_id = other.struct_id;
-        }
+        Structure(const Structure& other) :
+            members(other.members)
+            , struct_id(other.struct_id)
+        {}
 
         void add(std::string name, Value val);
         void set(const std::string& name, Value val);
@@ -67,25 +68,23 @@ namespace kafe
     struct Value
     {
         typedef std::vector<Value> list_t;
-        typedef unsigned int addr_t;
 
         ValueType type;
-        mpark::variant<long, double, bool, std::string,
-                       list_t, Structure, addr_t> value;
+        mpark::variant<int8B_t, double, bool, std::string, list_t, Structure, addr_t> value;
 
-        Value() {}
-        Value(ValueType t) : type(t) {}
-        Value(ValueType t, long i)   : type(t) { mpark::get<long>(value) = i; }
-        Value(ValueType t, double d) : type(t) { mpark::get<double>(value) = d; }
-        Value(ValueType t, bool b)   : type(t), value(b) {}
-        Value(ValueType t, const std::string& s) : type(t), value(s) {}
-        Value(ValueType t, list_t l) : type(t), value(l) {}
-        Value(ValueType t, Structure st) : type(t), value(st) {}
-        Value(ValueType t, addr_t u) : type(t) { mpark::get<addr_t>(value) = u; }
+        Value()                                                       {}
+        Value(ValueType t)                       : type(t)            {}
+        Value(ValueType t, int8B_t i)            : type(t)            { mpark::get<int8B_t>(value) = i; }
+        Value(ValueType t, double d)             : type(t)            { mpark::get<double>(value) = d; }
+        Value(ValueType t, bool b)               : type(t), value(b)  {}
+        Value(ValueType t, const std::string& s) : type(t), value(s)  {}
+        Value(ValueType t, list_t l)             : type(t), value(l)  {}
+        Value(ValueType t, Structure st)         : type(t), value(st) {}
+        Value(ValueType t, addr_t u)             : type(t)            { mpark::get<addr_t>(value) = u; }
 
-        template <typename T> T get() const { return mpark::get<T>(value); }
-        template <typename T> T& getRef() { return mpark::get<T>(value); }
-        template <typename T> void set(T val) { mpark::get<T>(value) = val; }
+        template <typename T> T    get() const { return mpark::get<T>(value); }
+        template <typename T> T&   getRef()    { return mpark::get<T>(value); }
+        template <typename T> void set(T val)  { mpark::get<T>(value) = val; }
 
         bool operator==(const Value& other) const
         {
@@ -95,15 +94,15 @@ namespace kafe
         bool operator<(const Value& other) const
         {
             return (other.type == type) &&
-                   ((other.type == ValueType::Int) ? (other.get<long>() >= get<long>()) : true) &&
-                   ((other.type == ValueType::Double) ? (other.get<double>() >= get<double>()) : true) &&
-                   ((other.type == ValueType::Bool) ? (other.get<bool>() == true && get<bool>() == false) : true) &&
+                   ((other.type == ValueType::Int)    ? (other.get<int8B_t>() >= get<int8B_t>())                       : true) &&
+                   ((other.type == ValueType::Double) ? (other.get<double>() >= get<double>())                         : true) &&
+                   ((other.type == ValueType::Bool)   ? (other.get<bool>() == true && get<bool>() == false)            : true) &&
                    ((other.type == ValueType::String) ? (other.get<std::string>().size() >= get<std::string>().size()) : true) &&
-                   ((other.type == ValueType::List) ? (other.get<list_t>().size() >= get<list_t>().size()) : true) &&
-                   ((other.type == ValueType::Var) ? (other.get<std::string>().size() >= get<std::string>().size()) : true) &&
+                   ((other.type == ValueType::List)   ? (other.get<list_t>().size() >= get<list_t>().size())           : true) &&
+                   ((other.type == ValueType::Var)    ? (other.get<std::string>().size() >= get<std::string>().size()) : true) &&
                    // we can not compare structures nor addresses
                    ((other.type == ValueType::Struct) ? false : true) &&
-                   ((other.type == ValueType::Addr) ? false : true);
+                   ((other.type == ValueType::Addr)   ? false : true);
         }
 
         template <typename T>
@@ -115,7 +114,7 @@ namespace kafe
     bool operator!=(const Value& a, const Value& b);
     bool operator>=(const Value& a, const Value& b);
     bool operator<=(const Value& a, const Value& b);
-    bool operator>(const Value& a, const Value& b);
+    bool operator> (const Value& a, const Value& b);
 
     // custom type to create stacks and avoid to much verbosity
     typedef std::vector<Value> ValueStack_t;
@@ -135,7 +134,7 @@ namespace kafe
         struct Pair
         {
             std::size_t cnt;
-            std::size_t pos;
+            addr_t pos;
         };
 
         std::string segmentName;

@@ -21,45 +21,46 @@ namespace kafe
     class VM
     {
     private:
-        std::size_t m_stack_size;
-        std::size_t m_ip;
+        addr_t m_stack_size;
+        addr_t m_ip;
         ValueStack_t m_stack;
         // variable name => Value
         std::map<std::string, Value> m_variables;
         // just keeping the position of the segments
-        std::map<std::string, std::size_t> m_segments;
+        std::map<std::string, addr_t> m_segments;
         // keeping track of the segments' calls
         std::vector<Call> m_call_stack;
         // keeping the signatures of the declared structures
         // name of the struct : object Structure (.elements => name of the var : default value)
         std::map<std::string, Structure> m_struct_definitions;
-
-        bytecode_t m_loaded_bytecode;
-        bool m_has_loaded_bytecode;
-
+        // keeping the loaded bytecode into the VM to use easily without passing it around
+        bytecode_t m_bytecode;
         int m_debug_mode;
-        bool m_debug;
 
-        void push(Value value);
+        void  push(Value value);
         Value pop();
-        void clear();
+        void  clear();
+        // about types
+        inst_t      readByte     (addr_t i);
+        uint8B_t    readXBytesInt(unsigned char bytesCount=2);
+        int2B_t     read2BytesInt();
+        int4B_t     read4BytesInt();
+        int8B_t     read8BytesInt();
+        double      readDouble   ();
+        std::string readString   (uint2B_t strSize);
+        bool        readBool     ();
+        // about segments and jumps
+        addr_t      getSegmentAddr     (const std::string& segmentName);
+        std::string getSegmentName     ();
+        void        goToSegmentPosition(const std::string& segmentName);
+        void        pushCallStack      (const std::string& segmentName, addr_t lastPos);
+        std::string performJump        ();
+        void        retFromSegment     ();
 
-        inst_t getByte(bytecode_t& bytecode, std::size_t i);
-        long long getXBytesInt(bytecode_t& bytecode, unsigned bytesCount=2);
-        int get2BytesInt(bytecode_t& bytecode);
-        long get4BytesInt(bytecode_t& bytecode);
-        double readDouble(bytecode_t& byteocde);
-        std::string readString(bytecode_t& bytecode, std::size_t strSize);
-        bool readBool(bytecode_t& bytecode);
-
-        std::size_t getSegmentAddr(const std::string& segmentName);
-        std::string getSegmentName(bytecode_t& bytecode);
-        void goToSegmentPosition(const std::string& segmentName);
-        void pushCallStack(const std::string& segmentName, std::size_t lastPos);
-        std::string performJump(bytecode_t& bytecode);
-        void retFromSegment(bytecode_t& bytecode);
-
-        void builtins(bytecode_t& bytecode);
+        void exec_handleDataTypesDecl(inst_t instruction);
+        void exec_handleStructures   (inst_t instruction);
+        void exec_handleSegments     (inst_t instruction);
+        void exec_handleBuiltins     ();
 
     public:
         VM();
@@ -71,12 +72,12 @@ namespace kafe
 
         bytecode_t readFile(const std::string& filePath);
 
-        int execFromFile(const std::string& filePath);
-        int exec(bytecode_t bytecode);
-        void setMode(int mode);
-        void load(bytecode_t bytecode);
-        int exec();
-        void callSegment(const std::string& seg_name);
+        int  execFromFile(const std::string& filePath);
+        int  exec        (bytecode_t bytecode);
+        void setMode     (int mode);
+        void load        (bytecode_t bytecode);
+        int  exec        ();
+        int  callSegment (const std::string& seg_name);
 
         template <typename T> void push(T value)
         {

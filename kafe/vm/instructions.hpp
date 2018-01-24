@@ -24,8 +24,7 @@ namespace kafe
         INST_STRUCT_GETM = 0x0b,  // 0x0b [struct name size on 2 bytes] [name] [member name on 2 bytes] [name] ; push the value of the member (if it exists) onto the stack
         INST_STRUCT_SETM = 0x0c,  // 0x0c [struct name size on 2 bytes] [name] [member name on 2 bytes] [name] ; takes the last value on the stack and put it into the member (if it exists or not)
         INST_STRUCT_HASM = 0x0d,  // 0x0d [struct name size on 2 bytes] [name] [member name on 2 bytes] [name] ; check if the struct has a member "name" : push true or false
-
-        INST_DEL_VAR     = 0x0f,  // 0x0f [var name size on 2 bytes] [name]
+        INST_DEL_VAR     = 0x0e,  // 0x0e [var name size on 2 bytes] [name]
 
         // segments and blocs
         INST_SEGMENT     = 0x10,  // 0x10 [segment name size on 2 bytes] [name] [size (from the next byte after this 2, to the INST_RET included) on 2 bytes]
@@ -34,8 +33,8 @@ namespace kafe
         INST_LOAD_VAR    = 0x13,  // 0x13 [var name size on 2 bytes] [name] ; push its value on the stack
         INST_DUP         = 0x14,  // 0x14 ; duplicate the value at stack[-1]
         INST_JUMP        = 0x15,  // 0x15 [segment name size on 2 bytes] [name]
-        INST_JUMP_IF     = 0x16,  // 0x16 [size of the segment name on 2 bytes] [name] ; jump if stack[-1] compares to true
-        INST_JUMP_IFN    = 0x17,  // 0x17 [size of the segment name on 2 bytes] [name] ; jump if stack[-1] compares to false
+        INST_JUMP_IF     = 0x16,  // 0x16 [segment name size on 2 bytes] [name] ; jump if stack[-1] compares to true
+        INST_JUMP_IFN    = 0x17,  // 0x17 [segment name size on 2 bytes] [name] ; jump if stack[-1] compares to false
         INST_RET         = 0x18,  // 0x18 ; return from a segment
 
         // built-in procedures around numbers and booleans

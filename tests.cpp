@@ -30,31 +30,31 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
     kafe::VM vm;
     vm.setMode(debug_mode);
 
-    std::cout << "[ " << test_name << " ]" << std::endl << std::endl;
+    std::cerr << "[ " << test_name << " ]" << std::endl << std::endl;
 
-    std::cout << " pos  | code " << std::endl
+    std::cerr << " pos  | code " << std::endl
               << "------|------" << std::endl;
     for (std::size_t i=0; i < bytecode.size(); ++i)
-        std::cout << format((unsigned) i, 4) << "  |  "
+        std::cerr << format((unsigned) i, 4) << "  |  "
                   << format((unsigned) bytecode[i], 4) << std::endl;
-    std::cout << std::endl;
+    std::cerr << std::endl;
 
-    std::cout << "Calling order" << std::endl
+    std::cerr << "Calling order" << std::endl
               << "-------------" << std::endl;
     vm.load(bytecode);
     vm.exec();
-    std::cout << std::endl << std::endl
+    std::cerr << std::endl << std::endl
               << "Stack"   << std::endl
               << "-------------" << std::endl
               << "Size : " << vm.getStack().size()
               << std::endl << std::endl;
 
-    for (std::size_t _i=vm.getStack().size(); _i > 0; --_i)
+    for (std::size_t j=vm.getStack().size(); j > 0; --j)
     {
-        int i = _i - 1;
-        std::cout << "[" << i << "] " << kafe::convertTypeToString(vm.getStack()[i].type) << " " << vm.getStack()[i] << std::endl;
+        int i = j - 1;
+        std::cerr << "[" << i << "] " << kafe::convertTypeToString(vm.getStack()[i].type) << " " << vm.getStack()[i] << std::endl;
     }
-    std::cout << std::endl << "=================================" << std::endl << std::endl;
+    std::cerr << std::endl << "=================================" << std::endl << std::endl;
 
     vm.saveBytecode("examples/bytecode/" + filename);
 }
@@ -83,15 +83,17 @@ int start_tests(int debug_mode)
     };
     TEST_VM("var = 1; push(var); push(9); add", bytecode2, debug_mode);
 
-    // jump to the beginning ... until the world burns out in flame
-    /*
-    kafe::bytecode_t bytecode3[] = {
-        kafe::INST_SEGMENT, 0x00, 0x05, 'l', 'a', 'b', 'e', 'l',
-        kafe::INST_JUMP, 0x00, 0x05, 'l', 'a', 'b', 'e', 'l',
+    // jumps
+    kafe::bytecode_t bytecode3 = {
+        kafe::INST_BOOL, 0x01,
+        kafe::INST_SEGMENT, 0x00, 0x05, 'l', 'a', 'b', 'e', 'l', 0x00, 0x03,
+            kafe::INST_BOOL, 0x00,
+            kafe::INST_RET,
+        kafe::INST_JUMP_IF, 0x00, 0x05, 'l', 'a', 'b', 'e', 'l',
+        kafe::INST_JUMP_IFN, 0x00, 0x05, 'l', 'a', 'b', 'e', 'l',
         0x00
     };
-    TEST_VM("jump to `label` until the world burns", bytecode3, debug_mode);
-    */
+    TEST_VM("jump if true to label [push false], jump if false to label [push false]", bytecode3, debug_mode);
 
     kafe::bytecode_t bytecode4 = {
         kafe::INST_DECL_SEG, 0x00, 0x03, 'v', 'a', 'r', 0x00, 0x17, // len:8
