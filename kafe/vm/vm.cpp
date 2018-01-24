@@ -38,6 +38,31 @@ namespace kafe
         m_segments.clear();
     }
 
+    bool VM::findVar(const std::string& varName)
+    {
+        if (m_call_stack.size() == 0)
+            { return m_variables.find(varName) != m_variables.end(); }
+        else
+        {
+            std::size_t cs_last_pos = m_call_stack.size() - 1;
+            return m_call_stack[cs_last_pos].vars.find(varName) != m_call_stack[cs_last_pos].vars.end()
+                   || m_variables.find(varName) != m_variables.end();
+        }
+    }
+
+    Value VM::getVar(const std::string& varName)
+    {
+        if (m_call_stack.size() == 0)
+            { return m_variables[varName]; }
+        else
+        {
+            if (m_variables.find(varName) != m_variables.end())
+                { return m_variables[varName]; }
+            std::size_t cs_last_pos = m_call_stack.size() - 1;
+            return m_call_stack[cs_last_pos].vars[varName];
+        }
+    }
+
     inst_t VM::readByte(addr_t i)
     {
         if (i < m_bytecode.size())

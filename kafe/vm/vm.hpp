@@ -41,6 +41,8 @@ namespace kafe
         void  push(Value value);
         Value pop();
         void  clear();
+        bool  findVar(const std::string& varName);
+        Value getVar(const std::string& varName);
         // about types
         inst_t      readByte     (addr_t i);
         uint8B_t    readXBytesInt(unsigned char bytesCount=2);
