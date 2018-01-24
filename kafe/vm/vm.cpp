@@ -147,7 +147,7 @@ namespace kafe
     std::string VM::performJump()
     {
         // read segment name
-        std::string seg_name = getSegmentName();
+        std::string seg_name = readString();
         // keep the last value of the instruction pointer, we'll need it
         addr_t last_pos = m_ip;
         // jump to the segment
@@ -440,13 +440,12 @@ namespace kafe
 
                 // we read the size of the name of the segment
                 std::string seg_name = readString();
-                // we try to add the segment position to the "segment register" if it wasn't registered before
-                // (using a INST_DECL_SEG for example)
-                if (m_segments.find(seg_name) == m_segments.end())
-                    { m_segments[seg_name] = m_ip; }
                 // we get the size of the segment and jump to the end of it, we don't want to execute it, it wasn't called,
                 // only defined
                 uint2B_t seg_size = read2BytesInt();
+                // we try to add the segment position to the "segment register" if it wasn't registered before
+                if (m_segments.find(seg_name) == m_segments.end())
+                    { m_segments[seg_name] = m_ip + 1; }  // +1 because we want the next byte, not the current one
                 if (seg_size > 0 && m_ip + seg_size < m_bytecode.size())
                     { m_ip += seg_size; }
                 else

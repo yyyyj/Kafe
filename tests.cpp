@@ -103,7 +103,7 @@ int start_tests(int debug_mode)
         kafe::INST_SEGMENT, 0x00, 0x03, 'v', 'a', 'r', 0x00, 0x0a,  // len:8 => 23
             kafe::INST_LOAD_VAR, 0x00, 0x01, 'a',                   // len:4 => 27
             kafe::INST_BOOL, 0x01,                                  // len:2 => 29
-            kafe::INST_PROCEDURE, 0, kafe::INST_NE,                 // len:3 => 32
+            kafe::INST_PROCEDURE, 0x0, kafe::INST_NE,               // len:3 => 32
             kafe::INST_RET,                                         // len:1 => 33
         kafe::INST_JUMP, 0x00, 0x03, 'v', 'a', 'r',                 // len:6 => 39
         0x00                                                        // len:1 => 40
@@ -119,7 +119,7 @@ int start_tests(int debug_mode)
     TEST_VM("testing segments, jump and ret", bytecode4, debug_mode);
 
     kafe::bytecode_t bytecode5 = {
-        kafe::INST_INT_2B, 0b11111111, 0b11111111,
+        kafe::INST_INT_2B, 0b10000000, 0b00000000,
         kafe::INST_VAR, 0x00, 0x01, 'h',
         kafe::INST_STORE_VAR,
         kafe::INST_LOAD_VAR, 0x00, 0x01, 'h',
