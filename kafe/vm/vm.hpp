@@ -6,12 +6,12 @@
 #include "../utils.hpp"
 #include "value.hpp"
 
-#include <map>
 #include <string>
 #include <vector>
 #include <fstream>
 #include <exception>
 #include <stdexcept>
+#include <unordered_map>
 
 #define EXP_DOUBLE_LIMIT 0b0100110100
 #define EXP_DOUBLE_SIGN  0b1000000000
@@ -26,14 +26,14 @@ namespace kafe
         addr_t m_ip;
         ValueStack_t m_stack;
         // variable name => Value
-        std::map<std::string, Value> m_variables;
+        std::unordered_map<std::string, Value> m_variables;
         // just keeping the position of the segments
-        std::map<std::string, addr_t> m_segments;
+        std::unordered_map<std::string, addr_t> m_segments;
         // keeping track of the segments' calls
         std::vector<Call> m_call_stack;
         // keeping the signatures of the declared structures
         // name of the struct : object Structure (.elements => name of the var : default value)
-        std::map<std::string, Structure> m_struct_definitions;
+        std::unordered_map<std::string, Structure> m_struct_definitions;
         // keeping the loaded bytecode into the VM to use easily without passing it around
         bytecode_t m_bytecode;
         int m_debug_mode;

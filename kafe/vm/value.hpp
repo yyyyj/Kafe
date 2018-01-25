@@ -1,12 +1,12 @@
 #ifndef kafe_value
 #define kafe_value
 
-#include <map>
 #include <string>
 #include <vector>
 #include <cstdint>
 #include <exception>
 #include <stdexcept>
+#include <unordered_map>
 
 #include "../types.hpp"
 #include "../libs/variant.hpp"
@@ -142,7 +142,7 @@ namespace kafe
         // in order to be able to go back
         std::vector<Pair> lastPositions;
         // internal variables stack
-        std::map<std::string, Value> vars;
+        std::unordered_map<std::string, Value> vars;
     };
 
 }  // namespace kafe
