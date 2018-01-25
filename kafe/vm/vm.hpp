@@ -38,11 +38,14 @@ namespace kafe
         bytecode_t m_bytecode;
         int m_debug_mode;
 
-        void  push(Value value);
-        Value pop();
-        void  clear();
-        bool  findVar(const std::string& varName);
-        Value getVar(const std::string& varName);
+        void   push      (Value value);
+        Value  pop       ();
+        void   clear     ();
+        bool   findVar   (const std::string& varName);
+        Value  getVar    (const std::string& varName);
+        Value& getRefVar (const std::string& name);
+        void   setVar    (const std::string& varName, Value v);
+        void   delVar    (const std::string& varName);
         // about types
         inst_t      readByte     (addr_t i);
         uint8B_t    readXBytesInt(unsigned char bytesCount=2);

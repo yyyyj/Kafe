@@ -63,6 +63,46 @@ namespace kafe
         }
     }
 
+    Value& VM::getRefVar(const std::string& varName)
+    {
+        if (m_call_stack.size() == 0)
+            { return m_variables[varName]; }
+        else
+        {
+            if (m_variables.find(varName) != m_variables.end())
+                { return m_variables[varName]; }
+            std::size_t cs_last_pos = m_call_stack.size() - 1;
+            return m_call_stack[cs_last_pos].vars[varName];
+        }
+
+    }
+
+    void VM::setVar(const std::string& varName, Value v)
+    {
+        if (m_call_stack.size() == 0)
+            { m_variables[varName] = v; }
+        else
+        {
+            if (m_variables.find(varName) != m_variables.end())
+                { m_variables[varName] = v; }
+            std::size_t cs_last_pos = m_call_stack.size() - 1;
+            m_call_stack[cs_last_pos].vars[varName] = v;
+        }
+    }
+
+    void VM::delVar(const std::string& varName)
+    {
+        if (m_call_stack.size() == 0)
+            { m_variables.erase(m_variables.find(varName)); }
+        else
+        {
+            if (m_variables.find(varName) != m_variables.end())
+                { m_variables.erase(m_variables.find(varName)); }
+            std::size_t cs_last_pos = m_call_stack.size() - 1;
+            m_call_stack[cs_last_pos].vars.erase(m_call_stack[cs_last_pos].vars.find(varName));
+        }
+    }
+
     inst_t VM::readByte(addr_t i)
     {
         if (i < m_bytecode.size())
@@ -317,9 +357,9 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "delete variable" << std::endl;
 
-                std::string var_name = readString();
-                if (m_variables.find(var_name) != m_variables.end())
-                    { m_variables.erase(m_variables.find(var_name)); }
+                std::string name = readString();
+                if (findVar(name))
+                    { delVar(name); }
                 else
                     { throw std::logic_error("Can not delete a non-existing variable"); }
 
@@ -403,10 +443,10 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure get member" << std::endl;
 
                 std::string name = readString();
-                if (m_variables.find(name) != m_variables.end())
+                if (findVar(name))
                 {
                     std::string member = readString();
-                    StructElem* pse = m_variables[name].getRef<Structure>().findMember(member);
+                    StructElem* pse = getRefVar(name).getRef<Structure>().findMember(member);
                     if (pse != nullptr)
                         { push(pse->val); }
                     else
@@ -423,10 +463,10 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure set member" << std::endl;
 
                 std::string name = readString();
-                if (m_variables.find(name) != m_variables.end())
+                if (findVar(name))
                 {
                     std::string member = readString();
-                    m_variables[name].getRef<Structure>().set(member, pop());
+                    getRefVar(name).getRef<Structure>().set(member, pop());
                 }
                 else
                     { throw std::logic_error("Can not set a member of a non-existing structure"); }
@@ -439,10 +479,10 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure has member" << std::endl;
 
                 std::string name = readString();
-                if (m_variables.find(name) != m_variables.end())
+                if (findVar(name))
                 {
                     std::string member = readString();
-                    if (m_variables[name].getRef<Structure>().findMember(member) != nullptr)
+                    if (getRefVar(name).getRef<Structure>().findMember(member) != nullptr)
                         { push(Value(ValueType::Bool, true)); }
                     else
                         { push(Value(ValueType::Bool, false)); }
@@ -486,7 +526,7 @@ namespace kafe
                 Value val = pop();
 
                 if (var_name.type == ValueType::Var)
-                    { m_variables[var_name.get<std::string>()] = val; }
+                    { setVar(var_name.get<std::string>(), val); }
                 else
                     { throw std::logic_error("Can not store a value into a non-variable"); }
 
@@ -500,8 +540,8 @@ namespace kafe
                 // we read the size of the var name and read it
                 std::string v = readString();
                 // if the variable can be found, push it on the stack
-                if (m_variables.find(v) != m_variables.end())
-                    { push(m_variables[v]); }
+                if (findVar(v))
+                    { push(getVar(v)); }
                 else
                     { throw std::runtime_error("Can not push an undefined variable onto the stack"); }
 
