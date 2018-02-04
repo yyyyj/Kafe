@@ -26,11 +26,9 @@ namespace kafe
         addr_t m_ip;
         ValueStack_t m_stack;
         // variable name => Value
-        std::unordered_map<std::string, Value> m_variables;
-        // just keeping the position of the segments
-        std::unordered_map<std::string, addr_t> m_segments;
+        VarStack_t m_variables;
         // keeping track of the segments' calls
-        std::vector<Call> m_call_stack;
+        CallStack_t m_call_stack;
         // keeping the signatures of the declared structures
         // name of the struct : object Structure (.elements => name of the var : default value)
         std::unordered_map<std::string, Structure> m_struct_definitions;
@@ -56,12 +54,9 @@ namespace kafe
         std::string readString   ();
         bool        readBool     ();
         // about segments and jumps
-        addr_t      getSegmentAddr     (const std::string& segmentName);
-        void        goToSegmentPosition(const std::string& segmentName);
-        void        pushCallStack      (const std::string& segmentName, addr_t lastPos);
-        std::string performJump        ();
-        void        retFromSegment     ();
-
+        void        performJump   (bool registerCall=true);
+        void        retFromSegment();
+        // execution stuff
         void exec_handleDataTypesDecl(inst_t instruction);
         void exec_handleStructures   (inst_t instruction);
         void exec_handleSegments     (inst_t instruction);
@@ -82,7 +77,6 @@ namespace kafe
         void setMode     (int mode);
         void load        (bytecode_t bytecode);
         int  exec        ();
-        int  callSegment (const std::string& seg_name);
 
         template <typename T> void push(T value)
         {
@@ -94,6 +88,7 @@ namespace kafe
         }
 
         ValueStack_t& getStack();
+        VarStack_t&   getVariables();
         void saveBytecode(const std::string& filename);
     };
 

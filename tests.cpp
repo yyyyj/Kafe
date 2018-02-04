@@ -36,7 +36,7 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
               << "------|------" << std::endl;
     for (std::size_t i=0; i < bytecode.size(); ++i)
         std::cerr << format((unsigned) i, 4) << "  |  "
-                  << format((unsigned) bytecode[i], 4) << std::endl;
+                  << kafe::abc::hexstr((unsigned) bytecode[i]) << std::endl;
     std::cerr << std::endl;
 
     std::cerr << "Calling order" << std::endl
@@ -54,6 +54,16 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
         int i = j - 1;
         std::cerr << "[" << i << "] " << kafe::convertTypeToString(vm.getStack()[i].type) << " " << vm.getStack()[i] << std::endl;
     }
+    std::cerr << std::endl   << std::endl
+              << "Variables" << std::endl
+              << "-------------" << std::endl
+              << "Size : " << vm.getVariables().size()
+              << std::endl << std::endl;
+    for (auto& element : vm.getVariables())
+    {
+        std::cerr << element.first << " = " << element.second << " (" << kafe::convertTypeToString(element.second.type) << ")" << std::endl;
+    }
+
     std::cerr << std::endl << "=================================" << std::endl << std::endl;
 
     vm.saveBytecode("examples/bytecode/" + filename);
@@ -64,7 +74,7 @@ int start_tests(int debug_mode)
     // int:18768, str:hello, bool:true
     kafe::bytecode_t bytecode1 = {
         kafe::INST_INT_2B, 0x49, 0x50,
-        kafe::INST_STR, 0x00, 0x05, 'h', 'e', 'l', 'l', 'o',
+        kafe::INST_STR, 'h', 'e', 'l', 'l', 'o', '\0',
         kafe::INST_BOOL, 'A',
         0x00
     };
@@ -74,54 +84,64 @@ int start_tests(int debug_mode)
     // then push the int 9 on the stack and perform an addition, push the result on the stack
     kafe::bytecode_t bytecode2 = {
         kafe::INST_INT_2B, 0x00, 0x01,
-        kafe::INST_VAR, 0x00, 0x03, 'v', 'a', 'r',
+        kafe::INST_VAR, 'v', 'a', 'r', '\0',
         kafe::INST_STORE_VAR,
-        kafe::INST_LOAD_VAR, 0x00, 0x03, 'v', 'a', 'r',
+        kafe::INST_LOAD_VAR, 'v', 'a', 'r', '\0',
         kafe::INST_INT_2B, 0x00, 0x09,
-        kafe::INST_PROCEDURE, 0, kafe::INST_ADD,
+        kafe::INST_PROCEDURE, ((kafe::INST_ADD & 0xff00) >> 8), (kafe::INST_ADD & 0x00ff),
         0x00
     };
     TEST_VM("var = 1; push(var); push(9); add", bytecode2, debug_mode);
 
     // jumps
     kafe::bytecode_t bytecode3 = {
+        kafe::INST_ADDR, 0x00, 0x00, 0x00, 0x0f,
         kafe::INST_BOOL, 0x01,
-        kafe::INST_SEGMENT, 0x00, 0x05, 'l', 'a', 'b', 'e', 'l', 0x00, 0x00, 0x00, 0x03,
+        kafe::INST_JUMP_IF,
+        kafe::INST_ADDR, 0x00, 0x00, 0x00, 0x0f,
+        kafe::INST_JUMP_IFN,
+
+        kafe::INST_HALT,
+
+        // segment, jumping back
             kafe::INST_BOOL, 0x00,
-            kafe::INST_RET,
-        kafe::INST_JUMP_IF, 0x00, 0x05, 'l', 'a', 'b', 'e', 'l',
-        kafe::INST_JUMP_IFN, 0x00, 0x05, 'l', 'a', 'b', 'e', 'l',
+            kafe::INST_ADDR, 0x00, 0x00, 0x00, 0x08,
+            kafe::INST_JUMP,
+
         0x00
     };
-    TEST_VM("jump if true to label [push false], jump if false to label [push false]", bytecode3, debug_mode);
+    TEST_VM("push true, jump if => 15, push false, jump => 7, jump if not, halt", bytecode3, debug_mode);
 
     kafe::bytecode_t bytecode4 = {
         kafe::INST_BOOL, 0x00,
-        kafe::INST_VAR, 0x00, 0x01, 'a',
+        kafe::INST_VAR, 'a', '\0',
         kafe::INST_STORE_VAR,
-        kafe::INST_SEGMENT, 0x00, 0x03, 'v', 'a', 'r', 0x00, 0x00, 0x00, 0x0a,
-            kafe::INST_LOAD_VAR, 0x00, 0x01, 'a',
+        kafe::INST_ADDR, 0x00, 0x00, 0x00, 0x0d,
+        kafe::INST_CALL,
+        kafe::INST_HALT,
+
+        // segment
+            kafe::INST_LOAD_VAR, 'a', '\0',
             kafe::INST_BOOL, 0x01,
-            kafe::INST_PROCEDURE, 0x0, kafe::INST_NE,
+            kafe::INST_PROCEDURE, ((kafe::INST_NE & 0xff00) >> 8), (kafe::INST_NE & 0x00ff),
             kafe::INST_RET,
-        kafe::INST_CALL, 0x00, 0x03, 'v', 'a', 'r',
+
         0x00
     };
     /* equivalent :
     dyn a : bool = false
-    fun var : void
-        true != a  # pushed onto the stack, BUT IT SHOULDN'T BE !
-        ret
+    fun var : bool
+        ret true != a
     end
-    var  # calling the function var
+    (var)  # calling the function var
     */
     TEST_VM("testing segments, jump and ret", bytecode4, debug_mode);
 
     kafe::bytecode_t bytecode5 = {
         kafe::INST_INT_2B, 0b10000000, 0b00000000,
-        kafe::INST_VAR, 0x00, 0x01, 'h',
+        kafe::INST_VAR, 'h', '\0',
         kafe::INST_STORE_VAR,
-        kafe::INST_LOAD_VAR, 0x00, 0x01, 'h',
+        kafe::INST_LOAD_VAR, 'h', '\0',
         kafe::INST_DUP,
         kafe::INST_INT_2B, 0b01111111, 0b11111111,
         0x00

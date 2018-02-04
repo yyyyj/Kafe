@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 #include "../types.hpp"
+#define MPARK_EXCEPTIONS
 #include "../libs/variant.hpp"
 
 namespace kafe
@@ -30,6 +31,12 @@ namespace kafe
     };
 
     std::string convertTypeToString(ValueType t);
+
+    struct Call
+    {
+        addr_t lastPos;
+        addr_t lastStackSize;
+    };
 
     // forward declaration for Structure
     struct StructElem;
@@ -70,17 +77,18 @@ namespace kafe
         typedef std::vector<Value> list_t;
 
         ValueType type;
-        mpark::variant<int8B_t, double, bool, std::string, list_t, Structure, addr_t> value;
+        mpark::variant<int8B_t, double, bool, std::string, list_t, Structure> value;
 
         Value()                                                       {}
         Value(ValueType t)                       : type(t)            {}
+        // the trick is that addr_t and int8B_t are the same types, we're doing this to avoid problems with mpark::variant
+        // because it's already using a size_t to know how many types are stored and it conflicts
         Value(ValueType t, int8B_t i)            : type(t)            { mpark::get<int8B_t>(value) = i; }
         Value(ValueType t, double d)             : type(t)            { mpark::get<double>(value) = d; }
         Value(ValueType t, bool b)               : type(t), value(b)  {}
         Value(ValueType t, const std::string& s) : type(t), value(s)  {}
         Value(ValueType t, list_t l)             : type(t), value(l)  {}
         Value(ValueType t, Structure st)         : type(t), value(st) {}
-        Value(ValueType t, addr_t u)             : type(t)            { mpark::get<addr_t>(value) = u; }
 
         template <typename T> T    get() const { return mpark::get<T>(value); }
         template <typename T> T&   getRef()    { return mpark::get<T>(value); }
@@ -118,6 +126,8 @@ namespace kafe
 
     // custom type to create stacks and avoid to much verbosity
     typedef std::vector<Value> ValueStack_t;
+    typedef std::unordered_map<std::string, Value> VarStack_t;
+    typedef std::vector<Call> CallStack_t;
 
     struct StructElem
     {
@@ -126,24 +136,6 @@ namespace kafe
     };
 
     std::ostream& operator<<(std::ostream& os, const Structure& st);
-
-    struct Call
-    {
-        // we'll do something like a RLE to be able top optimize things like
-        // [context = main() =>] function() => function() => function() => ...
-        struct Pair
-        {
-            std::size_t cnt;
-            addr_t pos;
-        };
-
-        std::string segmentName;
-        // all the positions from where the segment was called
-        // in order to be able to go back
-        std::vector<Pair> lastPositions;
-        // internal variables stack
-        std::unordered_map<std::string, Value> vars;
-    };
 
 }  // namespace kafe
 

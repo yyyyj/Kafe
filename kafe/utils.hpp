@@ -22,7 +22,7 @@ namespace kafe
         T setSign(T value, int bytesCount)
         {
             T msb = 1 << (8 * bytesCount - 1);
-            if (sizeof(T) > (unsigned)bytesCount && (value & msb))
+            if (sizeof(T) > (unsigned) bytesCount && (value & msb))
                 { return msb - value; }
             return value;
         }
@@ -54,6 +54,8 @@ namespace kafe
             else if (i < 0 && (unsigned)(-i) <= obj.size())
                 obj.erase(obj.begin() + obj.size() + i);
         }
+
+        std::string hexstr(const unsigned& n);
 
         template<typename T>
         std::string str(const T& n)

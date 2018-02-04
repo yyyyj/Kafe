@@ -6,11 +6,7 @@
 namespace kafe
 {
 
-    VM::VM() :
-        m_stack_size(0)
-        , m_ip(0)
-        , m_debug_mode(0)
-    {}
+    VM::VM() : m_stack_size(0), m_ip(0), m_debug_mode(0) {}
 
     VM::~VM()
     {
@@ -35,72 +31,31 @@ namespace kafe
         m_stack.clear();
         m_stack_size = m_ip = 0;
         m_variables.clear();
-        m_segments.clear();
     }
 
     bool VM::findVar(const std::string& varName)
     {
-        if (m_call_stack.size() == 0)
-            { return m_variables.find(varName) != m_variables.end(); }
-        else
-        {
-            std::size_t cs_last_pos = m_call_stack.size() - 1;
-            return m_call_stack[cs_last_pos].vars.find(varName) != m_call_stack[cs_last_pos].vars.end()
-                   || m_variables.find(varName) != m_variables.end();
-        }
+        return m_variables.find(varName) != m_variables.end();
     }
 
     Value VM::getVar(const std::string& varName)
     {
-        if (m_call_stack.size() == 0)
-            { return m_variables[varName]; }
-        else
-        {
-            if (m_variables.find(varName) != m_variables.end())
-                { return m_variables[varName]; }
-            std::size_t cs_last_pos = m_call_stack.size() - 1;
-            return m_call_stack[cs_last_pos].vars[varName];
-        }
+        return m_variables[varName];
     }
 
     Value& VM::getRefVar(const std::string& varName)
     {
-        if (m_call_stack.size() == 0)
-            { return m_variables[varName]; }
-        else
-        {
-            if (m_variables.find(varName) != m_variables.end())
-                { return m_variables[varName]; }
-            std::size_t cs_last_pos = m_call_stack.size() - 1;
-            return m_call_stack[cs_last_pos].vars[varName];
-        }
-
+        return m_variables[varName];
     }
 
     void VM::setVar(const std::string& varName, Value v)
     {
-        if (m_call_stack.size() == 0)
-            { m_variables[varName] = v; }
-        else
-        {
-            if (m_variables.find(varName) != m_variables.end())
-                { m_variables[varName] = v; }
-            std::size_t cs_last_pos = m_call_stack.size() - 1;
-            m_call_stack[cs_last_pos].vars[varName] = v;
-        }
+        m_variables[varName] = v;
     }
 
     void VM::delVar(const std::string& varName)
     {
-        if (m_call_stack.size() == 0)
-            { m_variables.erase(m_variables.find(varName)); }
-        else
-        {
-            if (m_variables.find(varName) != m_variables.end())
-                { m_variables.erase(m_variables.find(varName)); }
-            std::size_t cs_last_pos = m_call_stack.size() - 1;
-            m_call_stack[cs_last_pos].vars.erase(m_call_stack[cs_last_pos].vars.find(varName));
-        }
+        m_variables.erase(m_variables.find(varName));
     }
 
     inst_t VM::readByte(addr_t i)
@@ -144,108 +99,60 @@ namespace kafe
 
     std::string VM::readString()
     {
-        uint2B_t strSize = read2BytesInt();
-        if (strSize > 0)
+        std::string work = "";
+        ++m_ip;
+        while (true)
         {
-            std::string work = "";
-            ++m_ip;
-            for (uint2B_t j=m_ip; m_ip - j < strSize; ++m_ip)
-                { work += readByte(m_ip); }
-            --m_ip;
-            return work;
+            inst_t byte = readByte(m_ip++);
+            if (byte != 0x0)
+                { work += byte; }
+            else
+                { break; }
         }
-        else
-            { throw std::logic_error("Invalid size given when trying to read a string"); }
+        --m_ip;
+        return work;
     }
 
     bool VM::readBool()
     {
-        return (readByte(++m_ip) > 0);
+        return readByte(++m_ip) > 0;
     }
 
-    addr_t VM::getSegmentAddr(const std::string& segmentName)
+    void VM::performJump(bool registerCall)
     {
-        if (m_segments.find(segmentName) != m_segments.end())
-            { return m_segments[segmentName]; }
-        else
-            { throw std::runtime_error("Can not get the position of an undefined segment"); }
-    }
-
-    void VM::goToSegmentPosition(const std::string& segmentName)
-    {
-        m_ip = getSegmentAddr(segmentName) - 1; // -1 because we do that before an iteration end, so we will do ++m_ip just after
-    }
-
-    void VM::pushCallStack(const std::string& segmentName, addr_t lastPos)
-    {
-        // we need to keep track of what segment we jumped to, from which position,
-        // to be able to go able to the caller position easily, and continue the execution
-        addr_t cs_last_index = m_call_stack.size() - 1;
-
-        // if the stack is empty or the last element on the stack isn't a call of the same segment we are calling
-        if (m_call_stack.size() == 0 || m_call_stack[cs_last_index].segmentName != segmentName)
-        {
-            Call::Pair bloc = {/* cnt= */ 1, /* pos= */ lastPos};
-            Call call_element;
-
-            call_element.segmentName = segmentName;
-            call_element.lastPositions.push_back(bloc);
-
-            m_call_stack.push_back(call_element);
-        }
-        else
-        {
-            // the stack isn't empty and the last element is describing the same segment as the one which is being called
-            addr_t lp_last_index = m_call_stack[cs_last_index].lastPositions.size() - 1;
-            // if the last element on the stack of the call element is the same as the position
-            // from where we are calling this segment, add one to its counter `cnt`
-            if (m_call_stack[cs_last_index].lastPositions[lp_last_index].pos == lastPos)
-                { ++m_call_stack[cs_last_index].lastPositions[lp_last_index].cnt; }
-            else
-            {
-                Call::Pair bloc = {/* cnt= */ 1, /* pos= */ lastPos};
-                m_call_stack[cs_last_index].lastPositions.push_back(bloc);
-            }
-        }
-    }
-
-    std::string VM::performJump()
-    {
-        // read segment name
-        std::string seg_name = readString();
+        addr_t last_pos;
         // keep the last value of the instruction pointer, we'll need it
-        addr_t last_pos = m_ip;
+        last_pos = m_ip;
         // jump to the segment
-        goToSegmentPosition(seg_name);
-        // refresh the call stack and register we've jumped to `seg_name`, from `last_pos`
-        // in order to be able to go back when the execution of the segment we'll end
-        pushCallStack(seg_name, last_pos);
+        Value p = pop();
+        if (p.type != ValueType::Addr)
+            { throw std::logic_error("Can not jump to something which isn't an address"); }
+        // -1 because we're doing this right before the end of a loop, so we'll do a ++m_ip after
+        m_ip = p.get<addr_t>() - 1;
 
-        return seg_name;
+        if (registerCall)
+        {
+            // refresh the call stack and register we've jumped from `last_pos`
+            // in order to be able to go back when the execution of the segment we'll end
+            Call c = {/* lastPos= */ last_pos, /* lastStackSize= */ m_stack.size()};
+            m_call_stack.push_back(c);
+        }
     }
 
     void VM::retFromSegment()
     {
         if (m_call_stack.size() > 0)
         {
-            addr_t cs_last_index = m_call_stack.size() - 1;
-            addr_t lp_last_index = m_call_stack[cs_last_index].lastPositions.size() - 1;
-            addr_t lp = m_call_stack[cs_last_index].lastPositions[lp_last_index].pos;
+            Call lc = abc::pop(m_call_stack, -1);
+            m_ip = lc.lastPos;
 
-            // going back to the position where the segment was called to continue the execution
-            m_ip = lp;
-            --m_call_stack[cs_last_index].lastPositions[lp_last_index].cnt;
-
-            // just checking we keep within bounds of the bytecode
-            if (m_ip >= m_bytecode.size())
-                { throw std::logic_error("Jumping back from a segment to an invalid position in the bytecode"); }
-
-            // the "pair" recording the multiples calls of the same segment from the same segment is now empty, pop it
-            if (m_call_stack[cs_last_index].lastPositions[lp_last_index].cnt == 0)
-                { abc::popNoReturn(m_call_stack[cs_last_index].lastPositions, -1); }
-            // the "call element" recording the multiples calls of the same segment is now empty, pop it
-            if (m_call_stack[cs_last_index].lastPositions.size() == 0)
-                { abc::popNoReturn(m_call_stack, -1); }
+            // cleaning the stack
+            if (lc.lastStackSize > m_stack.size())
+            {
+                // we can only keep one element on the stack (the return value of the function)
+                while (lc.lastStackSize - m_stack.size() > 1)
+                    { pop(); }
+            }
         }
         else
             { throw std::logic_error("Can not return from a non-segment"); }
@@ -312,7 +219,8 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "addr" << std::endl;
 
-                Value a(ValueType::Addr, getSegmentAddr(readString()));
+                Value a(ValueType::Addr);
+                a.set<addr_t>(read4BytesInt());
                 push(a);
 
                 break;
@@ -499,25 +407,6 @@ namespace kafe
     {
         switch (instruction)
         {
-            case INST_SEGMENT:
-            {
-                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "segment" << std::endl;
-
-                // we read the size of the name of the segment
-                std::string seg_name = readString();
-                // we get the size of the segment and jump to the end of it, we don't want to execute it, it wasn't called
-                uint4B_t seg_size = read4BytesInt();
-                // we try to add the segment position to the "segment register" if it wasn't registered before
-                if (m_segments.find(seg_name) == m_segments.end())
-                    { m_segments[seg_name] = m_ip + 1; }  // +1 because we want the next byte, not the current one
-                if (seg_size > 0 && m_ip + seg_size < m_bytecode.size())
-                    { m_ip += seg_size; }
-                else
-                    { throw std::logic_error("Invalid bloc count for the segment"); }
-
-                break;
-            }
-
             case INST_STORE_VAR:
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "store var" << std::endl;
@@ -569,8 +458,8 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "call" << std::endl;
 
-                std::string seg_name = performJump();
-                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << seg_name << std::endl;
+                performJump();
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << 1 + ((unsigned) m_ip) << std::endl;
 
                 break;
             }
@@ -579,9 +468,8 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "jump" << std::endl;
 
-                std::string seg_name = readString();
-                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << seg_name << std::endl;
-                goToSegmentPosition(seg_name);
+                performJump(/* registerCall= */ false);
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << 1 + ((unsigned) m_ip) << std::endl;
 
                 break;
             }
@@ -594,9 +482,8 @@ namespace kafe
                 Value a = pop();
                 if (a == Value(ValueType::Bool, true))
                 {
-                    std::string seg_name = readString();
-                    if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << seg_name << std::endl;
-                    goToSegmentPosition(seg_name);
+                    performJump(/* registerCall= */ false);
+                    if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << 1 + ((unsigned) m_ip) << std::endl;
                 }
 
                 break;
@@ -609,9 +496,8 @@ namespace kafe
                 Value a = pop();
                 if (a == Value(ValueType::Bool, false))
                 {
-                    std::string seg_name = readString();
-                    if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << seg_name << std::endl;
-                    goToSegmentPosition(seg_name);
+                    performJump(/* registerCall= */ false);
+                    if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << 1 + ((unsigned) m_ip) << std::endl;
                 }
 
                 break;
@@ -632,22 +518,6 @@ namespace kafe
 
                 Value a(ValueType::Addr, m_ip);
                 push(a);
-
-                break;
-            }
-
-            case INST_GOTO:
-            {
-                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "goto" << std::endl;
-
-                Value a = pop();
-                if (a.type == ValueType::Addr)
-                {
-                    if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    ->" << a.get<addr_t>() << std::endl;
-                    m_ip = a.get<addr_t>();
-                }
-                else
-                    { throw std::logic_error("Can not use a non-address to find where to jump"); }
 
                 break;
             }
@@ -761,18 +631,23 @@ namespace kafe
             for (m_ip=0; m_ip < m_bytecode.size(); ++m_ip)
             {
                 inst_t instruction = readByte(m_ip);
-                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "[" << m_ip << "] " << (unsigned) instruction << " ";
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "[" << m_ip << "] " << abc::hexstr((unsigned) instruction) << " ";
 
                 if (INST_INT_2B <= instruction && instruction <= INST_DEL_VAR)
                     { exec_handleDataTypesDecl(instruction); }
-                else if (INST_SEGMENT <= instruction && instruction <= INST_RET)
+                else if (INST_STORE_VAR <= instruction && instruction <= INST_GET_CWA)
                     { exec_handleSegments(instruction); }
+                else if (instruction == INST_HALT)
+                {
+                    if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "halt" << std::endl;
+                    break;
+                }
                 else if (instruction == INST_PROCEDURE)
                     { exec_handleBuiltins(); }
                 else
                 {
                     if (instruction != 0x00)
-                        { throw std::runtime_error("Can not identify the instruction " + abc::str((unsigned) instruction)); }
+                        { throw std::runtime_error("Can not identify the instruction " + abc::hexstr((unsigned) instruction)); }
                 }
             }
 
@@ -782,22 +657,14 @@ namespace kafe
             { throw std::logic_error("Can not run if no bytecode were given"); }
     }
 
-    int VM::callSegment(const std::string& seg_name)
-    {
-        // set the `last_pos` as the \0 byte to stop the execution of the segment right after we return from it
-        addr_t last_pos = m_bytecode.size() - 1;
-        // jump to the segment
-        goToSegmentPosition(seg_name);
-        // refresh the call stack and register we've jumped to `seg_name`, from `last_pos`
-        // in order to be able to go back when the execution of the segment we'll end
-        pushCallStack(seg_name, last_pos);
-
-        return exec();
-    }
-
     ValueStack_t& VM::getStack()
     {
         return m_stack;
+    }
+
+    VarStack_t& VM::getVariables()
+    {
+        return m_variables;
     }
 
     void VM::saveBytecode(const std::string& filename)
