@@ -3,8 +3,8 @@
 #include <string>
 
 #include "kafe/kafe.hpp"
-#include "tests.hpp"
-
+#include "tests/tests.hpp"
+#include "libs/clipp.hpp"
 
 int getDebugMode(bool verbose, bool interactive)
 {

@@ -532,7 +532,7 @@ namespace kafe
         {
             case INST_ADD:
             {
-                std::cerr << "add" << std::endl;
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "add" << std::endl;
 
                 Value b = pop();
                 Value a = pop();
@@ -565,7 +565,7 @@ namespace kafe
 
             case INST_NE:
             {
-                std::cerr << "ne" << std::endl;
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "ne" << std::endl;
 
                 Value b = pop();
                 Value a = pop();
@@ -613,7 +613,7 @@ namespace kafe
 
     void VM::setMode(int mode)
     {
-        m_debug_mode |= mode;
+        m_debug_mode = mode;
     }
 
     void VM::load(bytecode_t bytecode)
@@ -627,7 +627,6 @@ namespace kafe
         if (m_bytecode.size() != 0)
         {
             clear();
-
             for (m_ip=0; m_ip < m_bytecode.size(); ++m_ip)
             {
                 inst_t instruction = readByte(m_ip);
@@ -650,6 +649,7 @@ namespace kafe
                         { throw std::runtime_error("Can not identify the instruction " + abc::hexstr((unsigned) instruction)); }
                 }
             }
+            if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << std::endl << std::endl;
 
             return 0;
         }
