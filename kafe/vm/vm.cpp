@@ -1,12 +1,14 @@
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
+#include <iomanip>
 
 #include "vm.hpp"
 
 namespace kafe
 {
 
-    VM::VM() : m_stack_size(0), m_ip(0), m_debug_mode(0) {}
+    VM::VM() : m_stack_size(0), m_ip(0), m_debug_mode(0), m_interactive_advance(0) {}
 
     VM::~VM()
     {
@@ -29,7 +31,7 @@ namespace kafe
     {
         // cleaning the VM to run it again without creating a new instance
         m_stack.clear();
-        m_stack_size = m_ip = 0;
+        m_stack_size = m_ip = m_interactive_advance = 0;
         m_variables.clear();
     }
 
@@ -150,8 +152,9 @@ namespace kafe
             if (lc.lastStackSize > m_stack.size())
             {
                 // we can only keep one element on the stack (the return value of the function)
-                while (lc.lastStackSize - m_stack.size() > 1)
-                    { pop(); }
+                //while (lc.lastStackSize - m_stack.size() > 1)
+                //    { pop(); }
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "[WARNING] entering the garbage collector (not implemented ATM), with lc.lastStackSize=" << lc.lastStackSize << " and m_stack.size()=" << m_stack.size() << std::endl;
             }
         }
         else
@@ -485,6 +488,8 @@ namespace kafe
                     performJump(/* registerCall= */ false);
                     if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << 1 + ((unsigned) m_ip) << std::endl;
                 }
+                else
+                    { pop(); }  // remove the address from the stack
 
                 break;
             }
@@ -499,6 +504,8 @@ namespace kafe
                     performJump(/* registerCall= */ false);
                     if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << 1 + ((unsigned) m_ip) << std::endl;
                 }
+                else
+                    { pop(); }  // remove the address from the stack
 
                 break;
             }
@@ -518,6 +525,27 @@ namespace kafe
 
                 Value a(ValueType::Addr, m_ip);
                 push(a);
+
+                break;
+            }
+
+            case INST_PERMUTATION:
+            {
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "permutation" << std::endl;
+
+                Value b = pop();
+                Value a = pop();
+                push(b);
+                push(a);
+
+                break;
+            }
+
+            case INST_POP:
+            {
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "pop" << std::endl;
+
+                pop();
 
                 break;
             }
@@ -563,6 +591,34 @@ namespace kafe
                 break;
             }
 
+            case INST_SUB:
+            {
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "sub" << std::endl;
+
+                Value b = pop();
+                Value a = pop();
+
+                if (a.type == b.type)
+                {
+                    if (a.type == ValueType::Int)
+                    {
+                        Value c(ValueType::Int, a.get<int8B_t>() - b.get<int8B_t>());
+                        push(c);
+                    }
+                    else if (a.type == ValueType::Double)
+                    {
+                        Value c(ValueType::Double, a.get<double>() - b.get<double>());
+                        push(c);
+                    }
+                    else
+                        { throw std::logic_error("Can not substract two " + convertTypeToString(a.type)); }
+                }
+                else
+                    { throw std::logic_error("Can not substract two variables of heterogeneous types"); }
+
+                break;
+            }
+
             case INST_NE:
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "ne" << std::endl;
@@ -581,6 +637,95 @@ namespace kafe
                 throw std::runtime_error("Invalid byte used to identify a non-existing procedure : " +
                                          abc::str((unsigned) instruction));
             }
+        }
+    }
+
+    void VM::interactiveMode(inst_t instruction, bool displayOnly)
+    {
+        // display stack + variables
+        std::cerr << std::endl << "IP = " << std::setw(4) << m_ip << " | Bytecode size = " << std::setw(5) << m_bytecode.size() << " | "
+                  << "Instruction = " << abc::hexstr((unsigned) instruction)    << std::endl
+                  << "Stack                     | Variables                   " << std::endl
+                  << "--------------------------|-----------------------------" << std::endl;
+        VarStack_t::iterator it = m_variables.begin();
+        for (std::size_t i=0; i < std::max(m_stack.size(), m_variables.size()); ++i)
+        {
+            if (i < m_stack.size())
+                { std::cerr << std::setw(6) << convertTypeToString(m_stack[i].type) << " " << std::setw(18) << m_stack[i]; }
+            else
+                { std::cerr << "                         "; }
+            std::cerr << " | ";
+            if (i < m_variables.size())
+            {
+                std::ostringstream out;
+                out << std::setw(12) << it->first << " = " << std::setw(6) << convertTypeToString(it->second.type) << " " << it->second;
+                std::cerr << out.str();
+                std::advance(it, 1);
+            }
+            std::cerr << std::endl << std::flush;
+        }
+
+        if (!displayOnly)
+        {
+            std::string command = "";
+            while (command == "")
+            {
+                std::cerr << std::endl << "> ";
+                std::getline(std::cin, command);
+
+                if (command == "help")
+                {
+                    std::cerr << "Type `continue` to advance to the next relevant bytecode" << std::endl
+                              << "     `break` to quit the interactive mode and continue the execution" << std::endl
+                              << "     `advance x`, x a number between 0 and the bytecode size to read x byte without prompting again" << std::endl
+                              << "     `clear` to clear the screen" << std::endl
+                        ;
+                    command = "";
+                }
+                else if (command == "continue")
+                    { break; }
+                else if (command == "break")
+                {
+                    m_debug_mode -= VM::FLAG_INTERACTIVE;
+                    break;
+                }
+                else if (command.substr(0, 7) == "advance" && command.size() >= 9)
+                {
+                    std::string num = command.substr(8);
+                    if(num.empty() || ((!isdigit(num[0])) && (num[0] != '-') && (num[0] != '+')))
+                    {
+                        std::cerr << "Give a correct number" << std::endl;
+                        command = "";
+                    }
+                    else
+                    {
+                        int n = abc::strTo<int>(num);
+                        if (n <= 0)
+                        {
+                            std::cerr << "A number < 0 is considered invalid" << std::endl;
+                            command = "";
+                        }
+                        else
+                            { m_interactive_advance = n; }
+                    }
+                }
+                else if (command == "clear")
+                {
+                    #ifdef RUNNING_WIN
+                    system("cls");
+                    #endif // RUNNING_WIN
+                    #ifdef RUNNING_POSIX
+                    system("clear");
+                    #endif // RUNNING_POSIX
+                    command = "";
+                }
+                else
+                {
+                    std::cerr << "Unrecognized command `" << command << "`" << std::endl;
+                    command = "";
+                }
+            }
+            std::cerr << std::endl;
         }
     }
 
@@ -627,6 +772,7 @@ namespace kafe
         if (m_bytecode.size() != 0)
         {
             clear();
+            addr_t old_ip = 0;
             for (m_ip=0; m_ip < m_bytecode.size(); ++m_ip)
             {
                 inst_t instruction = readByte(m_ip);
@@ -634,7 +780,7 @@ namespace kafe
 
                 if (INST_INT_2B <= instruction && instruction <= INST_DEL_VAR)
                     { exec_handleDataTypesDecl(instruction); }
-                else if (INST_STORE_VAR <= instruction && instruction <= INST_GET_CWA)
+                else if (INST_STORE_VAR <= instruction && instruction <= INST_POP)
                     { exec_handleSegments(instruction); }
                 else if (instruction == INST_HALT)
                 {
@@ -648,6 +794,17 @@ namespace kafe
                     if (instruction != 0x00)
                         { throw std::runtime_error("Can not identify the instruction " + abc::hexstr((unsigned) instruction)); }
                 }
+
+                if (m_debug_mode & VM::FLAG_INTERACTIVE && (m_interactive_advance == 0 || m_interactive_advance <= old_ip))
+                {
+                    if (m_interactive_advance != 0)
+                        { m_interactive_advance = old_ip = 0; }
+                    interactiveMode(instruction);
+                }
+                else if (m_debug_mode & VM::FLAG_INTERACTIVE && m_interactive_advance > old_ip)
+                    { interactiveMode(instruction, /* displayOnly= */ true); }
+
+                ++old_ip;
             }
             if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << std::endl << std::endl;
 

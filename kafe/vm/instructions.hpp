@@ -35,7 +35,9 @@ namespace kafe
         INST_JUMP_IFN    = 0x16,  // 0x16 ; jump to stack[-2] (Value::Addr) if stack[-1] compares to false and continue the execution
         INST_RET         = 0x17,  // 0x17 ; return from a segment
         INST_GET_CWA     = 0x18,  // 0x18 ; push the current address in the bytecode on the stack as a Value::Addr (CWA stands for current working address)
-        INST_HALT        = 0x19,  // 0x19 ; end the execution of the script
+        INST_PERMUTATION = 0x19,  // 0x19 ; switch the two top values of the stack
+        INST_POP         = 0x1a,  // 0x1a ; pop the value off the stack (delete it)
+        INST_HALT        = 0x1b,  // 0x1b ; end the execution of the script
 
         // built-in procedures around numbers and booleans
         INST_PROCEDURE   = 0x20,

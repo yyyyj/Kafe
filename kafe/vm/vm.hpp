@@ -35,6 +35,7 @@ namespace kafe
         // keeping the loaded bytecode into the VM to use easily without passing it around
         bytecode_t m_bytecode;
         int m_debug_mode;
+        int m_interactive_advance;
 
         void   push      (Value value);
         Value  pop       ();
@@ -61,6 +62,8 @@ namespace kafe
         void exec_handleStructures   (inst_t instruction);
         void exec_handleSegments     (inst_t instruction);
         void exec_handleBuiltins     ();
+
+        void interactiveMode(inst_t instruction, bool displayOnly=false);
 
     public:
         VM();

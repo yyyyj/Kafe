@@ -4,16 +4,14 @@
 
 #define TEST_VM(name, obj) test_vm( name , #obj , obj , debug_mode );
 
+#define CALL_PROCEDURE(c) ((c & 0xff00) >> 8), (c & 0x00ff)
+
 void test_vm(const std::string& test_name, const std::string& filename, kafe::bytecode_t bytecode, int debug_mode)
 {
     kafe::VM vm;
     vm.setMode(debug_mode);
 
     std::cerr << "[ " << test_name << " ]" << std::endl << std::endl;
-    std::cerr << " pos  | code " << std::endl << "------|------" << std::endl;
-    for (std::size_t i=0; i < bytecode.size(); ++i)
-        { std::cerr << format((unsigned) i, 4) << "  |  " << kafe::abc::hexstr((unsigned) bytecode[i]) << std::endl; }
-    std::cerr << std::endl;
 
     BENCHMARK_F("loading", vm.load(bytecode), ns)
 
@@ -22,7 +20,7 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
 
     vm.exec(); vm.setMode(0);
 
-    BENCHMARK_MR("", vm.exec(), 50, us)
+    BENCHMARK_MR("", vm.exec(), 100, us)
     BENCHMARK_F("saving", vm.saveBytecode("examples/bytecode/" + filename), ms)
 
     if (vm.getStack().size())
@@ -59,7 +57,7 @@ int start_tests(int debug_mode)
         kafe::INST_STORE_VAR,
         kafe::INST_LOAD_VAR, 'v', 'a', 'r', '\0',
         kafe::INST_INT_2B, 0x00, 0x09,
-        kafe::INST_PROCEDURE, ((kafe::INST_ADD & 0xff00) >> 8), (kafe::INST_ADD & 0x00ff),
+        kafe::INST_PROCEDURE, CALL_PROCEDURE(kafe::INST_ADD),
         0x00
     };
     TEST_VM("var = 1; push(var); push(9); add", bytecode2);
@@ -94,7 +92,7 @@ int start_tests(int debug_mode)
         // segment
             kafe::INST_LOAD_VAR, 'a', '\0',
             kafe::INST_BOOL, 0x01,
-            kafe::INST_PROCEDURE, ((kafe::INST_NE & 0xff00) >> 8), (kafe::INST_NE & 0x00ff),
+            kafe::INST_PROCEDURE, CALL_PROCEDURE(kafe::INST_NE),
             kafe::INST_RET,
 
         0x00
@@ -118,6 +116,70 @@ int start_tests(int debug_mode)
         0x00
     };
     TEST_VM("testing variable duplication and negatives numbers (-32767, 32767)", bytecode5);
+
+    kafe::bytecode_t bytecode6 = {
+        // (fibonacci 23)
+        kafe::INST_INT_2B, 0x00, 0x17,
+        kafe::INST_ADDR, 0x00, 0x00, 0x00, 0x0a,
+        kafe::INST_CALL,
+
+        kafe::INST_HALT,
+        // func fibonacci : int -- n : int   -----> ADDR: 0x0a
+            kafe::INST_VAR, 'n', '\0',
+            kafe::INST_STORE_VAR,
+
+            kafe::INST_INT_2B, 0x00, 0x00, // a = 0
+            kafe::INST_VAR, 'a', '\0',
+            kafe::INST_STORE_VAR,
+
+            kafe::INST_INT_2B, 0x00, 0x01, // b = 1
+            kafe::INST_VAR, 'b', '\0',
+            kafe::INST_STORE_VAR,
+
+            kafe::INST_INT_2B, 0x00, 0x00,  // i = 0
+            kafe::INST_VAR, 'i', '\0',
+            kafe::INST_STORE_VAR,
+
+            kafe::INST_LOAD_VAR, 'a', '\0',  // c = a   <-------------- 0x23
+            kafe::INST_VAR, 'c', '\0',
+            kafe::INST_STORE_VAR,
+
+            kafe::INST_LOAD_VAR, 'b', '\0',  // a = b
+            kafe::INST_VAR, 'a', '\0',
+            kafe::INST_STORE_VAR,
+
+            kafe::INST_LOAD_VAR, 'b', '\0',  // b = b + c
+            kafe::INST_LOAD_VAR, 'c', '\0',
+            kafe::INST_PROCEDURE, CALL_PROCEDURE(kafe::INST_ADD),
+            kafe::INST_VAR, 'b', '\0',
+            kafe::INST_STORE_VAR,
+
+            kafe::INST_LOAD_VAR, 'i', '\0',  // i = i + 1
+            kafe::INST_INT_2B, 0x00, 0x01,
+            kafe::INST_PROCEDURE, CALL_PROCEDURE(kafe::INST_ADD),
+            kafe::INST_VAR, 'i', '\0',
+            kafe::INST_STORE_VAR,
+
+            kafe::INST_ADDR, 0x00, 0x00, 0x00, 0x23,
+
+            kafe::INST_LOAD_VAR, 'i', '\0',  // if i == n then
+            kafe::INST_LOAD_VAR, 'n', '\0',
+            kafe::INST_PROCEDURE, CALL_PROCEDURE(kafe::INST_NE),
+
+            kafe::INST_JUMP_IF,  // jump to the beginning
+
+            kafe::INST_LOAD_VAR, 'a', '\0',  // ret a
+
+            kafe::INST_DEL_VAR, 'a', '\0',
+            kafe::INST_DEL_VAR, 'b', '\0',
+            kafe::INST_DEL_VAR, 'c', '\0',
+            kafe::INST_DEL_VAR, 'i', '\0',
+            kafe::INST_DEL_VAR, 'n', '\0',
+
+            kafe::INST_RET,
+        0x00
+    };
+    TEST_VM("Fibonacci", bytecode6);
 
     return 0;
 }
