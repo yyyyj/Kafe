@@ -12,8 +12,51 @@ Now you know everything.
 
 * Python (>= 3.4)
 
-* Cmake (to build the project)
+* CMake (>= 3.5)
 
-# Documentation
+# Goal
 
-See [this](doc/main.md)
+The goal is to make a programming language fast enough to be used in video-games, but it's also a toy for me because I am using it to discover the kind of problems the developers of Java 
+(and of any other VM language) encountered, to know what's behind the big black box :)
+
+# Free samples everyone ?
+
+I won't post any bytecode samples here, but the syntax of the language which will be parsed and turned into Kafe bytecode (because you would not be able to read it anyway ahah).
+
+```
+struct Character -- _name:str _life:int
+    dyn name : str = _name
+    dyn life : int = _life
+    
+    fun update : void -- dt:double
+        # do stuff
+        ret
+    end
+end
+
+dyn player : Character = "John Doe" 120
+dyn mob : Character = "Rabbit" 15
+
+fun update : int -- dt:double component:str
+    dyn status : int = 0
+    
+    if component == "player"
+        print "updating player"
+        player.update dt
+    elif component == "mob"
+        print "updating mob"
+        mod.update dt
+    else
+        print "unknow component : " component
+        status = 1  # an error occured
+    end
+    
+    ret status
+end
+
+update 0.005 "player"
+```
+
+# [Documentation](doc/main.md)
+
+# [Tests](tests/README.md)
