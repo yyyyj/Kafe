@@ -118,8 +118,8 @@ int start_tests(int debug_mode)
     TEST_VM("testing variable duplication and negatives numbers (-32767, 32767)", bytecode5);
 
     kafe::bytecode_t bytecode6 = {
-        // (fibonacci 23)
-        kafe::INST_INT_2B, 0x00, 0x17,
+        // (fibonacci 40)
+        kafe::INST_INT_2B, 0x00, 0x28,
         kafe::INST_ADDR, 0x00, 0x00, 0x00, 0x0a,
         kafe::INST_CALL,
 
