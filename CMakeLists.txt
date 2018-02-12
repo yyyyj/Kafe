@@ -3,6 +3,8 @@ cmake_policy(SET CMP0015 NEW)
 
 project(Kafe)
 
+set(CMAKE_CXX_STANDARD 14)
+
 if(CMAKE_COMPILER_IS_GNUCC)
   set(CMAKE_CXX_FLAGS "-std=c++14 -fpermissive -O3")
 endif()

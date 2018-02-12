@@ -5,5 +5,5 @@
 #include "KafeListener.h"
 
 
-using namespace Kafe;
+using namespace kafe;
 

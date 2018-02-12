@@ -8,7 +8,7 @@
 #include "KafeListener.h"
 
 
-namespace Kafe {
+namespace kafe {
 
 /**
  * This class provides an empty implementation of KafeListener,
@@ -95,4 +95,4 @@ public:
 
 };
 
-}  // namespace Kafe
+}  // namespace kafe

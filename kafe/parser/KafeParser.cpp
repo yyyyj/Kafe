@@ -3,13 +3,12 @@
 
 
 #include "KafeListener.h"
-#include "KafeVisitor.h"
 
 #include "KafeParser.h"
 
 
 using namespace antlrcpp;
-using namespace Kafe;
+using namespace kafe;
 using namespace antlr4;
 
 KafeParser::KafeParser(TokenStream *input) : Parser(input) {
@@ -62,14 +61,6 @@ void KafeParser::ChunkContext::exitRule(tree::ParseTreeListener *listener) {
   auto parserListener = dynamic_cast<KafeListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitChunk(this);
-}
-
-
-antlrcpp::Any KafeParser::ChunkContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitChunk(this);
-  else
-    return visitor->visitChildren(this);
 }
 
 KafeParser::ChunkContext* KafeParser::chunk() {
@@ -125,14 +116,6 @@ void KafeParser::BlockContext::exitRule(tree::ParseTreeListener *listener) {
   auto parserListener = dynamic_cast<KafeListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitBlock(this);
-}
-
-
-antlrcpp::Any KafeParser::BlockContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitBlock(this);
-  else
-    return visitor->visitChildren(this);
 }
 
 KafeParser::BlockContext* KafeParser::block() {
@@ -239,14 +222,6 @@ void KafeParser::StatContext::exitRule(tree::ParseTreeListener *listener) {
   auto parserListener = dynamic_cast<KafeListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitStat(this);
-}
-
-
-antlrcpp::Any KafeParser::StatContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitStat(this);
-  else
-    return visitor->visitChildren(this);
 }
 
 KafeParser::StatContext* KafeParser::stat() {
@@ -454,14 +429,6 @@ void KafeParser::RetstatContext::exitRule(tree::ParseTreeListener *listener) {
     parserListener->exitRetstat(this);
 }
 
-
-antlrcpp::Any KafeParser::RetstatContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitRetstat(this);
-  else
-    return visitor->visitChildren(this);
-}
-
 KafeParser::RetstatContext* KafeParser::retstat() {
   RetstatContext *_localctx = _tracker.createInstance<RetstatContext>(_ctx, getState());
   enterRule(_localctx, 6, KafeParser::RuleRetstat);
@@ -511,14 +478,6 @@ void KafeParser::TypeContext::exitRule(tree::ParseTreeListener *listener) {
   auto parserListener = dynamic_cast<KafeListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitType(this);
-}
-
-
-antlrcpp::Any KafeParser::TypeContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitType(this);
-  else
-    return visitor->visitChildren(this);
 }
 
 KafeParser::TypeContext* KafeParser::type() {
@@ -621,14 +580,6 @@ void KafeParser::ExplistContext::exitRule(tree::ParseTreeListener *listener) {
     parserListener->exitExplist(this);
 }
 
-
-antlrcpp::Any KafeParser::ExplistContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitExplist(this);
-  else
-    return visitor->visitChildren(this);
-}
-
 KafeParser::ExplistContext* KafeParser::explist() {
   ExplistContext *_localctx = _tracker.createInstance<ExplistContext>(_ctx, getState());
   enterRule(_localctx, 10, KafeParser::RuleExplist);
@@ -697,14 +648,6 @@ void KafeParser::FunctioncallContext::exitRule(tree::ParseTreeListener *listener
   auto parserListener = dynamic_cast<KafeListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitFunctioncall(this);
-}
-
-
-antlrcpp::Any KafeParser::FunctioncallContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitFunctioncall(this);
-  else
-    return visitor->visitChildren(this);
 }
 
 KafeParser::FunctioncallContext* KafeParser::functioncall() {
@@ -839,14 +782,6 @@ void KafeParser::ExpContext::exitRule(tree::ParseTreeListener *listener) {
   auto parserListener = dynamic_cast<KafeListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitExp(this);
-}
-
-
-antlrcpp::Any KafeParser::ExpContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitExp(this);
-  else
-    return visitor->visitChildren(this);
 }
 
 
@@ -1102,14 +1037,6 @@ void KafeParser::ArgslistContext::exitRule(tree::ParseTreeListener *listener) {
     parserListener->exitArgslist(this);
 }
 
-
-antlrcpp::Any KafeParser::ArgslistContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitArgslist(this);
-  else
-    return visitor->visitChildren(this);
-}
-
 KafeParser::ArgslistContext* KafeParser::argslist() {
   ArgslistContext *_localctx = _tracker.createInstance<ArgslistContext>(_ctx, getState());
   enterRule(_localctx, 16, KafeParser::RuleArgslist);
@@ -1195,14 +1122,6 @@ void KafeParser::FuncbodyContext::exitRule(tree::ParseTreeListener *listener) {
     parserListener->exitFuncbody(this);
 }
 
-
-antlrcpp::Any KafeParser::FuncbodyContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitFuncbody(this);
-  else
-    return visitor->visitChildren(this);
-}
-
 KafeParser::FuncbodyContext* KafeParser::funcbody() {
   FuncbodyContext *_localctx = _tracker.createInstance<FuncbodyContext>(_ctx, getState());
   enterRule(_localctx, 18, KafeParser::RuleFuncbody);
@@ -1254,14 +1173,6 @@ void KafeParser::StructbodyContext::exitRule(tree::ParseTreeListener *listener) 
     parserListener->exitStructbody(this);
 }
 
-
-antlrcpp::Any KafeParser::StructbodyContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitStructbody(this);
-  else
-    return visitor->visitChildren(this);
-}
-
 KafeParser::StructbodyContext* KafeParser::structbody() {
   StructbodyContext *_localctx = _tracker.createInstance<StructbodyContext>(_ctx, getState());
   enterRule(_localctx, 20, KafeParser::RuleStructbody);
@@ -1309,14 +1220,6 @@ void KafeParser::OperatorOrContext::exitRule(tree::ParseTreeListener *listener) 
     parserListener->exitOperatorOr(this);
 }
 
-
-antlrcpp::Any KafeParser::OperatorOrContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitOperatorOr(this);
-  else
-    return visitor->visitChildren(this);
-}
-
 KafeParser::OperatorOrContext* KafeParser::operatorOr() {
   OperatorOrContext *_localctx = _tracker.createInstance<OperatorOrContext>(_ctx, getState());
   enterRule(_localctx, 22, KafeParser::RuleOperatorOr);
@@ -1362,14 +1265,6 @@ void KafeParser::OperatorAndContext::exitRule(tree::ParseTreeListener *listener)
     parserListener->exitOperatorAnd(this);
 }
 
-
-antlrcpp::Any KafeParser::OperatorAndContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitOperatorAnd(this);
-  else
-    return visitor->visitChildren(this);
-}
-
 KafeParser::OperatorAndContext* KafeParser::operatorAnd() {
   OperatorAndContext *_localctx = _tracker.createInstance<OperatorAndContext>(_ctx, getState());
   enterRule(_localctx, 24, KafeParser::RuleOperatorAnd);
@@ -1413,14 +1308,6 @@ void KafeParser::OperatorComparisonContext::exitRule(tree::ParseTreeListener *li
   auto parserListener = dynamic_cast<KafeListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitOperatorComparison(this);
-}
-
-
-antlrcpp::Any KafeParser::OperatorComparisonContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitOperatorComparison(this);
-  else
-    return visitor->visitChildren(this);
 }
 
 KafeParser::OperatorComparisonContext* KafeParser::operatorComparison() {
@@ -1482,14 +1369,6 @@ void KafeParser::OperatorStrcatContext::exitRule(tree::ParseTreeListener *listen
     parserListener->exitOperatorStrcat(this);
 }
 
-
-antlrcpp::Any KafeParser::OperatorStrcatContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitOperatorStrcat(this);
-  else
-    return visitor->visitChildren(this);
-}
-
 KafeParser::OperatorStrcatContext* KafeParser::operatorStrcat() {
   OperatorStrcatContext *_localctx = _tracker.createInstance<OperatorStrcatContext>(_ctx, getState());
   enterRule(_localctx, 28, KafeParser::RuleOperatorStrcat);
@@ -1533,14 +1412,6 @@ void KafeParser::OperatorAddSubContext::exitRule(tree::ParseTreeListener *listen
   auto parserListener = dynamic_cast<KafeListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitOperatorAddSub(this);
-}
-
-
-antlrcpp::Any KafeParser::OperatorAddSubContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitOperatorAddSub(this);
-  else
-    return visitor->visitChildren(this);
 }
 
 KafeParser::OperatorAddSubContext* KafeParser::operatorAddSub() {
@@ -1598,14 +1469,6 @@ void KafeParser::OperatorMulDivModContext::exitRule(tree::ParseTreeListener *lis
     parserListener->exitOperatorMulDivMod(this);
 }
 
-
-antlrcpp::Any KafeParser::OperatorMulDivModContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitOperatorMulDivMod(this);
-  else
-    return visitor->visitChildren(this);
-}
-
 KafeParser::OperatorMulDivModContext* KafeParser::operatorMulDivMod() {
   OperatorMulDivModContext *_localctx = _tracker.createInstance<OperatorMulDivModContext>(_ctx, getState());
   enterRule(_localctx, 32, KafeParser::RuleOperatorMulDivMod);
@@ -1661,14 +1524,6 @@ void KafeParser::OperatorBitwiseContext::exitRule(tree::ParseTreeListener *liste
   auto parserListener = dynamic_cast<KafeListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitOperatorBitwise(this);
-}
-
-
-antlrcpp::Any KafeParser::OperatorBitwiseContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitOperatorBitwise(this);
-  else
-    return visitor->visitChildren(this);
 }
 
 KafeParser::OperatorBitwiseContext* KafeParser::operatorBitwise() {
@@ -1730,14 +1585,6 @@ void KafeParser::OperatorUnaryContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitOperatorUnary(this);
 }
 
-
-antlrcpp::Any KafeParser::OperatorUnaryContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitOperatorUnary(this);
-  else
-    return visitor->visitChildren(this);
-}
-
 KafeParser::OperatorUnaryContext* KafeParser::operatorUnary() {
   OperatorUnaryContext *_localctx = _tracker.createInstance<OperatorUnaryContext>(_ctx, getState());
   enterRule(_localctx, 36, KafeParser::RuleOperatorUnary);
@@ -1792,14 +1639,6 @@ void KafeParser::OperatorPowerContext::exitRule(tree::ParseTreeListener *listene
   auto parserListener = dynamic_cast<KafeListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitOperatorPower(this);
-}
-
-
-antlrcpp::Any KafeParser::OperatorPowerContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitOperatorPower(this);
-  else
-    return visitor->visitChildren(this);
 }
 
 KafeParser::OperatorPowerContext* KafeParser::operatorPower() {
@@ -1861,14 +1700,6 @@ void KafeParser::NumberContext::exitRule(tree::ParseTreeListener *listener) {
   auto parserListener = dynamic_cast<KafeListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitNumber(this);
-}
-
-
-antlrcpp::Any KafeParser::NumberContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitNumber(this);
-  else
-    return visitor->visitChildren(this);
 }
 
 KafeParser::NumberContext* KafeParser::number() {
@@ -1936,14 +1767,6 @@ void KafeParser::StringContext::exitRule(tree::ParseTreeListener *listener) {
     parserListener->exitString(this);
 }
 
-
-antlrcpp::Any KafeParser::StringContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitString(this);
-  else
-    return visitor->visitChildren(this);
-}
-
 KafeParser::StringContext* KafeParser::string() {
   StringContext *_localctx = _tracker.createInstance<StringContext>(_ctx, getState());
   enterRule(_localctx, 42, KafeParser::RuleString);
@@ -2001,14 +1824,6 @@ void KafeParser::ListContext::exitRule(tree::ParseTreeListener *listener) {
   auto parserListener = dynamic_cast<KafeListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitList(this);
-}
-
-
-antlrcpp::Any KafeParser::ListContext::accept(tree::ParseTreeVisitor *visitor) {
-  if (auto parserVisitor = dynamic_cast<KafeVisitor*>(visitor))
-    return parserVisitor->visitList(this);
-  else
-    return visitor->visitChildren(this);
 }
 
 KafeParser::ListContext* KafeParser::list() {

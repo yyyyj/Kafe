@@ -14,16 +14,22 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <fstream>
 
-#ifdef RUNNING_WIN
+#include "antlr4-runtime.h"
+#include "parser/KafeLexer.h"
+#include "parser/KafeParser.h"
+
+/*#ifdef RUNNING_WIN
     #define popen _popen
     #define pclose _pclose
 #endif // RUNNING_WIN
+*/
 
 namespace kafe
 {
 
-    namespace internal
+    /*namespace internal
     {
 
         // well don't do this at home because I am not really sure it will work on any system with python installed but hmmf
@@ -38,8 +44,11 @@ namespace kafe
         std::string execScript(const std::string& script);
 
     }  // namespace internal
+    */
 
     void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool optimize=false, bool ast=false);
+
+    void testANTLR();
 
 }  // namespace kafe
 

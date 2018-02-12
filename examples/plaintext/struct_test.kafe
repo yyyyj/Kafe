@@ -1,0 +1,30 @@
+struct Character -- _name:str, _life:int
+    dyn name : str = _name
+    dyn life : int = _life
+    
+    fun update : void -- dt:double
+        # do stuff
+        ret
+end
+
+dyn player : struct Character = "John Doe" 120
+dyn mob : struct Character = "Rabbit" 15
+
+# comma in arg list is optionnal
+fun update : int -- dt:double, component:str
+    dyn status : int = 0
+    
+    if component == "player" then
+        (print "updating player")
+        (player.update dt)
+    elif component == "mob" then
+        (print "updating mob")
+        (mod.update dt)
+    else
+        (print "unknow component : " component)
+        status = 1  # an error occured
+    end
+    
+    ret status
+
+(update 0.005 "player")

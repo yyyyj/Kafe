@@ -3,7 +3,7 @@
 namespace kafe
 {
 
-    namespace internal
+    /*namespace internal
     {
 
         std::string exec(const char* cmd)
@@ -27,10 +27,11 @@ namespace kafe
         }
 
     }  // namespace internal
+    */
 
     void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool optimize, bool ast)
     {
-        std::string command = "parser/generateBytecode.py ";
+        /*std::string command = "parser/generateBytecode.py ";
         for (std::size_t i=0; i < files.size(); ++i)
         {
             command += files[i] + " ";
@@ -39,7 +40,30 @@ namespace kafe
         command += (optimize ? std::string(" -O") : std::string(""));
         command += (ast ? std::string(" --ast") : std::string(""));
 
-        internal::execScript(command);
+        internal::execScript(command);*/
+    }
+
+    void testANTLR()
+    {
+        std::string line;
+        std::ifstream kafeFile("examples/plaintext/all_kw_test.kafe");
+        if (kafeFile.is_open())
+        {
+            antlr4::ANTLRInputStream input(kafeFile);
+            KafeLexer lexer(&input);
+            antlr4::CommonTokenStream tokens(&lexer);
+            tokens.fill();
+            for (auto token : tokens.getTokens())
+            {
+                std::cout << token->toString() << std::endl;
+            }
+            KafeParser parser(&tokens);
+            antlr4::tree::ParseTree* tree = parser.chunk();
+            std::cout << tree->toStringTree(&parser) << std::endl;
+            kafeFile.close();
+        }
+        else
+            { throw std::runtime_error("Could not open wanted file"); }
     }
 
 }  // namespace kafe

@@ -7,7 +7,7 @@
 #include "antlr4-runtime.h"
 
 
-namespace Kafe {
+namespace kafe {
 
 
 class  KafeLexer : public antlr4::Lexer {
@@ -64,4 +64,4 @@ private:
   static Initializer _init;
 };
 
-}  // namespace Kafe
+}  // namespace kafe

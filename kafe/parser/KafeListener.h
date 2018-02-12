@@ -8,7 +8,7 @@
 #include "KafeParser.h"
 
 
-namespace Kafe {
+namespace kafe {
 
 /**
  * This interface defines an abstract listener for a parse tree produced by KafeParser.
@@ -88,4 +88,4 @@ public:
 
 };
 
-}  // namespace Kafe
+}  // namespace kafe
