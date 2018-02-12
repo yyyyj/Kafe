@@ -18,11 +18,16 @@ out/
 *.depend
 *.cbp
 
+# external libs
+antlr4-runtime/
+*.jar
+
 # python precompiled files
 __pycache__/
 *.pyc
 *.pyo
 *.pyu
 
-# just some personnal notes
+# just some personnal stuff
 specs.txt
+*.cmd
