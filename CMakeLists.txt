@@ -1,19 +1,36 @@
-cmake_minimum_required(VERSION 3.5)
+# minimum required CMAKE version
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 cmake_policy(SET CMP0015 NEW)
-
 project(Kafe)
-
-set(CMAKE_CXX_STANDARD 14)
 
 if(CMAKE_COMPILER_IS_GNUCC)
   set(CMAKE_CXX_FLAGS "-std=c++14 -fpermissive -O3")
 endif()
 
-file(GLOB_RECURSE PG_UN "./kafe/*.hpp" "./tests.hpp")
-file(GLOB_RECURSE HD_UN "./kafe/*.cpp" "./tests.cpp" "./main.cpp")
+LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-set_property(GLOBAL APPEND_STRING PROPERTY COMPILE_FLAGS -Wall)
+# compiler must be 11 or 14
+SET (CMAKE_CXX_STANDARD 14)
 
-include_directories(kafe/)
+# set variable pointing to the antlr tool that supports C++
+set(ANTLR4CPP_JAR_LOCATION ${PROJECT_SOURCE_DIR}/thirdparty/antlr/antlr-4.7.1-complete.jar)
+# add external build for antlrcpp
+include(ExternalAntlr4Cpp)
+# add antrl4cpp artifacts to project environment
+include_directories(${ANTLR4CPP_INCLUDE_DIRS})
+link_directories(${ANTLR4CPP_LIBS})
+message(STATUS "Found antlr4cpp libs: ${ANTLR4CPP_LIBS} and includes: ${ANTLR4CPP_INCLUDE_DIRS}")
 
-add_executable(Kafe ${PG_UN} ${HD_UN})
+file(GLOB_RECURSE INCLUDE_FILES "kafe/*.hpp" "tests/*.hpp")
+file(GLOB_RECURSE SRC_FILES "kafe/*.cpp" "tests/tests.cpp" "tests/utils.cpp" "main.cpp")
+
+# Call macro to add lexer and grammar to your build dependencies.
+antlr4cpp_process_grammar(Kafe kafe ${CMAKE_CURRENT_SOURCE_DIR}/Kafe.g)
+# include generated files in project environment
+include_directories(${antlr4cpp_include_dirs_antlrcpptest})
+include_directories("thirdparty/include/")
+
+# add generated grammar to Kafe binary target
+add_executable(Kafe main.cpp ${antlr4cpp_src_files_antlrcpptest} ${INCLUDE_FILES} ${SRC_FILE})
+add_dependencies(Kafe antlr4cpp antlr4cpp_generation_kafe)
+target_link_libraries(Kafe antlr4-runtime)

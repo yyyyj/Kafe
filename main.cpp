@@ -4,7 +4,7 @@
 
 #include "kafe/kafe.hpp"
 #include "tests/tests.hpp"
-#include "libs/clipp.hpp"
+#include <clipp.hpp>
 
 int getDebugMode(bool verbose, bool interactive)
 {

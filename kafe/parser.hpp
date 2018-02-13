@@ -16,9 +16,9 @@
 #include <array>
 #include <fstream>
 
-#include "antlr4-runtime.h"
-#include "parser/KafeLexer.h"
-#include "parser/KafeParser.h"
+#include <antlr4-runtime.h>
+#include <KafeLexer.h>
+#include <KafeParser.h>
 
 /*#ifdef RUNNING_WIN
     #define popen _popen

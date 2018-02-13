@@ -19,7 +19,7 @@ out/
 *.cbp
 
 # external libs
-antlr4-runtime/
+thirdparty/
 *.jar
 
 # python precompiled files

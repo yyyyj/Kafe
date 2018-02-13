@@ -9,8 +9,9 @@
 #include <unordered_map>
 
 #include "../types.hpp"
+
 #define MPARK_EXCEPTIONS
-#include "../libs/variant.hpp"
+#include <mpark/variant.hpp>
 
 namespace kafe
 {

@@ -1,5 +1,5 @@
 #include "tests.hpp"
-#include "../libs/benchmark.hpp"
+#include <benchmark.hpp>
 #include <iostream>
 
 #define TEST_VM(name, obj) test_vm( name , #obj , obj , debug_mode );
