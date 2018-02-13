@@ -19,8 +19,8 @@ out/
 *.cbp
 
 # external libs
-thirdparty/
-*.jar
+#thirdparty/
+#*.jar
 
 # python precompiled files
 __pycache__/
