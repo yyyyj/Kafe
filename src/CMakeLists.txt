@@ -2,9 +2,10 @@ cmake_minimum_required(VERSION 3.5)
 cmake_policy(SET CMP0015 NEW)
 project(Kafe)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+#include_directories(${CMAKE_CURRENT_BINARY_DIR})
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/thirparty/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/thirparty/mpark)
 
 ANTLR(INPUT Kafe.g)
 
