@@ -1,0 +1,70 @@
+# minimum required CMAKE version
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+cmake_policy(SET CMP0015 NEW)
+project(Kafe)
+
+if(CMAKE_COMPILER_IS_GNUCC)
+  set(CMAKE_CXX_FLAGS "-std=c++14 -fpermissive -O3")
+endif()
+
+# compiler must be 11 or 14
+set(CMAKE_CXX_STANDARD 14)
+
+############ Generate runtime #################
+# macro to add dependencies to target
+#
+# Param 1 project name
+# Param 1 namespace (postfix for dependencies)
+# Param 2 Grammar file (full path)
+#
+# output
+#
+# antlr4cpp_src_files_{namespace} - src files for add_executable
+# antlr4cpp_include_dirs_{namespace} - include dir for generated headers
+# antlr4cpp_generation_{namespace} - for add_dependencies tracking
+macro(antlr4cpp_process_grammar antlr4cpp_project antlr4cpp_project_namespace antlr4cpp_grammar)
+  if(EXISTS "${ANTLR4CPP_JAR_LOCATION}")
+    message(STATUS "Found antlr tool: ${ANTLR4CPP_JAR_LOCATION}")
+  else()
+    message(FATAL_ERROR "Unable to find antlr tool. ANTLR4CPP_JAR_LOCATION:${ANTLR4CPP_JAR_LOCATION}")
+  endif()
+
+  add_custom_target("antlr4cpp_generation_${antlr4cpp_project_namespace}"
+    COMMAND ${CMAKE_COMMAND} -E make_directory kafe/parser/
+    COMMAND "${Java_JAVA_EXECUTABLE}" -jar "${ANTLR4CPP_JAR_LOCATION}" -Werror -Dlanguage=Cpp -o "kafe/parser/" -package ${antlr4cpp_project_namespace} "${antlr4cpp_grammar}"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+    DEPENDS "${antlr4cpp_grammar}"
+    )
+  # Find all the input files
+  file(GLOB generated_files kafe/parser/*.cpp)
+
+  # export generated cpp files into list
+  foreach(generated_file ${generated_files})
+    list(APPEND antlr4cpp_src_files_${antlr4cpp_project_namespace} ${generated_file})
+    set_source_files_properties(${generated_file} PROPERTIES COMPILE_FLAGS -Wno-overloaded-virtual)
+  endforeach(generated_file)
+  message(STATUS "Antlr4Cpp  ${antlr4cpp_project_namespace} Generated: ${generated_files}")
+
+  # export generated include directory
+  set(antlr4cpp_include_dirs_${antlr4cpp_project_namespace} kafe/parser)
+  message(STATUS "Antlr4Cpp ${antlr4cpp_project_namespace} include: kafe/parser")
+endmacro()
+
+# set variable pointing to the antlr tool that supports C++
+set(ANTLR4CPP_JAR_LOCATION ${PROJECT_SOURCE_DIR}/thirdparty/antlr/antlr-4.7.1-complete.jar)
+# add antrl4cpp artifacts to project environment
+# add_subdirectory("thirdparty/antlr/runtime")
+
+file(GLOB_RECURSE INCLUDE_FILES "kafe/*.hpp" "tests/*.hpp")
+file(GLOB_RECURSE SRC_FILES "kafe/*.cpp" "tests/tests.cpp" "tests/utils.cpp" "main.cpp")
+
+# Call macro to add lexer and grammar to your build dependencies.
+antlr4cpp_process_grammar(Kafe kafe ${CMAKE_CURRENT_SOURCE_DIR}/Kafe.g)
+# include generated files in project environment
+include_directories("thirdparty/include/")
+include_directories("thirdparty/antlr/runtime/src/")
+
+# add generated grammar to Kafe binary target
+add_executable(Kafe main.cpp ${antlr4cpp_src_files_antlrcpptest} ${INCLUDE_FILES} ${SRC_FILES})
+add_dependencies(Kafe antlr4cpp_generation_kafe)
+#target_link_libraries(Kafe antlr4-runtime)

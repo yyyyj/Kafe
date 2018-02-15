@@ -1,36 +1,55 @@
-# minimum required CMAKE version
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+cmake_minimum_required(VERSION 3.5)
 cmake_policy(SET CMP0015 NEW)
-project(Kafe)
 
-if(CMAKE_COMPILER_IS_GNUCC)
-  set(CMAKE_CXX_FLAGS "-std=c++14 -fpermissive -O3")
-endif()
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+# Function
+#   ANTLR(INPUT <input> (DEPENDENCIES <dependencies>))
+#
+# Description:
+#   Take an ANTLR file and produce a CMake rule to generate the corresponding
+#   C++ files.
+#
+# Notes:
+#   The ANTLR file path must be relative to ${CMAKE_CURRENT_SOURCE_DIR}
+#
+# Example:
+#   ANTLR(INPUT MyLexer.g4)
+#   ANTLR(INPUT MyParser.g4 DEPENDENCIES MyLexer.cpp)
+function(ANTLR)
+  cmake_parse_arguments(ARGUMENTS "DEPENDENCIES" "INPUT" "" ${ARGN} )
+  set(source ${ARGUMENTS_INPUT})
+  set(dependencies ${ARGUMENTS_UNPARSED_ARGUMENTS})
+  get_filename_component(source_filename ${CMAKE_CURRENT_SOURCE_DIR}/${source} NAME_WE)
+  get_filename_component(source_src_dir  ${CMAKE_CURRENT_SOURCE_DIR}/${source} DIRECTORY)
+  get_filename_component(source_gen_dir  ${CMAKE_CURRENT_BINARY_DIR}/${source} DIRECTORY)
+  add_custom_command(
+    DEPENDS
+      ${source_src_dir}/${source}
+      ${dependencies}
+    OUTPUT
+      ${source_gen_dir}/${source_filename}.h
+      ${source_gen_dir}/${source_filename}.cpp
+      ${source_gen_dir}/${source_filename}.interp
+      ${source_gen_dir}/${source_filename}.tokens
+    COMMAND
+      java
+    ARGS
+      -jar ${CMAKE_SOURCE_DIR}/antlr/antlr-4.7.1-complete.jar
+      -Dlanguage=Cpp
+      -no-listener
+      -no-visitor
+      -o ${source_gen_dir}
+      ${source_src_dir}/${source}
+  )
+  set(output ${source_gen_dir}/${source_filename}.cpp)
+endfunction()
 
-# compiler must be 11 or 14
-SET (CMAKE_CXX_STANDARD 14)
+# Build the ANTLR runtime.
+###add_subdirectory(${CMAKE_SOURCE_DIR}/antlr/antlr4-runtime)
+include_directories(${CMAKE_SOURCE_DIR}/antlr/antlr4-runtime)
 
-# set variable pointing to the antlr tool that supports C++
-set(ANTLR4CPP_JAR_LOCATION ${PROJECT_SOURCE_DIR}/thirdparty/antlr/antlr-4.7.1-complete.jar)
-# add external build for antlrcpp
-include(ExternalAntlr4Cpp)
-# add antrl4cpp artifacts to project environment
-include_directories(${ANTLR4CPP_INCLUDE_DIRS})
-link_directories(${ANTLR4CPP_LIBS})
-message(STATUS "Found antlr4cpp libs: ${ANTLR4CPP_LIBS} and includes: ${ANTLR4CPP_INCLUDE_DIRS}")
+#-------------------------------------------------------------------------------
 
-file(GLOB_RECURSE INCLUDE_FILES "kafe/*.hpp" "tests/*.hpp")
-file(GLOB_RECURSE SRC_FILES "kafe/*.cpp" "tests/tests.cpp" "tests/utils.cpp" "main.cpp")
-
-# Call macro to add lexer and grammar to your build dependencies.
-antlr4cpp_process_grammar(Kafe kafe ${CMAKE_CURRENT_SOURCE_DIR}/Kafe.g)
-# include generated files in project environment
-include_directories(${antlr4cpp_include_dirs_antlrcpptest})
-include_directories("thirdparty/include/")
-
-# add generated grammar to Kafe binary target
-add_executable(Kafe main.cpp ${antlr4cpp_src_files_antlrcpptest} ${INCLUDE_FILES} ${SRC_FILE})
-add_dependencies(Kafe antlr4cpp antlr4cpp_generation_kafe)
-target_link_libraries(Kafe antlr4-runtime)
+add_subdirectory(src)
