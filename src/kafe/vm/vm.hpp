@@ -5,6 +5,7 @@
 #include "../types.hpp"
 #include "../utils.hpp"
 #include "value.hpp"
+#include "../myexception.hpp"
 
 #include <string>
 #include <vector>
@@ -36,6 +37,8 @@ namespace kafe
         bytecode_t m_bytecode;
         int m_debug_mode;
         int m_interactive_advance;
+        // storing all the execptions to display them when the time has come
+        std::vector<Exception> m_exceptions;
 
         void   push      (Value value);
         Value  pop       ();
@@ -62,6 +65,7 @@ namespace kafe
         void exec_handleStructures   (inst_t instruction);
         void exec_handleSegments     (inst_t instruction);
         void exec_handleBuiltins     ();
+        void raiseException          (int error, const std::string& message);
 
         void interactiveMode(inst_t instruction, bool displayOnly=false);
 

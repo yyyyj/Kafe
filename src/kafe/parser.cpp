@@ -49,6 +49,7 @@ namespace kafe
         std::ifstream kafeFile("examples/plaintext/all_kw_test.kafe");
         if (kafeFile.is_open())
         {
+            std::cout << "file found" << std::endl;
             antlr4::ANTLRInputStream input(kafeFile);
             KafeLexer lexer(&input);
             antlr4::CommonTokenStream tokens(&lexer);
@@ -62,8 +63,8 @@ namespace kafe
             std::cout << tree->toStringTree(&parser) << std::endl;
             kafeFile.close();
         }
-        else
-            { throw std::runtime_error("Could not open wanted file"); }
+        /*else
+            { throw std::runtime_error("Could not open wanted file"); }*/
     }
 
 }  // namespace kafe

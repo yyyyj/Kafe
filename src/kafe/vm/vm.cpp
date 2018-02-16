@@ -25,7 +25,13 @@ namespace kafe
     Value VM::pop()
     {
         // return last element put on the stack
-        return abc::pop(m_stack, m_stack_size - 1);
+        if (m_stack_size - 1 >= 0)
+            { return abc::pop(m_stack, m_stack_size - 1); }
+        else
+        {
+            raiseException(Exception::LOGIC, "Can not pop from an empty value stack");
+            return Value(ValueType::Unknown);
+        }
     }
 
     void VM::clear()
@@ -34,6 +40,7 @@ namespace kafe
         m_stack.clear();
         m_stack_size = m_ip = m_interactive_advance = 0;
         m_variables.clear();
+        m_exceptions.clear();
     }
 
     bool VM::findVar(const std::string& varName)
@@ -65,7 +72,8 @@ namespace kafe
     {
         if (i < m_bytecode.size())
             return m_bytecode[i];
-        throw std::runtime_error("Index out of range, can not get next byte ! => Malformed bytecode");
+        raiseException(Exception::MALFORMED, "Index out of range, can not get next byte");
+        return 0x00;
     }
 
     uint8B_t VM::readXBytesInt(unsigned char bytesCount)
@@ -107,7 +115,7 @@ namespace kafe
         while (true)
         {
             inst_t byte = readByte(m_ip++);
-            if (byte != 0x0)
+            if (byte != 0x00)
                 { work += byte; }
             else
                 { break; }
@@ -129,7 +137,7 @@ namespace kafe
         // jump to the segment
         Value p = pop();
         if (p.type != ValueType::Addr)
-            { throw std::logic_error("Can not jump to something which isn't an address"); }
+            { raiseException(Exception::LOGIC, "Can not jump to something which isn't an address"); }
         // -1 because we're doing this right before the end of a loop, so we'll do a ++m_ip after
         m_ip = p.get<addr_t>() - 1;
 
@@ -159,7 +167,7 @@ namespace kafe
             }
         }
         else
-            { throw std::logic_error("Can not return from a non-segment"); }
+            { raiseException(Exception::LOGIC, "Can not return from a non-segment"); }
     }
 
     void VM::exec_handleDataTypesDecl(inst_t instruction)
@@ -273,7 +281,7 @@ namespace kafe
                 if (findVar(name))
                     { delVar(name); }
                 else
-                    { throw std::logic_error("Can not delete a non-existing variable"); }
+                    { raiseException(Exception::LOGIC, "Can not delete a non-existing variable"); }
 
                 break;
             }
@@ -313,17 +321,17 @@ namespace kafe
                                 if (pse->val.type == val.type)
                                     { a.getRef<Structure>().add(name.get<std::string>(), val); }
                                 else
-                                    { throw std::logic_error("Type error while trying to set an argument of a structure"); }
+                                    { raiseException(Exception::LOGIC, "Type error while trying to set an argument of a structure"); }
                             }
                             else
-                                { throw std::runtime_error("Can not set a non-member of a structure using a structure declaration"); }
+                                { raiseException(Exception::RUNTIME, "Can not set a non-member of a structure using a structure declaration"); }
                         }
                         else
-                            { throw std::logic_error("The name of the member to set in the given structure isn't a string"); }
+                            { raiseException(Exception::LOGIC, "The name of the member to set in the given structure isn't a string"); }
                     }
                 }
                 else
-                    { throw std::runtime_error("Can not use an undefined structure"); }
+                    { raiseException(Exception::LOGIC, "Can not use an undefined structure"); }
                 push(a);
 
                 break;
@@ -344,7 +352,7 @@ namespace kafe
                     if (name.type == ValueType::Var)
                         { m_struct_definitions[name.get<std::string>()].add(name.get<std::string>(), val); }
                     else
-                        { throw std::logic_error("Expecting a variable when declaring a structure's member"); }
+                        { raiseException(Exception::LOGIC, "Expecting a variable when declaring a structure's member"); }
                 }
 
                 break;
@@ -362,10 +370,10 @@ namespace kafe
                     if (pse != nullptr)
                         { push(pse->val); }
                     else
-                        { throw std::runtime_error("Can not get a non-existing member of a structure"); }
+                        { raiseException(Exception::RUNTIME, "Can not get a non-existing member of a structure"); }
                 }
                 else
-                    { throw std::logic_error("Can not get a member of a non-existing structure"); }
+                    { raiseException(Exception::LOGIC, "Can not get a member of a non-existing structure"); }
 
                 break;
             }
@@ -381,7 +389,7 @@ namespace kafe
                     getRefVar(name).getRef<Structure>().set(member, pop());
                 }
                 else
-                    { throw std::logic_error("Can not set a member of a non-existing structure"); }
+                    { raiseException(Exception::LOGIC, "Can not set a member of a non-existing structure"); }
 
                 break;
             }
@@ -400,7 +408,7 @@ namespace kafe
                         { push(Value(ValueType::Bool, false)); }
                 }
                 else
-                    { throw std::logic_error("Can not get a member of a non-existing structure"); }
+                    { raiseException(Exception::LOGIC, "Can not get a member of a non-existing structure"); }
 
                 break;
             }
@@ -421,7 +429,7 @@ namespace kafe
                 if (var_name.type == ValueType::Var)
                     { setVar(var_name.get<std::string>(), val); }
                 else
-                    { throw std::logic_error("Can not store a value into a non-variable"); }
+                    { raiseException(Exception::LOGIC, "Can not store a value into a non-variable"); }
 
                 break;
             }
@@ -436,7 +444,7 @@ namespace kafe
                 if (findVar(v))
                     { push(getVar(v)); }
                 else
-                    { throw std::runtime_error("Can not push an undefined variable onto the stack"); }
+                    { raiseException(Exception::RUNTIME, "Can not push an undefined variable onto the stack"); }
 
                 break;
             }
@@ -453,7 +461,7 @@ namespace kafe
                     push(a); push(a);
                 }
                 else
-                    { throw std::logic_error("Can not duplicate the last value of the stack if there isn't any"); }
+                    { raiseException(Exception::LOGIC, "Can not duplicate the last value of the stack if there isn't any"); }
 
                 break;
             }
@@ -584,10 +592,10 @@ namespace kafe
                         push(c);
                     }
                     else
-                        { throw std::logic_error("Can not add two " + convertTypeToString(a.type)); }
+                        { raiseException(Exception::LOGIC, "Can not add two " + convertTypeToString(a.type)); }
                 }
                 else
-                    { throw std::logic_error("Can not add two variables of heterogeneous types"); }
+                    { raiseException(Exception::LOGIC, "Can not add two variables of heterogeneous types"); }
 
                 break;
             }
@@ -612,10 +620,10 @@ namespace kafe
                         push(c);
                     }
                     else
-                        { throw std::logic_error("Can not substract two " + convertTypeToString(a.type)); }
+                        { raiseException(Exception::LOGIC, "Can not substract two " + convertTypeToString(a.type)); }
                 }
                 else
-                    { throw std::logic_error("Can not substract two variables of heterogeneous types"); }
+                    { raiseException(Exception::LOGIC, "Can not substract two variables of heterogeneous types"); }
 
                 break;
             }
@@ -635,10 +643,15 @@ namespace kafe
 
             default:
             {
-                throw std::runtime_error("Invalid byte used to identify a non-existing procedure : " +
+                raiseException(Exception::MALFORMED, "Invalid byte used to identify a non-existing procedure : " +
                                          abc::str((unsigned) instruction));
             }
         }
+    }
+
+    void VM::raiseException(int error, const std::string& message)
+    {
+        m_exceptions.push_back(Exception(error, message, m_ip));
     }
 
     void VM::interactiveMode(inst_t instruction, bool displayOnly)
@@ -734,7 +747,7 @@ namespace kafe
     {
         // open the file and get its size
         std::ifstream ifs(filePath, std::ios::binary | std::ios::ate);
-        if (!ifs.good())
+        if (!ifs.good()) /// TODO : use raiseException ?
             { throw std::runtime_error("Can not open the given file"); }
         std::ifstream::pos_type pos = ifs.tellg();
         // reserve the appropriate size
@@ -793,7 +806,7 @@ namespace kafe
                 else
                 {
                     if (instruction != 0x00)
-                        { throw std::runtime_error("Can not identify the instruction " + abc::hexstr((unsigned) instruction)); }
+                        { raiseException(Exception::MALFORMED, "Can not identify the instruction " + abc::hexstr((unsigned) instruction)); }
                 }
 
                 if (m_debug_mode & VM::FLAG_INTERACTIVE && (m_interactive_advance == 0 || m_interactive_advance <= old_ip))
@@ -809,8 +822,16 @@ namespace kafe
             }
             if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << std::endl << std::endl;
 
+            if (!m_exceptions.empty())
+            {
+                // display exception list
+                for (auto& e : m_exceptions)
+                    { std::cerr << e << std::endl; }
+            }
+
             return 0;
         }
+        /// TODO : use raiseException ?
         else
             { throw std::logic_error("Can not run if no bytecode were given"); }
     }

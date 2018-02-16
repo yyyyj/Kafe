@@ -91,6 +91,9 @@ int main(int argc, char* argv[])
         }
 
         case mode::tests:
+            std::cout << "antlr" << std::endl;
+            kafe::testANTLR();
+            std::cout << "end" << std::endl;
             return start_tests(getDebugMode(verbose, interactive));
         }
     }
