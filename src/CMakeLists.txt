@@ -13,6 +13,5 @@ file(GLOB_RECURSE SRC_FILES "./kafe/*.cpp" "./tests.cpp" "./main.cpp")
 
 add_executable(Kafe main.cpp ${INCLUDE_FILES} ${SRC_FILES})
 target_link_libraries(Kafe antlr4_shared)
-message(STATUS "searching for libraries in ${CMAKE_HOME_DIRECTORY}/dist")
 link_directories("${CMAKE_HOME_DIRECTORY}/dist")
-target_link_libraries(Kafe antlr4-runtime)
+# target_link_libraries(Kafe antlr4-runtime)
