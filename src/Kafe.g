@@ -11,11 +11,12 @@ block
 stat
     : 'dyn' NAME ':' type '=' explist
     | NAME '=' explist
+    | NAME operatorMathAffectation explist
     | functioncall
     | 'for' NAME 'in' exp 'do' block 'end'
     | 'if' exp 'then' block ('elif' exp 'then' block)* ('else' block)? 'end'
     | 'while' exp 'do' block 'end'
-    | 'func' NAME ':' type argslist? funcbody
+    | 'fun' NAME ':' type argslist? funcbody
     | 'struct' NAME argslist? structbody
     | getstructmember
     ;
@@ -41,12 +42,8 @@ getstructmember
     : NAME '.' (NAME | getstructmember)
     ;
 
-funcname_or_member
-    : NAME | getstructmember
-    ;
-
 functioncall
-    : '(' funcname_or_member explist* ')'
+    : '(' (NAME | getstructmember) explist* ')'
     ;
 
 exp
@@ -54,6 +51,7 @@ exp
     | number
     | string
     | list
+    | NAME
     | functioncall
     | getstructmember
     | <assoc=right> exp operatorPower exp
@@ -105,6 +103,9 @@ operatorUnary
 
 operatorPower
     : '**';
+
+operatorMathAffectation
+    : '+=' | '-=' | '*=' | '/=' | '%=' | '**=' | '..=' | '&=' | '|=' | '<<=' | '>>=' | '^=';
 
 number
     : INT | HEX | FLOAT | HEX_FLOAT
@@ -191,7 +192,7 @@ HexDigit
     ;
 
 COMMENT
-    : ('#' .*?) -> channel(HIDDEN)
+    : '#' ~[\r\n]* -> skip
     ;
 
 WS  

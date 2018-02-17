@@ -2,9 +2,9 @@ struct Character -- _name:str, _life:int
     dyn name : str = _name
     dyn life : int = _life
     
-    fun update : void -- dt:double
+    fun update : int -- dt:double # always return a status code if the function has usually no value to give back
         # do stuff
-        ret
+        ret 0
 end
 
 dyn player : struct Character = "John Doe" 120

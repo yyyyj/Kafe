@@ -16,7 +16,7 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
     BENCHMARK_F("loading", vm.load(bytecode), ns)
 
     if (debug_mode & kafe::VM::FLAG_BASIC_DEBUG)
-        { std::cerr << std::endl << "Calling order" << std::endl << "-------------" << std::endl; }
+        std::cerr << std::endl << "Calling order" << std::endl << "-------------" << std::endl;
 
     vm.exec(); vm.setMode(0);
 
@@ -27,13 +27,13 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
     {
         std::cerr << std::endl << "Stack (" << vm.getStack().size() << ")" << std::endl << "-------------" << std::endl;
         for (std::size_t j=vm.getStack().size(); j > 0; --j)
-            { std::cerr << "[" << j - 1 << "] " << kafe::convertTypeToString(vm.getStack()[j - 1].type) << " " << vm.getStack()[j - 1] << std::endl; }
+            std::cerr << "[" << j - 1 << "] " << kafe::convertTypeToString(vm.getStack()[j - 1].type) << " " << vm.getStack()[j - 1] << std::endl;
     }
     if (vm.getVariables().size())
     {
         std::cerr << std::endl   << std::endl << "Variables (" << vm.getVariables().size() << ")" << std::endl << "-------------" << std::endl;
         for (auto& element : vm.getVariables())
-            { std::cerr << element.first << " = " << element.second << " (" << kafe::convertTypeToString(element.second.type) << ")" << std::endl; }
+            std::cerr << element.first << " = " << element.second << " (" << kafe::convertTypeToString(element.second.type) << ")" << std::endl;
     }
     std::cerr << std::endl << "=================================" << std::endl << std::endl;
 }

@@ -21,8 +21,10 @@ public:
     T__32 = 33, T__33 = 34, T__34 = 35, T__35 = 36, T__36 = 37, T__37 = 38, 
     T__38 = 39, T__39 = 40, T__40 = 41, T__41 = 42, T__42 = 43, T__43 = 44, 
     T__44 = 45, T__45 = 46, T__46 = 47, T__47 = 48, T__48 = 49, T__49 = 50, 
-    T__50 = 51, T__51 = 52, T__52 = 53, NAME = 54, NORMALSTRING = 55, CHARSTRING = 56, 
-    INT = 57, HEX = 58, FLOAT = 59, HEX_FLOAT = 60, COMMENT = 61, WS = 62
+    T__50 = 51, T__51 = 52, T__52 = 53, T__53 = 54, T__54 = 55, T__55 = 56, 
+    T__56 = 57, T__57 = 58, T__58 = 59, T__59 = 60, T__60 = 61, T__61 = 62, 
+    T__62 = 63, T__63 = 64, T__64 = 65, NAME = 66, NORMALSTRING = 67, CHARSTRING = 68, 
+    INT = 69, HEX = 70, FLOAT = 71, HEX_FLOAT = 72, COMMENT = 73, WS = 74
   };
 
   KafeLexer(antlr4::CharStream *input);
