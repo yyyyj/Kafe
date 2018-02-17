@@ -11,7 +11,7 @@
 
 # Command line options for the Kafe VM
 
-The VM is designed to read and execute bytecode, but it can also turn your kafe code into bytecode.
+The VM is designed to read and execute bytecode, but it can also turn your Kafe code into bytecode, parsing it using ANTLR4.
 
 ```bash
 /kafe-master/$ kafe help

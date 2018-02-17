@@ -12,6 +12,8 @@ Now you know everything.
 
 * CMake (>= 3.5)
 
+* Java 8 (to create the parser if you want to tweak the grammar)
+
 # Goal
 
 The goal is to make a programming language fast enough to be used in video-games, but it's also a toy for me because I am using it to discover the kind of problems the developers of Java 
