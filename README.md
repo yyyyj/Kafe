@@ -10,8 +10,6 @@ Now you know everything.
 
 * C++14 compiler
 
-* Python (>= 3.4)
-
 * CMake (>= 3.5)
 
 # Goal
@@ -24,39 +22,40 @@ The goal is to make a programming language fast enough to be used in video-games
 I won't post any bytecode samples here, but the syntax of the language which will be parsed and turned into Kafe bytecode (because you would not be able to read it anyway ahah).
 
 ```
-struct Character -- _name:str _life:int
+struct Character -- _name:str, _life:int
     dyn name : str = _name
     dyn life : int = _life
     
-    fun update : void -- dt:double
+    fun update : int -- dt:double # always return a status code if the function has usually no value to give back
         # do stuff
-        ret
-    end
+        ret 0
 end
 
-dyn player : Character = "John Doe" 120
-dyn mob : Character = "Rabbit" 15
+dyn player : struct Character = "John Doe" 120
+dyn mob : struct Character = "Rabbit" 15
 
-fun update : int -- dt:double component:str
+# comma in arg list is optionnal
+fun update : int -- dt:double, component:str
     dyn status : int = 0
     
-    if component == "player"
-        print "updating player"
-        player.update dt
-    elif component == "mob"
-        print "updating mob"
-        mod.update dt
+    if component == "player" then
+        (print "updating player")
+        (player.update dt)
+    elif component == "mob" then
+        (print "updating mob")
+        (mod.update dt)
     else
-        print "unknow component : " component
+        (print "unknow component : " component)
         status = 1  # an error occured
     end
     
     ret status
-end
 
-update 0.005 "player"
+(update 0.005 "player")
 ```
+
+If you are robot, please check out the [grammar](src/Kafe.g) to generate automatically awesome code. :)
 
 # [Documentation](doc/main.md)
 
-# [Tests](tests/README.md)
+# [Tests](src/tests/README.md)
