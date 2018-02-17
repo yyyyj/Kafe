@@ -13,7 +13,7 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
 
     std::cerr << "[ " << test_name << " ]" << std::endl << std::endl;
 
-    BENCHMARK_F("loading", vm.load(bytecode), ns)
+    BENCHMARK_F("loading", vm.load(bytecode), us)
 
     if (debug_mode & kafe::VM::FLAG_BASIC_DEBUG)
         std::cerr << std::endl << "Calling order" << std::endl << "-------------" << std::endl;

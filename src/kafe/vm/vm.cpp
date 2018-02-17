@@ -33,7 +33,9 @@ namespace kafe
     {
         // return last element put on the stack
         if (m_stack_size - 1 >= 0)
-            return abc::pop(m_stack, m_stack_size - 1);
+        {
+            return abc::pop(m_stack, --m_stack_size);
+        }
         else
             raiseException(Exception::CRITIC, "Can not pop from an empty value stack");
     }
@@ -832,13 +834,13 @@ namespace kafe
                 }
                 else if (m_debug_mode & VM::FLAG_INTERACTIVE && m_interactive_advance > old_ip)
                     interactiveMode(instruction, /* displayOnly= */ true);
+                
+                if (!m_exceptions.empty())
+                    displayTraceback();
 
                 ++old_ip;
             }
             if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << std::endl << std::endl;
-
-            if (!m_exceptions.empty())
-                displayTraceback();
 
             return 0;
         }
