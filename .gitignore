@@ -22,8 +22,8 @@ out/
 *.vcxproj.filters
 
 # external libs
-antlr/demo/
-antlr/cpp_runtime/antlrcpp*
+antlr/demo/*
+antlr/cpp_runtime/runtime/antlrcpp*
 
 # python precompiled files
 __pycache__/
