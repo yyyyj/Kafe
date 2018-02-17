@@ -39,19 +39,19 @@ fun update : int -- dt:double, component:str
     dyn status : int = 0
     
     if component == "player" then
-        (print "updating player")
-        (player.update dt)
+        print("updating player")
+        player.update(dt)
     elif component == "mob" then
-        (print "updating mob")
-        (mod.update dt)
+        print("updating mob")
+        mod.update(dt)
     else
-        (print "unknow component : " component)
+        print("unknow component : " component)
         status = 1  # an error occured
     end
     
     ret status
 
-(update 0.005 "player")
+update(0.005 "player")
 ```
 
 If you are robot, please check out the [grammar](src/Kafe.g) to generate automatically awesome code. :)

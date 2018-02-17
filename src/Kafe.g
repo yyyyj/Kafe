@@ -43,7 +43,7 @@ getstructmember
     ;
 
 functioncall
-    : '(' (NAME | getstructmember) explist* ')'
+    : (NAME | getstructmember) '(' explist* ')'
     ;
 
 exp
