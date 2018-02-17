@@ -66,6 +66,7 @@ namespace kafe
         void exec_handleSegments     (inst_t instruction);
         void exec_handleBuiltins     ();
         void raiseException          (int error, const std::string& message);
+        void displayTraceback        ();
 
         void interactiveMode(inst_t instruction, bool displayOnly=false);
 
@@ -80,7 +81,6 @@ namespace kafe
         bytecode_t readFile(const std::string& filePath);
 
         int  execFromFile(const std::string& filePath);
-        int  exec        (bytecode_t bytecode);
         void setMode     (int mode);
         void load        (bytecode_t bytecode);
         int  exec        ();

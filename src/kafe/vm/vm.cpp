@@ -6,6 +6,13 @@
 
 #include "vm.hpp"
 
+#ifdef _MSC_VER
+    // if compiling with visual studio, disable those warnings
+    #pragma warning (disable: 4715)  // a function isn't returning a value
+    #pragma warning (disable: 4244)  // conversion from addr_t to int, possible loss of data
+    #pragma warning (disable: 4334)  // shift result of 32 bits implicitly converted in 64 bits
+#endif
+
 namespace kafe
 {
 
@@ -648,6 +655,18 @@ namespace kafe
     void VM::raiseException(int error, const std::string& message)
     {
         m_exceptions.push_back(Exception(error, message, m_ip));
+        if (error == Exception::CRITIC)
+            displayTraceback();
+    }
+
+    void VM::displayTraceback()
+    {
+        // display exception list
+        std::cerr << std::endl << "Traceback (most recent call last) :" << std::endl;
+        for (auto& e : m_exceptions)
+            std::cerr << '\t' << e << std::endl;
+        // exit the program
+        throw std::runtime_error("Fatal error occured, see traceback");
     }
 
     void VM::interactiveMode(inst_t instruction, bool displayOnly)
@@ -819,14 +838,7 @@ namespace kafe
             if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << std::endl << std::endl;
 
             if (!m_exceptions.empty())
-            {
-                // display exception list
-                std::cerr << "Traceback (most recent call last) :" << std::endl;
-                for (auto& e : m_exceptions)
-                    std::cerr << e << std::endl;
-                // exit the program
-                throw std::runtime_error;
-            }
+                displayTraceback();
 
             return 0;
         }

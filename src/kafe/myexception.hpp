@@ -19,6 +19,8 @@ namespace kafe
         static const int RUNTIME = 2;
         static const int MALFORMED = 4;
 
+        static std::string errorCodeToString(int);
+
         Exception() = delete;
         Exception(int);
         Exception(int, const std::string&, addr_t);

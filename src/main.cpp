@@ -73,8 +73,7 @@ int main(int argc, char* argv[])
         {
         default:
         case mode::help:
-            std::cerr << make_man_page(cli, argv[0], fmt)
-                            .append_section("LICENSE", "        Mozilla Public License 2.0")
+            std::cerr << make_man_page(cli, argv[0], fmt).append_section("LICENSE", "        Mozilla Public License 2.0")
                       << std::endl;
             return 0;
 
@@ -100,7 +99,7 @@ int main(int argc, char* argv[])
     else
     {
         for (const auto& arg : wrong)
-            { std::cerr << "'" << arg << "'" << " ins't a valid argument" << std::endl; }
+            std::cerr << "'" << arg << "'" << " ins't a valid argument" << std::endl;
         std::cerr << "Usage:" << std::endl
                   << usage_lines(cli, argv[0], fmt) << std::endl
                   << "Options:" << std::endl

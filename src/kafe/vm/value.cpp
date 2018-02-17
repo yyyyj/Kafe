@@ -14,7 +14,7 @@ namespace kafe
         else if (t == ValueType::Var)    return "VAR";
         else if (t == ValueType::Struct) return "STRUCT";
         else if (t == ValueType::Addr)   return "ADDR";
-        else                             return "???";
+        else                             return "UNKNOWN-DATA-TYPE";
     }
 
     // Structure

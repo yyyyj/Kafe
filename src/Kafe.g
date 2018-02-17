@@ -17,6 +17,7 @@ stat
     | 'while' exp 'do' block 'end'
     | 'func' NAME ':' type argslist? funcbody
     | 'struct' NAME argslist? structbody
+    | getstructmember
     ;
 
 retstat
@@ -36,8 +37,16 @@ explist
     : exp exp*
     ;
 
+getstructmember
+    : NAME '.' (NAME | getstructmember)
+    ;
+
+funcname_or_member
+    : NAME | getstructmember
+    ;
+
 functioncall
-    : '(' NAME explist* ')'
+    : '(' funcname_or_member explist* ')'
     ;
 
 exp
@@ -46,6 +55,7 @@ exp
     | string
     | list
     | functioncall
+    | getstructmember
     | <assoc=right> exp operatorPower exp
     | operatorUnary exp
     | exp operatorMulDivMod exp
@@ -181,7 +191,7 @@ HexDigit
     ;
 
 COMMENT
-    : '#' .*? -> channel(HIDDEN)
+    : ('#' .*?) -> channel(HIDDEN)
     ;
 
 WS  

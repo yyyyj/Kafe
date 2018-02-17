@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 3.5)
 cmake_policy(SET CMP0015 NEW)
 project(Kafe)
 
+message(STATUS "building project Kafe")
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(GLOB_RECURSE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 
 ANTLR(INPUT Kafe.g)
 
@@ -13,5 +15,4 @@ file(GLOB_RECURSE SRC_FILES "./kafe/*.cpp" "./tests.cpp" "./main.cpp")
 
 add_executable(Kafe main.cpp ${INCLUDE_FILES} ${SRC_FILES})
 target_link_libraries(Kafe antlr4_shared)
-link_directories("${CMAKE_HOME_DIRECTORY}/dist")
-# target_link_libraries(Kafe antlr4-runtime)
+link_directories(GLOB_RECURSE "${CMAKE_HOME_DIRECTORY}/dist")

@@ -22,6 +22,7 @@ function(ANTLR)
   get_filename_component(source_filename ${CMAKE_CURRENT_SOURCE_DIR}/${source} NAME_WE)
   get_filename_component(source_src_dir  ${CMAKE_CURRENT_SOURCE_DIR}/${source} DIRECTORY)
   get_filename_component(source_gen_dir  ${CMAKE_CURRENT_BINARY_DIR}/${source} DIRECTORY)
+  message(STATUS "the grammar ${source} should be now used to generate a new parser")
   add_custom_command(
     DEPENDS
       ${source_src_dir}/${source}
