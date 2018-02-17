@@ -2,6 +2,7 @@
 #define kafe_myexception
 
 #include <string>
+#include "types.hpp"
 
 namespace kafe
 {
@@ -9,17 +10,18 @@ namespace kafe
     {
     private:
         int m_code;
-        int m_line;
+        addr_t m_line;
         std::string m_message;
 
     public:
+        static const int CRITIC = 0;
         static const int LOGIC = 1;
         static const int RUNTIME = 2;
-        static const int MALFORMED = 3;
+        static const int MALFORMED = 4;
 
         Exception() = delete;
         Exception(int);
-        Exception(int, const std::string&, int);
+        Exception(int, const std::string&, addr_t);
         Exception(const Exception&);
         friend std::ostream& operator<<(std::ostream&, const Exception&);
     };

@@ -7,7 +7,7 @@ namespace kafe
     Exception::Exception(int error) : m_code(error), m_line(0), m_message("")
     {}
 
-    Exception::Exception(int error, const std::string& message, int line) :
+    Exception::Exception(int error, const std::string& message, addr_t line) :
         m_code(error)
         , m_line(line)
         , m_message(message)

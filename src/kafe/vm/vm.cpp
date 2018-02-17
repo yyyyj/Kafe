@@ -26,12 +26,9 @@ namespace kafe
     {
         // return last element put on the stack
         if (m_stack_size - 1 >= 0)
-            { return abc::pop(m_stack, m_stack_size - 1); }
+            return abc::pop(m_stack, m_stack_size - 1);
         else
-        {
-            raiseException(Exception::LOGIC, "Can not pop from an empty value stack");
-            return Value(ValueType::Unknown);
-        }
+            raiseException(Exception::CRITIC, "Can not pop from an empty value stack");
     }
 
     void VM::clear()
@@ -72,15 +69,14 @@ namespace kafe
     {
         if (i < m_bytecode.size())
             return m_bytecode[i];
-        raiseException(Exception::MALFORMED, "Index out of range, can not get next byte");
-        return 0x00;
+        raiseException(Exception::CRITIC, "Index out of range, can not get next byte");
     }
 
     uint8B_t VM::readXBytesInt(unsigned char bytesCount)
     {
         uint8B_t v = readByte(++m_ip);
         for (unsigned char k=1; k < bytesCount; ++k)
-            { v = (v << 8) + readByte(++m_ip); }
+            v = (v << 8) + readByte(++m_ip);
         return v;
     }
 
@@ -116,9 +112,9 @@ namespace kafe
         {
             inst_t byte = readByte(m_ip++);
             if (byte != 0x00)
-                { work += byte; }
+                work += byte;
             else
-                { break; }
+                break;
         }
         --m_ip;
         return work;
@@ -137,7 +133,7 @@ namespace kafe
         // jump to the segment
         Value p = pop();
         if (p.type != ValueType::Addr)
-            { raiseException(Exception::LOGIC, "Can not jump to something which isn't an address"); }
+            raiseException(Exception::LOGIC, "Can not jump to something which isn't an address");
         // -1 because we're doing this right before the end of a loop, so we'll do a ++m_ip after
         m_ip = p.get<addr_t>() - 1;
 
@@ -167,7 +163,7 @@ namespace kafe
             }
         }
         else
-            { raiseException(Exception::LOGIC, "Can not return from a non-segment"); }
+            raiseException(Exception::MALFORMED, "Can not return from a non-segment");
     }
 
     void VM::exec_handleDataTypesDecl(inst_t instruction)
@@ -279,9 +275,9 @@ namespace kafe
 
                 std::string name = readString();
                 if (findVar(name))
-                    { delVar(name); }
+                    delVar(name);
                 else
-                    { raiseException(Exception::LOGIC, "Can not delete a non-existing variable"); }
+                    raiseException(Exception::LOGIC, "Can not delete a non-existing variable");
 
                 break;
             }
@@ -319,19 +315,19 @@ namespace kafe
                             if (pse != nullptr)
                             {
                                 if (pse->val.type == val.type)
-                                    { a.getRef<Structure>().add(name.get<std::string>(), val); }
+                                    a.getRef<Structure>().add(name.get<std::string>(), val);
                                 else
-                                    { raiseException(Exception::LOGIC, "Type error while trying to set an argument of a structure"); }
+                                    raiseException(Exception::LOGIC, "Type error while trying to set an argument of a structure");
                             }
                             else
-                                { raiseException(Exception::RUNTIME, "Can not set a non-member of a structure using a structure declaration"); }
+                                raiseException(Exception::RUNTIME, "Can not set a non-member of a structure using a structure declaration");
                         }
                         else
-                            { raiseException(Exception::LOGIC, "The name of the member to set in the given structure isn't a string"); }
+                            raiseException(Exception::LOGIC, "The name of the member to set in the given structure isn't a string");
                     }
                 }
                 else
-                    { raiseException(Exception::LOGIC, "Can not use an undefined structure"); }
+                    raiseException(Exception::LOGIC, "Can not use an undefined structure");
                 push(a);
 
                 break;
@@ -350,9 +346,9 @@ namespace kafe
                     Value val = pop();
 
                     if (name.type == ValueType::Var)
-                        { m_struct_definitions[name.get<std::string>()].add(name.get<std::string>(), val); }
+                        m_struct_definitions[name.get<std::string>()].add(name.get<std::string>(), val);
                     else
-                        { raiseException(Exception::LOGIC, "Expecting a variable when declaring a structure's member"); }
+                        raiseException(Exception::LOGIC, "Expecting a variable when declaring a structure's member");
                 }
 
                 break;
@@ -368,12 +364,12 @@ namespace kafe
                     std::string member = readString();
                     StructElem* pse = getRefVar(name).getRef<Structure>().findMember(member);
                     if (pse != nullptr)
-                        { push(pse->val); }
+                        push(pse->val);
                     else
-                        { raiseException(Exception::RUNTIME, "Can not get a non-existing member of a structure"); }
+                        raiseException(Exception::RUNTIME, "Can not get a non-existing member of a structure");
                 }
                 else
-                    { raiseException(Exception::LOGIC, "Can not get a member of a non-existing structure"); }
+                    raiseException(Exception::LOGIC, "Can not get a member of a non-existing structure");
 
                 break;
             }
@@ -389,7 +385,7 @@ namespace kafe
                     getRefVar(name).getRef<Structure>().set(member, pop());
                 }
                 else
-                    { raiseException(Exception::LOGIC, "Can not set a member of a non-existing structure"); }
+                    raiseException(Exception::LOGIC, "Can not set a member of a non-existing structure");
 
                 break;
             }
@@ -403,12 +399,12 @@ namespace kafe
                 {
                     std::string member = readString();
                     if (getRefVar(name).getRef<Structure>().findMember(member) != nullptr)
-                        { push(Value(ValueType::Bool, true)); }
+                        push(Value(ValueType::Bool, true));
                     else
-                        { push(Value(ValueType::Bool, false)); }
+                        push(Value(ValueType::Bool, false));
                 }
                 else
-                    { raiseException(Exception::LOGIC, "Can not get a member of a non-existing structure"); }
+                    raiseException(Exception::LOGIC, "Can not get a member of a non-existing structure");
 
                 break;
             }
@@ -427,9 +423,9 @@ namespace kafe
                 Value val = pop();
 
                 if (var_name.type == ValueType::Var)
-                    { setVar(var_name.get<std::string>(), val); }
+                    setVar(var_name.get<std::string>(), val);
                 else
-                    { raiseException(Exception::LOGIC, "Can not store a value into a non-variable"); }
+                    raiseException(Exception::LOGIC, "Can not store a value into a non-variable");
 
                 break;
             }
@@ -442,9 +438,9 @@ namespace kafe
                 std::string v = readString();
                 // if the variable can be found, push it on the stack
                 if (findVar(v))
-                    { push(getVar(v)); }
+                    push(getVar(v));
                 else
-                    { raiseException(Exception::RUNTIME, "Can not push an undefined variable onto the stack"); }
+                    raiseException(Exception::RUNTIME, "Can not push an undefined variable onto the stack");
 
                 break;
             }
@@ -461,7 +457,7 @@ namespace kafe
                     push(a); push(a);
                 }
                 else
-                    { raiseException(Exception::LOGIC, "Can not duplicate the last value of the stack if there isn't any"); }
+                    raiseException(Exception::LOGIC, "Can not duplicate the last value of the stack if there isn't any");
 
                 break;
             }
@@ -498,7 +494,7 @@ namespace kafe
                     if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << 1 + ((unsigned) m_ip) << std::endl;
                 }
                 else
-                    { pop(); }  // remove the address from the stack
+                    pop();  // remove the address from the stack
 
                 break;
             }
@@ -514,7 +510,7 @@ namespace kafe
                     if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "    jumping to : " << 1 + ((unsigned) m_ip) << std::endl;
                 }
                 else
-                    { pop(); }  // remove the address from the stack
+                    pop();  // remove the address from the stack
 
                 break;
             }
@@ -592,10 +588,10 @@ namespace kafe
                         push(c);
                     }
                     else
-                        { raiseException(Exception::LOGIC, "Can not add two " + convertTypeToString(a.type)); }
+                        raiseException(Exception::LOGIC, "Can not add two " + convertTypeToString(a.type));
                 }
                 else
-                    { raiseException(Exception::LOGIC, "Can not add two variables of heterogeneous types"); }
+                    raiseException(Exception::LOGIC, "Can not add two variables of heterogeneous types");
 
                 break;
             }
@@ -620,10 +616,10 @@ namespace kafe
                         push(c);
                     }
                     else
-                        { raiseException(Exception::LOGIC, "Can not substract two " + convertTypeToString(a.type)); }
+                        raiseException(Exception::LOGIC, "Can not substract two " + convertTypeToString(a.type));
                 }
                 else
-                    { raiseException(Exception::LOGIC, "Can not substract two variables of heterogeneous types"); }
+                    raiseException(Exception::LOGIC, "Can not substract two variables of heterogeneous types");
 
                 break;
             }
@@ -665,9 +661,9 @@ namespace kafe
         for (std::size_t i=0; i < std::max(m_stack.size(), m_variables.size()); ++i)
         {
             if (i < m_stack.size())
-                { std::cerr << std::setw(6) << convertTypeToString(m_stack[i].type) << " " << std::setw(18) << m_stack[i]; }
+                std::cerr << std::setw(6) << convertTypeToString(m_stack[i].type) << " " << std::setw(18) << m_stack[i];
             else
-                { std::cerr << "                         "; }
+                std::cerr << "                         ";
             std::cerr << " | ";
             if (i < m_variables.size())
             {
@@ -697,7 +693,7 @@ namespace kafe
                     command = "";
                 }
                 else if (command == "continue")
-                    { break; }
+                    break;
                 else if (command == "break")
                 {
                     m_debug_mode -= VM::FLAG_INTERACTIVE;
@@ -720,7 +716,7 @@ namespace kafe
                             command = "";
                         }
                         else
-                            { m_interactive_advance = n; }
+                            m_interactive_advance = n;
                     }
                 }
                 else if (command == "clear")
@@ -747,8 +743,8 @@ namespace kafe
     {
         // open the file and get its size
         std::ifstream ifs(filePath, std::ios::binary | std::ios::ate);
-        if (!ifs.good()) /// TODO : use raiseException ?
-            { throw std::runtime_error("Can not open the given file"); }
+        if (!ifs.good())
+            throw std::runtime_error("Can not open the given file");
         std::ifstream::pos_type pos = ifs.tellg();
         // reserve the appropriate size
         std::vector<char> temp(pos);
@@ -759,7 +755,7 @@ namespace kafe
 
         bytecode_t bytes(pos);
         for (std::size_t i=0; i < pos; ++i)
-            { bytes[i] = (inst_t) temp[i]; }
+            bytes[i] = (inst_t) temp[i];
 
         return bytes;
     }
@@ -793,30 +789,30 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "[" << m_ip << "] " << abc::hexstr((unsigned) instruction) << " ";
 
                 if (INST_INT_2B <= instruction && instruction <= INST_DEL_VAR)
-                    { exec_handleDataTypesDecl(instruction); }
+                    exec_handleDataTypesDecl(instruction);
                 else if (INST_STORE_VAR <= instruction && instruction <= INST_POP)
-                    { exec_handleSegments(instruction); }
+                    exec_handleSegments(instruction);
                 else if (instruction == INST_HALT)
                 {
                     if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "halt" << std::endl;
                     break;
                 }
                 else if (instruction == INST_PROCEDURE)
-                    { exec_handleBuiltins(); }
+                    exec_handleBuiltins();
                 else
                 {
                     if (instruction != 0x00)
-                        { raiseException(Exception::MALFORMED, "Can not identify the instruction " + abc::hexstr((unsigned) instruction)); }
+                        raiseException(Exception::MALFORMED, "Can not identify the instruction " + abc::hexstr((unsigned) instruction));
                 }
 
                 if (m_debug_mode & VM::FLAG_INTERACTIVE && (m_interactive_advance == 0 || m_interactive_advance <= old_ip))
                 {
                     if (m_interactive_advance != 0)
-                        { m_interactive_advance = old_ip = 0; }
+                        m_interactive_advance = old_ip = (addr_t) 0;
                     interactiveMode(instruction);
                 }
                 else if (m_debug_mode & VM::FLAG_INTERACTIVE && m_interactive_advance > old_ip)
-                    { interactiveMode(instruction, /* displayOnly= */ true); }
+                    interactiveMode(instruction, /* displayOnly= */ true);
 
                 ++old_ip;
             }
@@ -825,15 +821,17 @@ namespace kafe
             if (!m_exceptions.empty())
             {
                 // display exception list
+                std::cerr << "Traceback (most recent call last) :" << std::endl;
                 for (auto& e : m_exceptions)
-                    { std::cerr << e << std::endl; }
+                    std::cerr << e << std::endl;
+                // exit the program
+                throw std::runtime_error;
             }
 
             return 0;
         }
-        /// TODO : use raiseException ?
         else
-            { throw std::logic_error("Can not run if no bytecode were given"); }
+            throw std::logic_error("Can not run if no bytecode were given");
     }
 
     ValueStack_t& VM::getStack()
