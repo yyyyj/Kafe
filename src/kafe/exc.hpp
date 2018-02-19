@@ -1,5 +1,5 @@
-#ifndef kafe_myexception
-#define kafe_myexception
+#ifndef kafe_exc
+#define kafe_exc
 
 #include <string>
 #include "types.hpp"
@@ -32,4 +32,4 @@ namespace kafe
     };
 }
 
-#endif // kafe_myexception
+#endif // kafe_exc

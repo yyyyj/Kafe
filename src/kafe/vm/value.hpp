@@ -7,12 +7,10 @@
 #include <exception>
 #include <stdexcept>
 #include <unordered_map>
-
-#define MPARK_EXCEPTIONS
-#include <mpark/variant.hpp>
+#include <variant>
 
 #include "../types.hpp"
-#include "../myexception.hpp"
+#include "../exc.hpp"
 
 namespace kafe
 {
@@ -80,12 +78,10 @@ namespace kafe
         typedef std::vector<Value> list_t;
 
         ValueType type;
-        mpark::variant<int8B_t, double, bool, std::string, list_t, Structure, Exception> value;
+        std::variant<int8B_t, double, bool, std::string, addr_t, list_t, Structure, Exception> value;
 
         Value()                                                       {}
         Value(ValueType t)                       : type(t)            {}
-        // the trick is that addr_t and int8B_t are the same types, we're doing this to avoid problems with mpark::variant
-        // because it's already using a size_t to know how many types are stored and it conflicts
         //Value(ValueType t, int8B_t i)            : type(t)            { mpark::get<int8B_t>(value) = i; }
         //Value(ValueType t, double d)             : type(t)            { mpark::get<double>(value) = d; }
         Value(ValueType t, bool b)               : type(t), value(b)  {}
@@ -94,9 +90,9 @@ namespace kafe
         //Value(ValueType t, Structure st)         : type(t), value(st) {}
         //Value(ValueType t, Exception ex)         : type(t), value(ex) {}
 
-        template <typename T> T    get() const { return mpark::get<T>(value); }
-        template <typename T> T&   getRef()    { return mpark::get<T>(value); }
-        template <typename T> void set(T val)  { mpark::get<T>(value) = val; }
+        template <typename T> T    get() const { return std::get<T>(value); }
+        template <typename T> T&   getRef()    { return std::get<T>(value); }
+        template <typename T> void set(const T& val)  { std::get<T>(value) = val; }
 
         bool operator==(const Value& other) const
         {

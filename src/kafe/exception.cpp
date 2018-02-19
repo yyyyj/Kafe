@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "myexception.hpp"
+#include "exc.hpp"
 
 namespace kafe
 {
@@ -51,7 +51,7 @@ namespace kafe
         return os;
     }
 
-    bool Exception::operator==(const Exception& /* other */)
+    bool Exception::operator==(const Exception& /* other */) const
     {
         return false;
     }

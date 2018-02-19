@@ -8,7 +8,7 @@ Now you know everything.
 
 # Pre-requisites
 
-* C++14 compiler
+* C++17 compiler
 
 * CMake (>= 3.5)
 

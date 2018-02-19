@@ -54,8 +54,7 @@ namespace kafe
     template <> ValueType Value::guessType<Value::list_t>() { return ValueType::List; }
     template <> ValueType Value::guessType<Structure>()     { return ValueType::Struct; }
     template <> ValueType Value::guessType<Exception>()     { return ValueType::Exception; }
-    // small trick related to the problem with mpark::variant already using a size_t
-    template <> ValueType Value::guessType<std::size_t>()   { return ValueType::Addr; }
+    template <> ValueType Value::guessType<addr_t>()        { return ValueType::Addr; }
     template <typename T> ValueType Value::guessType()      { return ValueType::Unknown; }
 
     std::ostream& operator<<(std::ostream& os, const Value& v)

@@ -7,7 +7,7 @@
 
 #include "instructions.hpp"
 #include "value.hpp"
-#include "../exceptions.hpp"
+#include "../exc.hpp"
 
 namespace kafe
 {

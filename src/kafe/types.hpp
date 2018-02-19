@@ -17,7 +17,7 @@ namespace kafe
     typedef uint32_t            uint4B_t;
     typedef int64_t             int8B_t;
     typedef uint64_t            uint8B_t;
-    typedef int64_t             addr_t;
+    typedef std::size_t         addr_t;
 
 }  // namespace kafe
 

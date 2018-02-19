@@ -6,6 +6,8 @@ namespace kafe
     {
         Value _add(const Value& a, const Value& b)
         {
+            Value exc(ValueType::Exception);
+
             if (a.type == b.type)
             {
                 if (a.type == ValueType::Int)
@@ -29,15 +31,16 @@ namespace kafe
                 else if (a.type == ValueType::List)
                 {
                     Value c(ValueType::List);
-                    for (std::size_t i = 0; i < a.getRef<list_t>().size(); ++i)
-                        c.getRef<list_t>().push_back(a.getRef<list_t>()[i]);
-                    for (std::size_t i = 0; i < b.getRef<list_t>().size(); ++i)
-                        c.getRef<list_t>().push_back(b.getRef<list_t>()[i]);
+                    for (std::size_t i = 0; i < a.get<Value::list_t>().size(); ++i)
+                        c.getRef<Value::list_t>().push_back(a.get<Value::list_t>()[i]);
+                    for (std::size_t i = 0; i < b.get<Value::list_t>().size(); ++i)
+                        c.getRef<Value::list_t>().push_back(b.get<Value::list_t>()[i]);
                     return c;
                 }
-                return Exception(Exception::LOGIC, "Can not add two " + convertTypeToString(a.type), 0);
+                exc.set<Exception>(Exception(Exception::LOGIC, "Can not add two " + convertTypeToString(a.type), 0));
             }
-            return Exception(Exception::LOGIC, "Can not add two variables of heterogeneous types", 0);
+            exc.set<Exception>(Exception(Exception::LOGIC, "Can not add two variables of heterogeneous types", 0));
+            return exc;
         }
 
         void load(FunctionDatabase& fdb)
