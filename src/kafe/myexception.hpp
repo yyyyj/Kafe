@@ -25,7 +25,10 @@ namespace kafe
         Exception(int);
         Exception(int, const std::string&, addr_t);
         Exception(const Exception&);
+        int errorCode() const;
         friend std::ostream& operator<<(std::ostream&, const Exception&);
+
+        bool operator==(const Exception&) const;
     };
 }
 

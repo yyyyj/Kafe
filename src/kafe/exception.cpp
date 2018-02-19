@@ -40,9 +40,19 @@ namespace kafe
         , m_message(other.m_message)
     {}
 
+    int Exception::errorCode() const
+    {
+        return m_code;
+    }
+
     std::ostream& operator<<(std::ostream& os, const Exception& exc)
     {
         os << "[" << Exception::errorCodeToString(exc.m_code) << " @ byte no " << exc.m_line << "] " << exc.m_message;
         return os;
+    }
+
+    bool Exception::operator==(const Exception& /* other */)
+    {
+        return false;
     }
 }

@@ -1,9 +1,10 @@
 import time
 
 class Benchmark():
-    def __init__(self, test_name):
+    def __init__(self, test_name, runs):
         self.start = time.time()
         self.name = test_name
+        self.runs = runs
         self.end = None
         
     def __enter__(self):
@@ -23,12 +24,10 @@ class Benchmark():
         elif unit == "ns":
             return elapsed * 1000 ** 3
     
-    def repr(self, runs):
-        return "Benchmark of {} on {} run(s) = {:.2f}us\nAverage = {:.2f}us".format(self.name, runs, self.to_ticks("us"), self.to_ticks("us") / runs)
+    def repr(self):
+        return "Benchmark of {} on {} run(s) = {:.2f}us\nAverage = {:.2f}us".format(self.name, self.runs, self.to_ticks("us"), self.to_ticks("us") / self.runs)
 
 def f(n):
-    if not hasattr(f, "c"): f.c = 0
-    f.c += 1
     if n == 0:
         return 0
     elif n == 1:
@@ -42,13 +41,13 @@ def fib(n):
         a, b = b, a + b
         i += 1
     return a
-
-with Benchmark("Fibonacci (recursive)") as bench:
-    for i in range(100):
-        f(23)
-print(bench.repr(100))
-
-with Benchmark("Fibonacci (loop)") as bench:
-    for i in range(100):
-        fib(23)
-print(bench.repr(100))
+"""
+with Benchmark("Fibonacci (recursive)", 500) as bench:
+    for i in range(bench.runs):
+        f(40)
+print(bench.repr())
+"""
+with Benchmark("Fibonacci (loop)", 1000) as bench:
+    for i in range(bench.runs):
+        fib(40)
+print(bench.repr())

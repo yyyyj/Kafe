@@ -14,6 +14,7 @@ namespace kafe
         else if (t == ValueType::Var)    return "VAR";
         else if (t == ValueType::Struct) return "STRUCT";
         else if (t == ValueType::Addr)   return "ADDR";
+        else if (t == ValueType::Exception) return "EXCEPTION";
         else                             return "UNKNOWN";
     }
 
@@ -52,6 +53,7 @@ namespace kafe
     template <> ValueType Value::guessType<std::string>()   { return ValueType::String; }
     template <> ValueType Value::guessType<Value::list_t>() { return ValueType::List; }
     template <> ValueType Value::guessType<Structure>()     { return ValueType::Struct; }
+    template <> ValueType Value::guessType<Exception>()     { return ValueType::Exception; }
     // small trick related to the problem with mpark::variant already using a size_t
     template <> ValueType Value::guessType<std::size_t>()   { return ValueType::Addr; }
     template <typename T> ValueType Value::guessType()      { return ValueType::Unknown; }
@@ -92,6 +94,10 @@ namespace kafe
 
         case ValueType::Addr:
             os << abc::hexstr(v.get<addr_t>());
+            break;
+
+        case ValueType::Exception:
+            os << v.get<Exception>();
             break;
 
         default:

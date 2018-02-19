@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "vm.hpp"
+#include "vm_lib.hpp"
 
 #ifdef _MSC_VER
     // if compiling with visual studio, disable those warnings
@@ -46,7 +47,15 @@ namespace kafe
         m_stack.clear();
         m_stack_size = m_ip = m_interactive_advance = 0;
         m_variables.clear();
+        m_struct_definitions.clear();
         m_exceptions.clear();
+        m_fdb_user.clear();
+    }
+
+    void VM::loadLib()
+    {
+        // load the default procedures for the vm
+        StdLibVM::load(m_fdb);
     }
 
     bool VM::findVar(const std::string& varName)
@@ -578,29 +587,12 @@ namespace kafe
 
                 Value b = pop();
                 Value a = pop();
+                Value c = m_fdb[StdLibVM::inst_to_name[instruction]](a, b);
 
-                if (a.type == b.type)
-                {
-                    if (a.type == ValueType::Int)
-                    {
-                        Value c(ValueType::Int, a.get<int8B_t>() + b.get<int8B_t>());
-                        push(c);
-                    }
-                    else if (a.type == ValueType::Double)
-                    {
-                        Value c(ValueType::Double, a.get<double>() + b.get<double>());
-                        push(c);
-                    }
-                    else if (a.type == ValueType::String)
-                    {
-                        Value c(ValueType::String, a.get<std::string>() + b.get<std::string>());
-                        push(c);
-                    }
-                    else
-                        raiseException(Exception::LOGIC, "Can not add two " + convertTypeToString(a.type));
-                }
+                if (c.type != ValueType::Exception)
+                    push(c);
                 else
-                    raiseException(Exception::LOGIC, "Can not add two variables of heterogeneous types");
+                    raiseException(c);
 
                 break;
             }
@@ -654,11 +646,16 @@ namespace kafe
         }
     }
 
+    void VM::raiseException(const Exception& exc)
+    {
+        m_exceptions.push_back(exc);
+        if (exc.errorCode() == Exception::CRITIC)
+            displayTraceback();
+    }
+
     void VM::raiseException(int error, const std::string& message)
     {
-        m_exceptions.push_back(Exception(error, message, m_ip));
-        if (error == Exception::CRITIC)
-            displayTraceback();
+        raiseException(Exception(error, message, m_ip));
     }
 
     void VM::displayTraceback()
@@ -795,6 +792,9 @@ namespace kafe
     void VM::load(bytecode_t bytecode)
     {
         clear();
+        // load the default procedures if the table if empty
+        if (m_fdb.size() == 0)
+            loadLib();
         m_bytecode = bytecode;
     }
 
@@ -845,7 +845,7 @@ namespace kafe
             return 0;
         }
         else
-            throw std::logic_error("Can not run if no bytecode were given");
+            throw std::logic_error("Can not run if no byte codes were given");
     }
 
     ValueStack_t& VM::getStack()

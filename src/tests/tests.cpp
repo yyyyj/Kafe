@@ -1,5 +1,5 @@
 #include "tests.hpp"
-#include <benchmark.hpp>
+#include <fola/benchmark.hpp>
 #include <iostream>
 
 #define TEST_VM(name, obj) test_vm( name , #obj , obj , debug_mode );
@@ -20,7 +20,7 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
 
     vm.exec(); vm.setMode(0);
 
-    BENCHMARK_MR("", vm.exec(), 100, us)
+    BENCHMARK_MRSTATS("", vm.exec(), 500, us)
     BENCHMARK_F("saving", vm.saveBytecode("examples/bytecode/" + filename), ms)
 
     if (vm.getStack().size())

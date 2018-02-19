@@ -13,6 +13,7 @@
 #include <exception>
 #include <stdexcept>
 #include <unordered_map>
+#include <sygmei/functiondb.hpp>
 
 #define EXP_DOUBLE_LIMIT 0b0100110100
 #define EXP_DOUBLE_SIGN  0b1000000000
@@ -37,12 +38,16 @@ namespace kafe
         bytecode_t m_bytecode;
         int m_debug_mode;
         int m_interactive_advance;
-        // storing all the execptions to display them when the time has come
+        // storing all the exceptions to display them when the time has come
         std::vector<Exception> m_exceptions;
+        // we'll store the procedures and all that stuff inside this db, and use another one for user define functions
+        FunctionDatabase m_fdb;
+        FunctionDatabase m_fdb_user;
 
         void   push      (Value value);
         Value  pop       ();
         void   clear     ();
+        void   loadLib   ();
         bool   findVar   (const std::string& varName);
         Value  getVar    (const std::string& varName);
         Value& getRefVar (const std::string& name);
@@ -65,6 +70,7 @@ namespace kafe
         void exec_handleStructures   (inst_t instruction);
         void exec_handleSegments     (inst_t instruction);
         void exec_handleBuiltins     ();
+        void raiseException          (const Exception&);
         void raiseException          (int error, const std::string& message);
         void displayTraceback        ();
 
@@ -89,7 +95,7 @@ namespace kafe
         {
             ValueType t = Value::guessType<T>();
             if (t == ValueType::Unknown)
-                { throw std::runtime_error("Can not guess value type when trying to push a value on the stack"); }
+                raiseException(Exception::CRITIC, "Can not guess value type when trying to push a value on the stack");
             Value c(t, value);
             push(c);
         }

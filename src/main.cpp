@@ -10,9 +10,9 @@ int getDebugMode(bool verbose, bool interactive)
 {
     int debug_mode = 0;
     if (verbose)
-        { debug_mode |= kafe::VM::FLAG_BASIC_DEBUG; }
+        debug_mode |= kafe::VM::FLAG_BASIC_DEBUG;
     if (interactive)
-        { debug_mode |= kafe::VM::FLAG_INTERACTIVE; }
+        debug_mode |= kafe::VM::FLAG_INTERACTIVE;
 
     return debug_mode;
 }
@@ -100,11 +100,9 @@ int main(int argc, char* argv[])
     {
         for (const auto& arg : wrong)
             std::cerr << "'" << arg << "'" << " ins't a valid argument" << std::endl;
-        std::cerr << "Usage:" << std::endl
-                  << usage_lines(cli, argv[0], fmt) << std::endl
-                  << "Options:" << std::endl
-                  << documentation(cli, fmt) << std::endl
-                  ;
+        std::cerr << "Usage:" << std::endl << usage_lines(cli, argv[0], fmt) << std::endl
+                  << "Options:" << std::endl << documentation(cli, fmt) << std::endl
+                  << "LICENSE" << std::endl << "        Mozilla Public License 2.0" << std::endl;
     }
 
     return 0;

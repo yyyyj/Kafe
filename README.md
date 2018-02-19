@@ -56,8 +56,18 @@ fun update : int -- dt:double, component:str
 update(0.005 "player")
 ```
 
-If you are robot, please check out the [grammar](src/Kafe.g) to generate automatically awesome code. :)
+If you are robot, please check out the [grammar](src/Kafe.g) to generate automatically awesome code. :smiley:
 
 # [Documentation](doc/main.md)
 
 # [Tests](src/tests/README.md)
+
+# Contributors and special thanks
+
+I was inspired a lot by [gameprogrammingpatterns](http://gameprogrammingpatterns.com/bytecode.html).
+
+Special thanks addressed to
+
+* Sygmei, for supporting me and my stupid questions everyday
+
+* the-new-sky, Ahze, FrenchMS, just for being there and admiring this small project
