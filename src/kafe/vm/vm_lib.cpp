@@ -4,6 +4,17 @@ namespace kafe
 {
     namespace StdLibVM
     {
+        Value procName(int2B_t inst)
+        {
+            if (inst > 0)
+                return Value(ValueType::String, inst_to_name[inst - 1]);
+            Value exc(ValueType::Exception);
+            exc.set<Exception>(Exception(Exception::CRITIC, "Can not find the procedure corresponding to the byte code 0x0000", 0));
+            return exc;
+        }
+
+        Value _doStuff(const Value&, const Value&) { return Value(ValueType::Bool, false); }
+
         Value _add(const Value& a, const Value& b)
         {
             Value exc(ValueType::Exception);
@@ -45,6 +56,7 @@ namespace kafe
 
         void load(FunctionDatabase& fdb)
         {
+            fdb.add("", &_doStuff);  // just for the alignment
             fdb.add("add", &_add);
         }
     }

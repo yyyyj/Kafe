@@ -40,6 +40,9 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
 
 int start_tests(int debug_mode)
 {
+    // just displaying useful info
+    std::cerr << "Sizeof(Value) = " << sizeof(kafe::Value) << "b" << std::endl << std::endl;
+
     // int:18768, str:hello, bool:true
     kafe::bytecode_t bytecode1 = {
         kafe::INST_INT_2B, 0x49, 0x50,

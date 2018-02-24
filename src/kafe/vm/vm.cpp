@@ -225,8 +225,7 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG)  std::cerr << "str" << std::endl;
 
-                Value a(ValueType::String);
-                a.set<std::string>(readString());
+                Value a(ValueType::String, readString());
                 push(a);
 
                 break;
@@ -272,8 +271,7 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "var" << std::endl;
 
-                Value a(ValueType::Var);
-                a.set<std::string>(readString());
+                Value a(ValueType::Var, readString());
                 push(a);
 
                 break;
@@ -589,12 +587,24 @@ namespace kafe
 
                 Value b = pop();
                 Value a = pop();
-                Value c = m_fdb[StdLibVM::inst_to_name[instruction]].call<Value>(a, b);
+                Value r = StdLibVM::procName(instruction);
+                if (r.type != ValueType::Exception)
+                {
+                    Value c = m_fdb[r.get<std::string>()].call<Value, const Value&, const Value&>(a, b);
 
-                if (c.type != ValueType::Exception)
-                    push(c);
+                    if (c.type != ValueType::Exception)
+                        push(c);
+                    else
+                    {
+                        c.getRef<Exception>().setLine(m_ip);
+                        raiseException(c.get<Exception>());
+                    }
+                }
                 else
-                    raiseException(c.get<Exception>());
+                {
+                    r.getRef<Exception>().setLine(m_ip);
+                    raiseException(r.get<Exception>());
+                }
 
                 break;
             }

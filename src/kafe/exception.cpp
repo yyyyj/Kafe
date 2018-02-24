@@ -45,6 +45,11 @@ namespace kafe
         return m_code;
     }
 
+    void Exception::setLine(addr_t line)
+    {
+        m_line = line;
+    }
+
     std::ostream& operator<<(std::ostream& os, const Exception& exc)
     {
         os << "[" << Exception::errorCodeToString(exc.m_code) << " @ byte no " << exc.m_line << "] " << exc.m_message;

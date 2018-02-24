@@ -3,32 +3,38 @@
 
 #include <unordered_map>
 #include <string>
+#include <exception>
+#include <stdexcept>
 
 class Function
 {
 private:
     void (*m_function)();
-    std::size_t argc;
+    std::size_t m_argc;
 
 public:
+    Function(): m_function(nullptr), m_argc(0) {}
+
     template <class R, class ...A1>
     Function& operator=(R(*f)(A1...))
     {
         m_function = (void(*)()) f;
-        argc = sizeof...(A1);
+        m_argc = sizeof...(A1);
         return *this;
     }
 
     template <class R, class ...A1>
     R call(A1... a1) const
     {
+        if (m_argc == 0 && m_function == nullptr)
+            throw std::runtime_error("Uninitialized function");
         R(*f)(A1...) = (R(*)(A1...))(m_function);
         return (*f)(a1...);
     }
 
     std::size_t argCount() const
     {
-        return argc;
+        return m_argc;
     }
 };
 

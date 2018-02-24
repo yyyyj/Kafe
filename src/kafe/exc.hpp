@@ -21,11 +21,12 @@ namespace kafe
 
         static std::string errorCodeToString(int);
 
-        Exception() = delete;
+        Exception() = default;
         Exception(int);
         Exception(int, const std::string&, addr_t);
         Exception(const Exception&);
         int errorCode() const;
+        void setLine(addr_t);
         friend std::ostream& operator<<(std::ostream&, const Exception&);
 
         bool operator==(const Exception&) const;

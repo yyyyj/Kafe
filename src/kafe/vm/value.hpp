@@ -78,21 +78,22 @@ namespace kafe
         typedef std::vector<Value> list_t;
 
         ValueType type;
-        std::variant<int8B_t, double, bool, std::string, addr_t, list_t, Structure, Exception> value;
+        std::variant<int8B_t, double, bool, std::string, list_t, Structure, Exception> value;
+        //addr_t _address;
 
         Value()                                                       {}
         Value(ValueType t)                       : type(t)            {}
         //Value(ValueType t, int8B_t i)            : type(t)            { mpark::get<int8B_t>(value) = i; }
         //Value(ValueType t, double d)             : type(t)            { mpark::get<double>(value) = d; }
         Value(ValueType t, bool b)               : type(t), value(b)  {}
-        //Value(ValueType t, const std::string& s) : type(t), value(s)  {}
+        Value(ValueType t, const std::string& s) : type(t), value(s)  {}
         //Value(ValueType t, list_t l)             : type(t), value(l)  {}
         //Value(ValueType t, Structure st)         : type(t), value(st) {}
         //Value(ValueType t, Exception ex)         : type(t), value(ex) {}
 
         template <typename T> T    get() const { return std::get<T>(value); }
         template <typename T> T&   getRef()    { return std::get<T>(value); }
-        template <typename T> void set(const T& val)  { std::get<T>(value) = val; }
+        template <typename T> void set(T val)  { std::get<T>(value) = val; }
 
         bool operator==(const Value& other) const
         {

@@ -37,7 +37,7 @@ namespace kafe
         // keeping the loaded bytecode into the VM to use easily without passing it around
         bytecode_t m_bytecode;
         int m_debug_mode;
-        int m_interactive_advance;
+        addr_t m_interactive_advance;
         // storing all the exceptions to display them when the time has come
         std::vector<Exception> m_exceptions;
         // we'll store the procedures and all that stuff inside this db, and use another one for user define functions

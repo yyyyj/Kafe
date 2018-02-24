@@ -47,6 +47,10 @@ namespace kafe
     }
 
     // Value
+    /*template <> addr_t  Value::get<addr_t>() const { return _address; }
+    template <> addr_t& Value::getRef<addr_t>()    { return _address; }
+    template <> void    Value::set<addr_t>(addr_t a) { _address = a; }*/
+
     template <> ValueType Value::guessType<int8B_t>()       { return ValueType::Int; }
     template <> ValueType Value::guessType<double>()        { return ValueType::Double; }
     template <> ValueType Value::guessType<bool>()          { return ValueType::Bool; }
@@ -54,7 +58,7 @@ namespace kafe
     template <> ValueType Value::guessType<Value::list_t>() { return ValueType::List; }
     template <> ValueType Value::guessType<Structure>()     { return ValueType::Struct; }
     template <> ValueType Value::guessType<Exception>()     { return ValueType::Exception; }
-    template <> ValueType Value::guessType<addr_t>()        { return ValueType::Addr; }
+    template <> ValueType Value::guessType<std::size_t>()   { return ValueType::Addr; }
     template <typename T> ValueType Value::guessType()      { return ValueType::Unknown; }
 
     std::ostream& operator<<(std::ostream& os, const Value& v)
