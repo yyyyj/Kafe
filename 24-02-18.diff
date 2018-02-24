@@ -1,0 +1,654 @@
+diff --git a/src/kafe/exception.cpp b/src/kafe/exception.cpp
+index 66925ba..00fc7f1 100644
+--- a/src/kafe/exception.cpp
++++ b/src/kafe/exception.cpp
+@@ -25,20 +25,9 @@ namespace kafe
+         }
+     }
+ 
+-    Exception::Exception(int error) : m_code(error), m_line(0), m_message("")
+-    {}
+-
+-    Exception::Exception(int error, const std::string& message, addr_t line) :
+-        m_code(error)
+-        , m_line(line)
+-        , m_message(message)
+-    {}
+-
+-    Exception::Exception(const Exception& other) :
+-        m_code(other.m_code)
+-        , m_line(other.m_line)
+-        , m_message(other.m_message)
+-    {}
++    Exception::Exception(int error) : m_code(error), m_line(0), m_message("") {}
++    Exception::Exception(int error, const std::string& message, addr_t line) : m_code(error), m_line(line), m_message(message) {}
++    Exception::Exception(const Exception& other) : m_code(other.m_code), m_line(other.m_line), m_message(other.m_message) {}
+ 
+     int Exception::errorCode() const
+     {
+diff --git a/src/kafe/types.hpp b/src/kafe/types.hpp
+index e3e06f0..2e879a0 100644
+--- a/src/kafe/types.hpp
++++ b/src/kafe/types.hpp
+@@ -3,6 +3,7 @@
+ 
+ #include <vector>
+ #include <cstdint>
++#include <string>
+ 
+ namespace kafe
+ {
+@@ -10,14 +11,14 @@ namespace kafe
+     typedef unsigned char       inst_t;
+     typedef std::vector<inst_t> bytecode_t;
+ 
+-    // fixed data types
+-    typedef int16_t             int2B_t;
+-    typedef uint16_t            uint2B_t;
+-    typedef int32_t             int4B_t;
+-    typedef uint32_t            uint4B_t;
+-    typedef int64_t             int8B_t;
+-    typedef uint64_t            uint8B_t;
+-    typedef /*std::size_t*/int8B_t         addr_t;
++    typedef int16_t      micro_int_t;
++    typedef uint16_t     micro_uint_t;
++    typedef int32_t      smol_int_t;
++    typedef uint32_t     smol_uint_t;
++    typedef int64_t      int_t;
++    typedef uint64_t     uint_t;
++    typedef std::size_t  addr_t;
++    typedef std::string  str_t;
+ 
+ }  // namespace kafe
+ 
+diff --git a/src/kafe/vm/value.cpp b/src/kafe/vm/value.cpp
+index 62efc44..1e95db7 100644
+--- a/src/kafe/vm/value.cpp
++++ b/src/kafe/vm/value.cpp
+@@ -3,23 +3,22 @@
+ 
+ namespace kafe
+ {
+-
+     std::string convertTypeToString(ValueType t)
+     {
+-        if (t == ValueType::Int)         return "INT";
+-        else if (t == ValueType::Double) return "DOUBLE";
+-        else if (t == ValueType::Bool)   return "BOOL";
+-        else if (t == ValueType::String) return "STRING";
+-        else if (t == ValueType::List)   return "LIST";
+-        else if (t == ValueType::Var)    return "VAR";
+-        else if (t == ValueType::Struct) return "STRUCT";
+-        else if (t == ValueType::Addr)   return "ADDR";
++        if (t == ValueType::Int)            return "INT";
++        else if (t == ValueType::Double)    return "DOUBLE";
++        else if (t == ValueType::Bool)      return "BOOL";
++        else if (t == ValueType::String)    return "STRING";
++        else if (t == ValueType::List)      return "LIST";
++        else if (t == ValueType::Var)       return "VAR";
++        else if (t == ValueType::Struct)    return "STRUCT";
++        else if (t == ValueType::Addr)      return "ADDR";
+         else if (t == ValueType::Exception) return "EXCEPTION";
+-        else                             return "UNKNOWN";
++        else                                return "UNKNOWN";
+     }
+ 
+     // Structure
+-    uint8B_t Structure::ID = 0;
++    uint_t Structure::ID = 0;
+ 
+     void Structure::add(std::string name, Value val)
+     {
+@@ -31,9 +30,9 @@ namespace kafe
+     {
+         StructElem* pse = findMember(name);
+         if (pse != nullptr)
+-            { pse->val = val; }
++            pse->val = val;
+         else
+-            { add(name, val); }
++            add(name, val);
+     }
+ 
+     StructElem* Structure::findMember(const std::string& name)
+@@ -41,32 +40,28 @@ namespace kafe
+         for (std::size_t i=0; i < members.size(); ++i)
+         {
+             if (members[i].name == name)
+-                { return &members[i]; }
++                return &members[i];
+         }
+         return nullptr;
+     }
+ 
+     // Value
+-    /*template <> addr_t  Value::get<addr_t>() const { return _address; }
+-    template <> addr_t& Value::getRef<addr_t>()    { return _address; }
+-    template <> void    Value::set<addr_t>(addr_t a) { _address = a; }*/
+-
+-    template <> ValueType Value::guessType<int8B_t>()       { return ValueType::Int; }
+-    template <> ValueType Value::guessType<double>()        { return ValueType::Double; }
+-    template <> ValueType Value::guessType<bool>()          { return ValueType::Bool; }
+-    template <> ValueType Value::guessType<std::string>()   { return ValueType::String; }
+-    template <> ValueType Value::guessType<Value::list_t>() { return ValueType::List; }
+-    template <> ValueType Value::guessType<Structure>()     { return ValueType::Struct; }
+-    template <> ValueType Value::guessType<Exception>()     { return ValueType::Exception; }
+-    template <> ValueType Value::guessType<std::size_t>()   { return ValueType::Addr; }
+-    template <typename T> ValueType Value::guessType()      { return ValueType::Unknown; }
++    template <> ValueType Value::guessType<int_t>()     { return ValueType::Int; }
++    template <> ValueType Value::guessType<double>()    { return ValueType::Double; }
++    template <> ValueType Value::guessType<bool>()      { return ValueType::Bool; }
++    template <> ValueType Value::guessType<str_t>()     { return ValueType::String; }
++    template <> ValueType Value::guessType<list_t>()    { return ValueType::List; }
++    template <> ValueType Value::guessType<Structure>() { return ValueType::Struct; }
++    template <> ValueType Value::guessType<Exception>() { return ValueType::Exception; }
++    template <> ValueType Value::guessType<addr_t>()    { return ValueType::Addr; }
++    template <typename T> ValueType Value::guessType()  { return ValueType::Unknown; }
+ 
+     std::ostream& operator<<(std::ostream& os, const Value& v)
+     {
+         switch(v.type)
+         {
+         case ValueType::Int:
+-            os << abc::str(v.get<int8B_t>());
++            os << abc::str(v.get<int_t>());
+             break;
+ 
+         case ValueType::Double:
+@@ -84,10 +79,8 @@ namespace kafe
+ 
+         case ValueType::List:
+         {
+-            for (std::size_t i=0; i < v.get<Value::list_t>().size(); ++i)
+-            {
+-                os << v.get<Value::list_t>()[i] << " ";
+-            }
++            for (std::size_t i=0; i < v.get<list_t>().size(); ++i)
++                os << v.get<list_t>()[i] << " ";
+             break;
+         }
+ 
+@@ -119,9 +112,7 @@ namespace kafe
+     {
+         os << "Struct id [" << st.struct_id << "]" << std::endl;
+         for (auto m : st.members)
+-        {
+             os << "\t" << m.name << " [" << convertTypeToString(m.val.type) << "]" << m.val << std::endl;
+-        }
+         return os;
+     }
+ 
+diff --git a/src/kafe/vm/value.hpp b/src/kafe/vm/value.hpp
+index 74a9fd1..f1831fc 100644
+--- a/src/kafe/vm/value.hpp
++++ b/src/kafe/vm/value.hpp
+@@ -8,24 +8,24 @@
+ #include <stdexcept>
+ #include <unordered_map>
+ #include <variant>
++#include <utility>
+ 
+ #include "../types.hpp"
+ #include "../exc.hpp"
+ 
+ namespace kafe
+ {
+-
+     // all the data types defined for kafe are listed below
+     enum class ValueType
+     {
+-        Int     = 1 << 0,
+-        Double  = 1 << 1,
+-        Bool    = 1 << 2,
+-        String  = 1 << 3,
+-        List    = 1 << 4,
+-        Var     = 1 << 5,
+-        Struct  = 1 << 6,
+-        Addr    = 1 << 7,
++        Int       = 1 << 0,
++        Double    = 1 << 1,
++        Bool      = 1 << 2,
++        String    = 1 << 3,
++        List      = 1 << 4,
++        Var       = 1 << 5,
++        Struct    = 1 << 6,
++        Addr      = 1 << 7,
+         Exception = 1 << 8,
+ 
+         Unknown = -1
+@@ -33,34 +33,22 @@ namespace kafe
+ 
+     std::string convertTypeToString(ValueType t);
+ 
+-    struct Call
+-    {
+-        addr_t lastPos;
+-        addr_t lastStackSize;
+-    };
+-
+     // forward declaration for Structure
+     struct StructElem;
+     struct Value;
+ 
+     struct Structure
+     {
+-        static uint8B_t ID;
++        static uint_t ID;
+ 
+         // name of the variable : default value
+         std::vector<StructElem> members;
+         // in order to be able to identify a structure
+         // each structure has the same struct_id as its base structure
+-        uint8B_t struct_id;
++        uint_t struct_id;
+ 
+-        Structure() :
+-            struct_id(Structure::ID++)
+-        {}
+-
+-        Structure(const Structure& other) :
+-            members(other.members)
+-            , struct_id(other.struct_id)
+-        {}
++        Structure() : struct_id(Structure::ID++) {}
++        Structure(const Structure& other) : members(other.members), struct_id(other.struct_id) {}
+ 
+         void add(std::string name, Value val);
+         void set(const std::string& name, Value val);
+@@ -78,22 +66,20 @@ namespace kafe
+         typedef std::vector<Value> list_t;
+ 
+         ValueType type;
+-        std::variant<int8B_t, double, bool, std::string, list_t, Structure, Exception> value;
+-        //addr_t _address;
+-
+-        Value()                                                       {}
+-        Value(ValueType t)                       : type(t)            {}
+-        //Value(ValueType t, int8B_t i)            : type(t)            { mpark::get<int8B_t>(value) = i; }
+-        //Value(ValueType t, double d)             : type(t)            { mpark::get<double>(value) = d; }
+-        Value(ValueType t, bool b)               : type(t), value(b)  {}
+-        Value(ValueType t, const std::string& s) : type(t), value(s)  {}
+-        //Value(ValueType t, list_t l)             : type(t), value(l)  {}
+-        //Value(ValueType t, Structure st)         : type(t), value(st) {}
+-        //Value(ValueType t, Exception ex)         : type(t), value(ex) {}
+-
+-        template <typename T> T    get() const { return std::get<T>(value); }
+-        template <typename T> T&   getRef()    { return std::get<T>(value); }
+-        template <typename T> void set(T val)  { std::get<T>(value) = val; }
++        std::variant<int_t, double, bool, str_t, list_t, Structure, addr_t, Exception> value;
++
++        Value()                                        {}
++        Value(ValueType t)         : type(t)           {}
++        Value(ValueType t, bool b) : type(t), value(b) {}
++
++        template <typename T> T  get() const { return std::get<T>(value); }
++        template <typename T> T& getRef()
++        {
++            /*if (!std::holds_alternative<T>(value))
++                set<T>({});*/
++            return std::get<T>(value);
++        }
++        template <typename T> void set(const T& val) { value = val; }
+ 
+         bool operator==(const Value& other) const
+         {
+@@ -103,15 +89,15 @@ namespace kafe
+         bool operator<(const Value& other) const
+         {
+             return (other.type == type) &&
+-                   ((other.type == ValueType::Int)    ? (other.get<int8B_t>() >= get<int8B_t>())                       : true) &&
+-                   ((other.type == ValueType::Double) ? (other.get<double>() >= get<double>())                         : true) &&
+-                   ((other.type == ValueType::Bool)   ? (other.get<bool>() == true && get<bool>() == false)            : true) &&
+-                   ((other.type == ValueType::String) ? (other.get<std::string>().size() >= get<std::string>().size()) : true) &&
+-                   ((other.type == ValueType::List)   ? (other.get<list_t>().size() >= get<list_t>().size())           : true) &&
+-                   ((other.type == ValueType::Var)    ? (other.get<std::string>().size() >= get<std::string>().size()) : true) &&
++                   ((other.type == ValueType::Int)    ? (other.get<int_t>() >= get<int_t>())                 : true) &&
++                   ((other.type == ValueType::Double) ? (other.get<double>() >= get<double>())               : true) &&
++                   ((other.type == ValueType::Bool)   ? (other.get<bool>() == true && get<bool>() == false)  : true) &&
++                   ((other.type == ValueType::String) ? (other.get<str_t>().size() >= get<str_t>().size())   : true) &&
++                   ((other.type == ValueType::List)   ? (other.get<list_t>().size() >= get<list_t>().size()) : true) &&
++                   ((other.type == ValueType::Var)    ? (other.get<str_t>().size() >= get<str_t>().size())   : true) &&
+                    // we can not compare structures nor addresses nor exceptions
+-                   ((other.type == ValueType::Struct) ? false : true) &&
+-                   ((other.type == ValueType::Addr)   ? false : true) &&
++                   ((other.type == ValueType::Struct) ?    false : true) &&
++                   ((other.type == ValueType::Addr)   ?    false : true) &&
+                    ((other.type == ValueType::Exception) ? false : true);
+         }
+ 
+@@ -126,10 +112,18 @@ namespace kafe
+     bool operator<=(const Value& a, const Value& b);
+     bool operator> (const Value& a, const Value& b);
+ 
+-    // custom type to create stacks and avoid to much verbosity
++    // custom types to create stacks and avoid to much verbosity
+     typedef std::vector<Value> ValueStack_t;
+     typedef std::unordered_map<std::string, Value> VarStack_t;
++    struct Call
++    {
++        addr_t lastPos;
++        addr_t lastStackSize;
++        VarStack_t vars;
++    };
+     typedef std::vector<Call> CallStack_t;
++    typedef std::unordered_map<std::string, Structure> StructureMap_t;
++    typedef Value::list_t list_t;
+ 
+     struct StructElem
+     {
+diff --git a/src/kafe/vm/vm.cpp b/src/kafe/vm/vm.cpp
+index 8d0be02..fd81b81 100644
+--- a/src/kafe/vm/vm.cpp
++++ b/src/kafe/vm/vm.cpp
+@@ -18,11 +18,7 @@ namespace kafe
+ {
+ 
+     VM::VM() : m_stack_size(0), m_ip(0), m_debug_mode(0), m_interactive_advance(0) {}
+-
+-    VM::~VM()
+-    {
+-        clear();
+-    }
++    VM::~VM() { clear(); }
+ 
+     void VM::push(Value value)
+     {
+@@ -34,9 +30,7 @@ namespace kafe
+     {
+         // return last element put on the stack
+         if (m_stack_size - 1 >= 0)
+-        {
+             return abc::pop(m_stack, --m_stack_size);
+-        }
+         else
+             raiseException(Exception::CRITIC, "Can not pop from an empty value stack");
+     }
+@@ -90,41 +84,41 @@ namespace kafe
+         raiseException(Exception::CRITIC, "Index out of range, can not get next byte");
+     }
+ 
+-    uint8B_t VM::readXBytesInt(unsigned char bytesCount)
++    uint_t VM::readXBytesInt(unsigned char bytesCount)
+     {
+-        uint8B_t v = readByte(++m_ip);
++        uint_t v = readByte(++m_ip);
+         for (unsigned char k=1; k < bytesCount; ++k)
+             v = (v << 8) + readByte(++m_ip);
+         return v;
+     }
+ 
+-    int2B_t VM::read2BytesInt()
++    micro_int_t VM::read2BytesInt()
+     {
+-        return abc::setSign((int2B_t) readXBytesInt(2), /* bytesCount */ 2);
++        return abc::setSign((micro_int_t) readXBytesInt(2), /* bytesCount */ 2);
+     }
+ 
+-    int4B_t VM::read4BytesInt()
++    smol_int_t VM::read4BytesInt()
+     {
+-        return abc::setSign((int4B_t) readXBytesInt(4), /* bytesCount */ 4);
++        return abc::setSign((smol_int_t) readXBytesInt(4), /* bytesCount */ 4);
+     }
+ 
+-    int8B_t VM::read8BytesInt()
++    int_t VM::read8BytesInt()
+     {
+-        return abc::setSign((int8B_t) readXBytesInt(8), /* bytesCount */ 8);
++        return abc::setSign((int_t) readXBytesInt(8), /* bytesCount */ 8);
+     }
+ 
+     double VM::readDouble()
+     {
+-        uint4B_t int_part = read4BytesInt();
+-        int2B_t exp = abc::abs(read2BytesInt());
++        smol_uint_t int_part = read4BytesInt();
++        micro_int_t exp = abc::abs(read2BytesInt());
+         exp = (exp > EXP_DOUBLE_LIMIT) ? EXP_DOUBLE_LIMIT : ((exp < -EXP_DOUBLE_LIMIT) ? -EXP_DOUBLE_LIMIT : exp);
+         exp *= (exp & EXP_DOUBLE_SIGN) ? (-1) : (+1);
+         return double(int_part) * std::pow(10, exp);
+     }
+ 
+-    std::string VM::readString()
++    str_t VM::readString()
+     {
+-        std::string work = "";
++        str_t work = "";
+         ++m_ip;
+         while (true)
+         {
+@@ -193,7 +187,7 @@ namespace kafe
+                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "int 2B" << std::endl;
+ 
+                 Value v(ValueType::Int);
+-                v.set<int8B_t>(read2BytesInt());
++                v.set<int_t>(read2BytesInt());
+                 push(v);
+ 
+                 break;
+@@ -204,7 +198,18 @@ namespace kafe
+                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "int 4B" << std::endl;
+ 
+                 Value v(ValueType::Int);
+-                v.set<int8B_t>(read4BytesInt());
++                v.set<int_t>(read4BytesInt());
++                push(v);
++
++                break;
++            }
++
++            case INST_INT_8B:
++            {
++                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "int 8B" << std::endl;
++
++                Value v(ValueType::Int);
++                v.set<int_t>(read8BytesInt());
+                 push(v);
+ 
+                 break;
+@@ -223,9 +228,10 @@ namespace kafe
+ 
+             case INST_STR:
+             {
+-                if (m_debug_mode & VM::FLAG_BASIC_DEBUG)  std::cerr << "str" << std::endl;
++                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "str" << std::endl;
+ 
+-                Value a(ValueType::String, readString());
++                Value a(ValueType::String);
++                a.set<str_t>(readString());
+                 push(a);
+ 
+                 break;
+@@ -256,11 +262,11 @@ namespace kafe
+             {
+                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "list" << std::endl;
+ 
+-                uint4B_t nb_elements = read4BytesInt();
++                smol_uint_t nb_elements = read4BytesInt();
+                 Value c(ValueType::List);
+                 while (nb_elements != 0)
+                 {
+-                    c.getRef<Value::list_t>().insert(c.getRef<Value::list_t>().begin(), pop());
++                    c.getRef<list_t>().insert(c.getRef<list_t>().begin(), pop());
+                     nb_elements--;
+                 }
+ 
+@@ -271,7 +277,8 @@ namespace kafe
+             {
+                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "var" << std::endl;
+ 
+-                Value a(ValueType::Var, readString());
++                Value a(ValueType::Var);
++                a.set<str_t>(readString());
+                 push(a);
+ 
+                 break;
+@@ -317,10 +324,10 @@ namespace kafe
+                 if (m_struct_definitions.find(struct_name) != m_struct_definitions.end())
+                 {
+                     // init the newly created structure from its "parent"
+-                    a.set<Structure>(m_struct_definitions[struct_name]);
++                    a.getRef<Structure>() = m_struct_definitions[struct_name];
+                     // push the given arguments
+-                    uint2B_t nb_args = read2BytesInt();
+-                    for (uint2B_t j=0; j < nb_args; ++j)
++                    micro_uint_t nb_args = read2BytesInt();
++                    for (micro_uint_t j=0; j < nb_args; ++j)
+                     {
+                         Value name = pop();
+                         Value val = pop();
+@@ -356,9 +363,9 @@ namespace kafe
+                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "declare structure" << std::endl;
+ 
+                 std::string name = readString();
+-                uint2B_t pairs_nb = read2BytesInt();
++                micro_uint_t pairs_nb = read2BytesInt();
+                 m_struct_definitions[name] = Structure();
+-                for (uint2B_t j=0; j < pairs_nb; ++j)
++                for (micro_uint_t j=0; j < pairs_nb; ++j)
+                 {
+                     Value name = pop();
+                     Value val = pop();
+@@ -577,7 +584,7 @@ namespace kafe
+ 
+     void VM::exec_handleBuiltins()
+     {
+-        uint2B_t instruction = read2BytesInt();
++        micro_uint_t instruction = read2BytesInt();
+ 
+         switch (instruction)
+         {
+@@ -620,7 +627,7 @@ namespace kafe
+                 {
+                     if (a.type == ValueType::Int)
+                     {
+-                        Value c(ValueType::Int, a.get<int8B_t>() - b.get<int8B_t>());
++                        Value c(ValueType::Int, a.get<int_t>() - b.get<int_t>());
+                         push(c);
+                     }
+                     else if (a.type == ValueType::Double)
+diff --git a/src/kafe/vm/vm.hpp b/src/kafe/vm/vm.hpp
+index 1c345ed..1a2dd07 100644
+--- a/src/kafe/vm/vm.hpp
++++ b/src/kafe/vm/vm.hpp
+@@ -12,7 +12,6 @@
+ #include <fstream>
+ #include <exception>
+ #include <stdexcept>
+-#include <unordered_map>
+ #include <sygmei/functiondb.hpp>
+ 
+ #define EXP_DOUBLE_LIMIT 0b0100110100
+@@ -20,7 +19,6 @@
+ 
+ namespace kafe
+ {
+-
+     class VM
+     {
+     private:
+@@ -33,7 +31,7 @@ namespace kafe
+         CallStack_t m_call_stack;
+         // keeping the signatures of the declared structures
+         // name of the struct : object Structure (.elements => name of the var : default value)
+-        std::unordered_map<std::string, Structure> m_struct_definitions;
++        StructureMap_t m_struct_definitions;
+         // keeping the loaded bytecode into the VM to use easily without passing it around
+         bytecode_t m_bytecode;
+         int m_debug_mode;
+@@ -55,12 +53,12 @@ namespace kafe
+         void   delVar    (const std::string& varName);
+         // about types
+         inst_t      readByte     (addr_t i);
+-        uint8B_t    readXBytesInt(unsigned char bytesCount=2);
+-        int2B_t     read2BytesInt();
+-        int4B_t     read4BytesInt();
+-        int8B_t     read8BytesInt();
++        uint_t      readXBytesInt(unsigned char bytesCount=2);
++        micro_int_t read2BytesInt();
++        smol_int_t  read4BytesInt();
++        int_t       read8BytesInt();
+         double      readDouble   ();
+-        std::string readString   ();
++        str_t       readString   ();
+         bool        readBool     ();
+         // about segments and jumps
+         void        performJump   (bool registerCall=true);
+diff --git a/src/kafe/vm/vm_lib.cpp b/src/kafe/vm/vm_lib.cpp
+index 267a2f6..49bd391 100644
+--- a/src/kafe/vm/vm_lib.cpp
++++ b/src/kafe/vm/vm_lib.cpp
+@@ -4,10 +4,14 @@ namespace kafe
+ {
+     namespace StdLibVM
+     {
+-        Value procName(int2B_t inst)
++        Value procName(micro_uint_t inst)
+         {
+             if (inst > 0)
+-                return Value(ValueType::String, inst_to_name[inst - 1]);
++            {
++                Value s(ValueType::String);
++                s.set<str_t>(inst_to_name[inst - 1]);
++                return s;
++            }
+             Value exc(ValueType::Exception);
+             exc.set<Exception>(Exception(Exception::CRITIC, "Can not find the procedure corresponding to the byte code 0x0000", 0));
+             return exc;
+@@ -24,7 +28,7 @@ namespace kafe
+                 if (a.type == ValueType::Int)
+                 {
+                     Value c(ValueType::Int);
+-                    c.set<int8B_t>(a.get<int8B_t>() + b.get<int8B_t>());
++                    c.set<int_t>(a.get<int_t>() + b.get<int_t>());
+                     return c;
+                 }
+                 else if (a.type == ValueType::Double)
+@@ -36,16 +40,16 @@ namespace kafe
+                 else if (a.type == ValueType::String)
+                 {
+                     Value c(ValueType::String);
+-                    c.set<std::string>(a.get<std::string>() + b.get<std::string>());
++                    c.set<str_t>(a.get<str_t>() + b.get<str_t>());
+                     return c;
+                 }
+                 else if (a.type == ValueType::List)
+                 {
+                     Value c(ValueType::List);
+-                    for (std::size_t i = 0; i < a.get<Value::list_t>().size(); ++i)
+-                        c.getRef<Value::list_t>().push_back(a.get<Value::list_t>()[i]);
+-                    for (std::size_t i = 0; i < b.get<Value::list_t>().size(); ++i)
+-                        c.getRef<Value::list_t>().push_back(b.get<Value::list_t>()[i]);
++                    for (std::size_t i = 0; i < a.get<list_t>().size(); ++i)
++                        c.getRef<list_t>().push_back(a.get<list_t>()[i]);
++                    for (std::size_t i = 0; i < b.get<list_t>().size(); ++i)
++                        c.getRef<list_t>().push_back(b.get<list_t>()[i]);
+                     return c;
+                 }
+                 exc.set<Exception>(Exception(Exception::LOGIC, "Can not add two " + convertTypeToString(a.type), 0));
+diff --git a/src/kafe/vm/vm_lib.hpp b/src/kafe/vm/vm_lib.hpp
+index 0c6cb53..455ecb0 100644
+--- a/src/kafe/vm/vm_lib.hpp
++++ b/src/kafe/vm/vm_lib.hpp
+@@ -6,18 +6,18 @@
+ #include <string>
+ 
+ #include "instructions.hpp"
+-#include "value.hpp"
+ #include "../exc.hpp"
++#include "value.hpp"
+ 
+ namespace kafe
+ {
+     namespace StdLibVM
+     {
+-        static const std::vector<std::string> inst_to_name = {
++        static std::vector<std::string> inst_to_name = {
+             "add", "sub", "div", "mul", "mod", "inc", "dec", "neg" // ...
+         };
+ 
+-        Value procName(int2B_t);
++        Value procName(micro_int_t);
+ 
+         Value _doStuff(const Value&, const Value&);
+         Value _add(const Value&, const Value&);

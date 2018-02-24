@@ -6,18 +6,18 @@
 #include <string>
 
 #include "instructions.hpp"
-#include "value.hpp"
 #include "../exc.hpp"
+#include "value.hpp"
 
 namespace kafe
 {
     namespace StdLibVM
     {
-        static const std::vector<std::string> inst_to_name = {
+        static std::vector<std::string> inst_to_name = {
             "add", "sub", "div", "mul", "mod", "inc", "dec", "neg" // ...
         };
 
-        Value procName(int2B_t);
+        Value procName(micro_int_t);
 
         Value _doStuff(const Value&, const Value&);
         Value _add(const Value&, const Value&);

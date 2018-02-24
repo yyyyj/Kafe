@@ -18,11 +18,7 @@ namespace kafe
 {
 
     VM::VM() : m_stack_size(0), m_ip(0), m_debug_mode(0), m_interactive_advance(0) {}
-
-    VM::~VM()
-    {
-        clear();
-    }
+    VM::~VM() { clear(); }
 
     void VM::push(Value value)
     {
@@ -34,9 +30,7 @@ namespace kafe
     {
         // return last element put on the stack
         if (m_stack_size - 1 >= 0)
-        {
             return abc::pop(m_stack, --m_stack_size);
-        }
         else
             raiseException(Exception::CRITIC, "Can not pop from an empty value stack");
     }
@@ -90,41 +84,41 @@ namespace kafe
         raiseException(Exception::CRITIC, "Index out of range, can not get next byte");
     }
 
-    uint8B_t VM::readXBytesInt(unsigned char bytesCount)
+    uint_t VM::readXBytesInt(unsigned char bytesCount)
     {
-        uint8B_t v = readByte(++m_ip);
+        uint_t v = readByte(++m_ip);
         for (unsigned char k=1; k < bytesCount; ++k)
             v = (v << 8) + readByte(++m_ip);
         return v;
     }
 
-    int2B_t VM::read2BytesInt()
+    micro_int_t VM::read2BytesInt()
     {
-        return abc::setSign((int2B_t) readXBytesInt(2), /* bytesCount */ 2);
+        return abc::setSign((micro_int_t) readXBytesInt(2), /* bytesCount */ 2);
     }
 
-    int4B_t VM::read4BytesInt()
+    smol_int_t VM::read4BytesInt()
     {
-        return abc::setSign((int4B_t) readXBytesInt(4), /* bytesCount */ 4);
+        return abc::setSign((smol_int_t) readXBytesInt(4), /* bytesCount */ 4);
     }
 
-    int8B_t VM::read8BytesInt()
+    int_t VM::read8BytesInt()
     {
-        return abc::setSign((int8B_t) readXBytesInt(8), /* bytesCount */ 8);
+        return abc::setSign((int_t) readXBytesInt(8), /* bytesCount */ 8);
     }
 
     double VM::readDouble()
     {
-        uint4B_t int_part = read4BytesInt();
-        int2B_t exp = abc::abs(read2BytesInt());
+        smol_uint_t int_part = read4BytesInt();
+        micro_int_t exp = abc::abs(read2BytesInt());
         exp = (exp > EXP_DOUBLE_LIMIT) ? EXP_DOUBLE_LIMIT : ((exp < -EXP_DOUBLE_LIMIT) ? -EXP_DOUBLE_LIMIT : exp);
         exp *= (exp & EXP_DOUBLE_SIGN) ? (-1) : (+1);
         return double(int_part) * std::pow(10, exp);
     }
 
-    std::string VM::readString()
+    str_t VM::readString()
     {
-        std::string work = "";
+        str_t work = "";
         ++m_ip;
         while (true)
         {
@@ -193,7 +187,7 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "int 2B" << std::endl;
 
                 Value v(ValueType::Int);
-                v.set<int8B_t>(read2BytesInt());
+                v.set<int_t>(read2BytesInt());
                 push(v);
 
                 break;
@@ -204,7 +198,18 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "int 4B" << std::endl;
 
                 Value v(ValueType::Int);
-                v.set<int8B_t>(read4BytesInt());
+                v.set<int_t>(read4BytesInt());
+                push(v);
+
+                break;
+            }
+
+            case INST_INT_8B:
+            {
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "int 8B" << std::endl;
+
+                Value v(ValueType::Int);
+                v.set<int_t>(read8BytesInt());
                 push(v);
 
                 break;
@@ -223,9 +228,10 @@ namespace kafe
 
             case INST_STR:
             {
-                if (m_debug_mode & VM::FLAG_BASIC_DEBUG)  std::cerr << "str" << std::endl;
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "str" << std::endl;
 
-                Value a(ValueType::String, readString());
+                Value a(ValueType::String);
+                a.set<str_t>(readString());
                 push(a);
 
                 break;
@@ -256,11 +262,11 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "list" << std::endl;
 
-                uint4B_t nb_elements = read4BytesInt();
+                smol_uint_t nb_elements = read4BytesInt();
                 Value c(ValueType::List);
                 while (nb_elements != 0)
                 {
-                    c.getRef<Value::list_t>().insert(c.getRef<Value::list_t>().begin(), pop());
+                    c.getRef<list_t>().insert(c.getRef<list_t>().begin(), pop());
                     nb_elements--;
                 }
 
@@ -271,7 +277,8 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "var" << std::endl;
 
-                Value a(ValueType::Var, readString());
+                Value a(ValueType::Var);
+                a.set<str_t>(readString());
                 push(a);
 
                 break;
@@ -317,10 +324,10 @@ namespace kafe
                 if (m_struct_definitions.find(struct_name) != m_struct_definitions.end())
                 {
                     // init the newly created structure from its "parent"
-                    a.set<Structure>(m_struct_definitions[struct_name]);
+                    a.getRef<Structure>() = m_struct_definitions[struct_name];
                     // push the given arguments
-                    uint2B_t nb_args = read2BytesInt();
-                    for (uint2B_t j=0; j < nb_args; ++j)
+                    micro_uint_t nb_args = read2BytesInt();
+                    for (micro_uint_t j=0; j < nb_args; ++j)
                     {
                         Value name = pop();
                         Value val = pop();
@@ -356,9 +363,9 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "declare structure" << std::endl;
 
                 std::string name = readString();
-                uint2B_t pairs_nb = read2BytesInt();
+                micro_uint_t pairs_nb = read2BytesInt();
                 m_struct_definitions[name] = Structure();
-                for (uint2B_t j=0; j < pairs_nb; ++j)
+                for (micro_uint_t j=0; j < pairs_nb; ++j)
                 {
                     Value name = pop();
                     Value val = pop();
@@ -577,7 +584,7 @@ namespace kafe
 
     void VM::exec_handleBuiltins()
     {
-        uint2B_t instruction = read2BytesInt();
+        micro_uint_t instruction = read2BytesInt();
 
         switch (instruction)
         {
@@ -620,7 +627,7 @@ namespace kafe
                 {
                     if (a.type == ValueType::Int)
                     {
-                        Value c(ValueType::Int, a.get<int8B_t>() - b.get<int8B_t>());
+                        Value c(ValueType::Int, a.get<int_t>() - b.get<int_t>());
                         push(c);
                     }
                     else if (a.type == ValueType::Double)

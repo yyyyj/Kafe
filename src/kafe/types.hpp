@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstdint>
+#include <string>
 
 namespace kafe
 {
@@ -10,14 +11,14 @@ namespace kafe
     typedef unsigned char       inst_t;
     typedef std::vector<inst_t> bytecode_t;
 
-    // fixed data types
-    typedef int16_t             int2B_t;
-    typedef uint16_t            uint2B_t;
-    typedef int32_t             int4B_t;
-    typedef uint32_t            uint4B_t;
-    typedef int64_t             int8B_t;
-    typedef uint64_t            uint8B_t;
-    typedef /*std::size_t*/int8B_t         addr_t;
+    typedef int16_t      micro_int_t;
+    typedef uint16_t     micro_uint_t;
+    typedef int32_t      smol_int_t;
+    typedef uint32_t     smol_uint_t;
+    typedef int64_t      int_t;
+    typedef uint64_t     uint_t;
+    typedef std::size_t  addr_t;
+    typedef std::string  str_t;
 
 }  // namespace kafe
 

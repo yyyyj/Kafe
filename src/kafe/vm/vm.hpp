@@ -12,7 +12,6 @@
 #include <fstream>
 #include <exception>
 #include <stdexcept>
-#include <unordered_map>
 #include <sygmei/functiondb.hpp>
 
 #define EXP_DOUBLE_LIMIT 0b0100110100
@@ -20,7 +19,6 @@
 
 namespace kafe
 {
-
     class VM
     {
     private:
@@ -33,7 +31,7 @@ namespace kafe
         CallStack_t m_call_stack;
         // keeping the signatures of the declared structures
         // name of the struct : object Structure (.elements => name of the var : default value)
-        std::unordered_map<std::string, Structure> m_struct_definitions;
+        StructureMap_t m_struct_definitions;
         // keeping the loaded bytecode into the VM to use easily without passing it around
         bytecode_t m_bytecode;
         int m_debug_mode;
@@ -55,12 +53,12 @@ namespace kafe
         void   delVar    (const std::string& varName);
         // about types
         inst_t      readByte     (addr_t i);
-        uint8B_t    readXBytesInt(unsigned char bytesCount=2);
-        int2B_t     read2BytesInt();
-        int4B_t     read4BytesInt();
-        int8B_t     read8BytesInt();
+        uint_t      readXBytesInt(unsigned char bytesCount=2);
+        micro_int_t read2BytesInt();
+        smol_int_t  read4BytesInt();
+        int_t       read8BytesInt();
         double      readDouble   ();
-        std::string readString   ();
+        str_t       readString   ();
         bool        readBool     ();
         // about segments and jumps
         void        performJump   (bool registerCall=true);
