@@ -1,5 +1,5 @@
-#ifndef kafe_bytecode
-#define kafe_bytecode
+#ifndef kafe_types
+#define kafe_types
 
 #include <vector>
 #include <cstdint>
@@ -22,4 +22,4 @@ namespace kafe
 
 }  // namespace kafe
 
-#endif // kafe_bytecode
+#endif // kafe_types
