@@ -740,6 +740,8 @@ namespace kafe
             {
                 std::ostringstream out;
                 out << std::setw(12) << it->first << " = " << std::setw(6) << convertTypeToString(it->second.type) << " " << it->second;
+                if (it->second.is_const)
+                    out << " (CONST)";
                 std::cerr << out.str();
                 std::advance(it, 1);
             }
@@ -759,6 +761,7 @@ namespace kafe
                     std::cerr << "Type `continue` to advance to the next relevant bytecode" << std::endl
                               << "     `break` to quit the interactive mode and continue the execution" << std::endl
                               << "     `advance x`, x a number between 0 and the bytecode size to read x byte without prompting again" << std::endl
+                              << "     `cslevel` get call stack level" << std::endl
                               << "     `clear` to clear the screen" << std::endl
                         ;
                     command = "";
@@ -789,6 +792,11 @@ namespace kafe
                         else
                             m_interactive_advance = n;
                     }
+                }
+                else if (command == "cslevel")
+                {
+                    std::cerr << "Call stack level : " << m_call_stack.size() << std::endl;
+                    command = "";
                 }
                 else if (command == "clear")
                 {
@@ -860,10 +868,8 @@ namespace kafe
             for (m_ip=0; m_ip < m_bytecode.size(); ++m_ip)
             {
                 inst_t instruction = readByte(m_ip);
-                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) {
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG)
                     std::cerr << "[" << m_ip << "] " << abc::hexstr((unsigned)instruction) << " ";
-                    std::cerr << "### call stack size " << m_call_stack.size() << std::endl;
-                }
 
                 if (INST_INT_2B <= instruction && instruction <= INST_DEL_VAR)
                     exec_handleDataTypesDecl(instruction);

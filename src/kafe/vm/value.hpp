@@ -69,9 +69,9 @@ namespace kafe
         std::variant<int_t, double, bool, str_t, list_t, Structure, addr_t, Exception> value;
         bool is_const;
 
-        Value()                                        {}
-        Value(ValueType t)         : type(t)           {}
-        Value(ValueType t, bool b) : type(t), value(b) {}
+        Value() : is_const(false)                      {}
+        Value(ValueType t) : type(t), is_const(false)  {}
+        Value(ValueType t, bool b) : type(t), value(b), is_const(false) {}
 
         Value& operator=(Value& other)
         {
