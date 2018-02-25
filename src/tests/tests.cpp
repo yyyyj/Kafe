@@ -16,9 +16,9 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
     vm.setMode(debug_mode);
     vm.load(bytecode);
 
+    std::cerr << "[ " << test_name << " ]" << std::endl << std::endl;
     if (debug_mode & kafe::VM::FLAG_BASIC_DEBUG)
         std::cerr << std::endl << "Calling order" << std::endl << "-------------" << std::endl;
-    std::cerr << "[ " << test_name << " ]" << std::endl << std::endl;
 
     vm.exec(); vm.setMode(0);
     BENCHMARK_MRSTATS("", vm.exec(), 500, us)

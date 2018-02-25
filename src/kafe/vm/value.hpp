@@ -67,17 +67,19 @@ namespace kafe
 
         ValueType type;
         std::variant<int_t, double, bool, str_t, list_t, Structure, addr_t, Exception> value;
+        bool is_const;
 
         Value()                                        {}
         Value(ValueType t)         : type(t)           {}
         Value(ValueType t, bool b) : type(t), value(b) {}
 
-        Value& operator=(const Value& other)
+        Value& operator=(Value& other)
         {
             if (this != &other)
             {
                 type = other.type;
                 value = other.value;
+                is_const = other.is_const;
             }
             return *this;
         }
@@ -89,7 +91,8 @@ namespace kafe
                 set<T>({});
             return std::get<T>(value);
         }
-        template <typename T> void set(T val) { value = val; }
+        template <typename T> void set(T&& val) { value = std::move(val); }
+        template <typename T> void set(const T& val) { value = T(val); }
 
         bool operator==(const Value& other) const
         {

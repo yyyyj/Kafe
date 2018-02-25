@@ -28,10 +28,10 @@ namespace kafe
     void State::operator()(const std::string& code)
     {}
 
-    RefVar& State::operator[](const std::string& key)
+    RefVar State::operator[](const std::string& key)
     {
         if (m_vars.find(key) != m_vars.end())
-            return m_vars[key];
+            return RefVar(m_vars[key]);
         throw std::runtime_error("Could not get the wanted key : " + key);
     }
     

@@ -18,6 +18,7 @@ namespace kafe
 {
 
     VM::VM() : m_stack_size(0), m_ip(0), m_debug_mode(0), m_interactive_advance(0) {}
+
     VM::~VM() { clear(); }
 
     void VM::push(Value value)
@@ -69,15 +70,30 @@ namespace kafe
     Value& VM::getRefVar(const std::string& varName)
     {
         if (m_call_stack.size() == 0)
-            return m_variables[varName];
+        {
+            if (!m_variables[varName].is_const)
+                return m_variables[varName];
+            raiseException(Exception::CRITIC, "Can not modify a const variable");
+        }
         return m_call_stack[m_call_stack.size() - 1].vars[varName];
     }
 
     void VM::setVar(const std::string& varName, Value v)
     {
         if (m_call_stack.size() == 0)
-            m_variables[varName] = v;
-        m_call_stack[m_call_stack.size() - 1].vars[varName] = v;
+        {
+            if (!m_variables[varName].is_const)
+                m_variables[varName] = v;
+            else
+                raiseException(Exception::CRITIC, "Can not modify a const variable");
+        }
+        else
+        {
+            if (!m_call_stack[m_call_stack.size() - 1].vars[varName].is_const)
+                m_call_stack[m_call_stack.size() - 1].vars[varName] = v;
+            else
+                raiseException(Exception::CRITIC, "Can not modify a const variable");
+        }
     }
 
     void VM::delVar(const std::string& varName)
@@ -837,7 +853,10 @@ namespace kafe
             for (m_ip=0; m_ip < m_bytecode.size(); ++m_ip)
             {
                 inst_t instruction = readByte(m_ip);
-                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "[" << m_ip << "] " << abc::hexstr((unsigned) instruction) << " ";
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) {
+                    std::cerr << "[" << m_ip << "] " << abc::hexstr((unsigned)instruction) << " ";
+                    std::cerr << "### call stack size " << m_call_stack.size() << std::endl;
+                }
 
                 if (INST_INT_2B <= instruction && instruction <= INST_DEL_VAR)
                     exec_handleDataTypesDecl(instruction);

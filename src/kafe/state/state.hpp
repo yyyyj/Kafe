@@ -18,7 +18,7 @@ namespace kafe
     class State
     {
     private:
-        std::unordered_map<std::string, RefVar> m_vars;
+        std::unordered_map<std::string, Value> m_vars;
         VM vm;
 
     public:
@@ -31,7 +31,7 @@ namespace kafe
         Function loadString(const std::string&);
         
         void operator()(const std::string&);
-        RefVar& operator[](const std::string&);
+        RefVar operator[](const std::string&);
     };
     
 }  // namespace kafe
