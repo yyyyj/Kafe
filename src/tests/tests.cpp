@@ -24,13 +24,13 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
     BENCHMARK_MRSTATS("", vm.exec(), 500, us)
     vm.saveBytecode("examples/bytecode/" + filename);
 
-    if (vm.getStack().size() && (debug_mode & kafe::VM::FLAG_BASIC_DEBUG))
+    if (vm.getStack().size())
     {
         std::cerr << std::endl << "Stack (" << vm.getStack().size() << ")" << std::endl << "-------------" << std::endl;
         for (std::size_t j=vm.getStack().size(); j > 0; --j)
             std::cerr << "[" << j - 1 << "] " << kafe::convertTypeToString(vm.getStack()[j - 1].type) << " " << vm.getStack()[j - 1] << std::endl;
     }
-    if (vm.getVariables().size() && (debug_mode & kafe::VM::FLAG_BASIC_DEBUG))
+    if (vm.getVariables().size())
     {
         std::cerr << std::endl   << std::endl << "Variables (" << vm.getVariables().size() << ")" << std::endl << "-------------" << std::endl;
         for (auto& element : vm.getVariables())
