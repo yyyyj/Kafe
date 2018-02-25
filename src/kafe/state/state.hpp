@@ -4,10 +4,13 @@
 #include "../vm/vm.hpp"
 #include "../parser.hpp"
 #include "../types.hpp"
-#include "function.hpp"
+#include "fct.hpp"
 #include "refvar.hpp"
 
 #include <string>
+#include <unordered_map>
+#include <exception>
+#include <stdexcept>
 
 namespace kafe
 {
@@ -15,7 +18,9 @@ namespace kafe
     class State
     {
     private:
-        
+        std::unordered_map<std::string, RefVar> m_vars;
+        VM vm;
+
     public:
         State();
         ~State();
@@ -25,8 +30,8 @@ namespace kafe
         Function loadFile(const std::string&);
         Function loadString(const std::string&);
         
-        Function operator()(const std::string&);
-        RefVar& operator[](std::size_t index);
+        void operator()(const std::string&);
+        RefVar& operator[](const std::string&);
     };
     
 }  // namespace kafe
