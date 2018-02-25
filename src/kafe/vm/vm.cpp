@@ -54,27 +54,38 @@ namespace kafe
 
     bool VM::findVar(const std::string& varName)
     {
-        return m_variables.find(varName) != m_variables.end();
+        if (m_call_stack.size() == 0)
+            return m_variables.find(varName) != m_variables.end();
+        return m_call_stack[m_call_stack.size() - 1].vars.find(varName) != m_call_stack[m_call_stack.size() - 1].vars.end();
     }
 
     Value VM::getVar(const std::string& varName)
     {
-        return m_variables[varName];
+        if (m_call_stack.size() == 0)
+            return m_variables[varName];
+        return m_call_stack[m_call_stack.size() - 1].vars[varName];
     }
 
     Value& VM::getRefVar(const std::string& varName)
     {
-        return m_variables[varName];
+        if (m_call_stack.size() == 0)
+            return m_variables[varName];
+        return m_call_stack[m_call_stack.size() - 1].vars[varName];
     }
 
     void VM::setVar(const std::string& varName, Value v)
     {
-        m_variables[varName] = v;
+        if (m_call_stack.size() == 0)
+            m_variables[varName] = v;
+        m_call_stack[m_call_stack.size() - 1].vars[varName] = v;
     }
 
     void VM::delVar(const std::string& varName)
     {
-        m_variables.erase(m_variables.find(varName));
+        if (m_call_stack.size() == 0)
+            m_variables.erase(m_variables.find(varName));
+        else
+            m_call_stack[m_call_stack.size() - 1].vars.erase(m_call_stack[m_call_stack.size() - 1].vars.find(varName));
     }
 
     inst_t VM::readByte(addr_t i)
