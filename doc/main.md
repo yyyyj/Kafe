@@ -7,6 +7,8 @@
 
 [How the VM works](vm.md)
 
+[Language documentation](lang/main.md)
+
 [Code examples](examples.md)
 
 # Command line options for the Kafe VM
