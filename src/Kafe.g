@@ -9,7 +9,7 @@ block
     ;
 
 stat
-    : 'dyn' NAME ':' type '=' explist
+    : varqualifier NAME ':' type '=' explist
     | NAME '=' explist
     | NAME operatorMathAffectation explist
     | functioncall
@@ -23,6 +23,10 @@ stat
 
 retstat
     : 'ret' exp
+    ;
+
+varqualifier
+    : 'dyn' | 'cst'
     ;
 
 type
