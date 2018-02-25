@@ -57,12 +57,16 @@ namespace kafe
     {
         if (m_call_stack.size() == 0)
             return m_variables.find(varName) != m_variables.end();
-        return m_call_stack[m_call_stack.size() - 1].vars.find(varName) != m_call_stack[m_call_stack.size() - 1].vars.end();
+        // if we didn't found the variable in the current scope, search for it in the upper scope
+        if (m_call_stack[m_call_stack.size() - 1].vars.find(varName) == m_call_stack[m_call_stack.size() - 1].vars.end())
+            return m_variables.find(varName) != m_variables.end();
+        return true;
     }
 
     Value VM::getVar(const std::string& varName)
     {
-        if (m_call_stack.size() == 0)
+        // we can get a var from the upper scope, but we search it in the current scope before looking in the global scope
+        if ((m_call_stack.size() != 0 && m_call_stack[m_call_stack.size() - 1].vars.find(varName) == m_call_stack[m_call_stack.size() - 1].vars.end()) || m_call_stack.size() == 0)
             return m_variables[varName];
         return m_call_stack[m_call_stack.size() - 1].vars[varName];
     }
@@ -75,7 +79,10 @@ namespace kafe
                 return m_variables[varName];
             raiseException(Exception::CRITIC, "Can not modify a const variable");
         }
-        return m_call_stack[m_call_stack.size() - 1].vars[varName];
+
+        if (!m_call_stack[m_call_stack.size() - 1].vars[varName].is_const)
+            return m_call_stack[m_call_stack.size() - 1].vars[varName];
+        raiseException(Exception::CRITIC, "Can not modify a const variable");
     }
 
     void VM::setVar(const std::string& varName, Value v)
