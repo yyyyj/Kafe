@@ -14,11 +14,11 @@
 #include <stdexcept>
 #include <sygmei/functiondb.hpp>
 
-#define EXP_DOUBLE_LIMIT 0b0100110100
-#define EXP_DOUBLE_SIGN  0b1000000000
-
 namespace kafe
 {
+    constexpr int EXP_DOUBLE_LIMIT = 0b0100110100;
+    constexpr int EXP_DOUBLE_SIGN = 0b1000000000;
+
     class VM
     {
     private:
@@ -79,6 +79,7 @@ namespace kafe
         ~VM();
 
         // the debug flags for the VM
+        static const int FLAG_DEFAULT_MODE = 0;
         static const int FLAG_BASIC_DEBUG = 1 << 0;
         static const int FLAG_INTERACTIVE = 1 << 1;
 

@@ -10,8 +10,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 
 ANTLR(INPUT Kafe.g)
 
-file(GLOB_RECURSE INCLUDE_FILES "./kafe/*.hpp" "./tests.hpp")
-file(GLOB_RECURSE SRC_FILES "./kafe/*.cpp" "./tests.cpp" "./main.cpp")
+file(GLOB_RECURSE INCLUDE_FILES "kafe/*.hpp" "tests/*.hpp")
+file(GLOB_RECURSE SRC_FILES "kafe/*.cpp" "tests/*.cpp" "main.cpp")
 
 add_executable(Kafe main.cpp ${INCLUDE_FILES} ${SRC_FILES})
 target_link_libraries(Kafe antlr4_shared)

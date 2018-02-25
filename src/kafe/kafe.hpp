@@ -2,6 +2,7 @@
 #define kafe_kafe
 
 #include "vm/vm.hpp"
+#include "state/state.hpp"
 #include "utils.hpp"
 #include "types.hpp"
 #include "parser.hpp"
