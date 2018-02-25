@@ -10,6 +10,7 @@ block
 
 stat
     : varqualifier NAME ':' type '=' explist
+    | 'nonlocal' NAME NAME*
     | NAME '=' explist
     | NAME operatorMathAffectation explist
     | functioncall
