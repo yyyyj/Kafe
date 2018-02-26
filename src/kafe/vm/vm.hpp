@@ -47,8 +47,8 @@ namespace kafe
         void     clear    ();
         void     loadLib  ();
         VarFound findVar  (const str_t& varName);
-        Value    getVar   (const str_t& varName, VarFound status);
-        Value&   getRefVar(const str_t& name, VarFound status);
+        Value    getVar   (const str_t& varName, VarFound vf);
+        Value&   getRefVar(const str_t& varName, VarFound vf);
         void     setVar   (const str_t& varName, Value v, VarFound vf, bool is_const=false);
         void     delVar   (const str_t& varName);
         // about types

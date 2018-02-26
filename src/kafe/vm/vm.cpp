@@ -53,7 +53,7 @@ namespace kafe
         StdLibVM::load(m_fdb);
     }
 
-    FindStatus VM::findVar(const str_t& varName)
+    VarFound VM::findVar(const str_t& varName)
     {
         if (m_call_stack.size() == 0)
             return (m_variables.find(varName) != m_variables.end()) ? VarFound::InCurrentScopeGlobal : VarFound::NotFound;
@@ -88,7 +88,8 @@ namespace kafe
         {
             // we are trying to get a reference on a variable outside our current scope
             // probably to modify it. we need to check if the variable is in the nonlocals vars list
-            if (m_call_stack[m_call_stack.size() - 1].refs_to_gscope.find(varName) != m_call_stack[m_call_stack.size() - 1].refs_to_gscope.end())
+            std::vector<str_t>& refs = m_call_stack[m_call_stack.size() - 1].refs_to_gscope;
+            if (std::find(refs.begin(), refs.end(), varName) != refs.end())
             {
                 if (!m_call_stack[m_call_stack.size() - 1].vars[varName].is_const)
                     return m_call_stack[m_call_stack.size() - 1].vars[varName];
@@ -463,7 +464,7 @@ namespace kafe
 
                 str_t name = readString();
                 VarFound vf = findVar(name);
-                if (vf != VarFound::NOT_FOUND)
+                if (vf != VarFound::NotFound)
                 {
                     str_t member = readString();
                     getRefVar(name, vf).getRef<Structure>().set(member, pop());
@@ -555,7 +556,7 @@ namespace kafe
                 // we read the size of the var name and read it
                 str_t name = readString();
                 // if the variable can be found, push it on the stack
-                VarFound vf = findVar(name)
+                VarFound vf = findVar(name);
                 if (vf != VarFound::NotFound)
                     push(getVar(name, vf));
                 else
