@@ -17,28 +17,43 @@ namespace kafe
         INST_ADDR        = 0x07,  // 0x07 [address on 4 bytes] ; used to store an address of something in the bytecode
         INST_LIST        = 0x08,  // 0x08 [number of elements on 4 bytes = X] ; takes the X last elements put on the stack and put them into a list
         INST_VAR         = 0x09,  // 0x09 [name]
+        // structures
         INST_STRUCT      = 0x0a,  // 0x0a [name] [number of pair<Value::Var, Value> = X] ; read X pair from the stack, var_name=stack[-1], value=stack[-2]
         INST_DECL_STRUCT = 0x0b,  // 0x0b [name] [number of pair<Value::Var, Value> = X] ; read X pair from the stack, var_name=stack[-1], value=stack[-2]
         INST_STRUCT_GETM = 0x0c,  // 0x0c [name] [member name] ; push the value of the member (if it exists) onto the stack
         INST_STRUCT_SETM = 0x0d,  // 0x0d [name] [member name] ; takes the last value on the stack and put it into the member (if it exists or not)
         INST_STRUCT_HASM = 0x0e,  // 0x0e [name] [member name] ; check if the struct has a member "name" : push true or false
-        INST_DEL_VAR     = 0x0f,  // 0x0f [name]
+        INST_STRUCT_TID  = 0x0f,  // 0x0f [name] ; push the type id (integer) of a struct "name" on the stack
+        // variables
+        INST_STORE_DYN   = 0x10,  // 0x10 ; store the value at stack[-2] in stack[-1] (create a DYN variable)
+        INST_STORE_CST   = 0x11,  // 0x11 ; store the value at stack[-2] in stack[-1] (create a CONST variable)
+        INST_LOAD_VAR    = 0x12,  // 0x12 [name] ; push its value on the stack
+        INST_DEL_VAR     = 0x13,  // 0x13 [name] ; delete the selected variable
+        INST_NONLOCAL    = 0x14,  // 0x14 [name] ; set a global scope variable as local scope variable with writing permissions (only in segments)
+        INST_GET_TYPE    = 0x15,  // 0x15 [name] ; name must a living variable in the current scope. push the string version of the type name. return "struct" for the structures
+        // lists
+        INST_SIZE_LST    = 0x16,  // 0x16 ; push the size, on the stack, of the list at stack[-1]
+        INST_POP_LST     = 0x17,  // 0x17 [integer on 6 bytes = X] ; pop the element at stack[-1][X] (stack[-1] must be a list), handling negatives indexes. raises an exception if the index isn't in range
+        INST_APPEND_LST  = 0x18,  // 0x18 ; push the element at stack[-2] in the list at stack[-1]
+        INST_GNTH_LST    = 0x19,  // 0x19 [integer on 6 bytes = X] ; push on the stack the elemenet at stack[-1][X] (stack[-1] must be a list), handling negatives indexes. raises an exception if the index isn't in range
+        INST_SNTH_LST    = 0x1a,  // 0x1a [integer on 6 bytes = X] ; push the element at stack[-2] in stack[-1][X] (which must be a list). raises and exception if stack[-1] isn't a list
+        INST_GSLICE_LST  = 0x1b,  // 0x1b [integer on 6 bytes = X] [integer on 6 bytes = Y] [integer on 6 bytes = P] ; push the value of stack[-1][X:Y:P] on the stack. the values touched are in [X, Y[ with a step of P. raises an exception if X > Y or stack[-1] isn't a list
+        INST_SSLICE_LST  = 0x1c,  // 0x1c [integer on 6 bytes = X] [integer on 6 bytes = Y] [integer on 6 bytes = P] ; set the value of stack[-1][X:Y:P] as stack[-2], each one must be lists (raises an exception if not, also if the indexes aren't correct)
+        INST_CONS_LST    = 0x1d,  // 0x1d ; construct a new list from the objects x and y, with x=stack[-2] and y=stack[-1]
         // segments and blocs
-        INST_STORE_VAR   = 0x10,  // 0x10 ; store the value at stack[-2] in stack[-1]
-        INST_LOAD_VAR    = 0x11,  // 0x11 [name] ; push its value on the stack
-        INST_DUP         = 0x12,  // 0x12 ; duplicate the value at stack[-1]
-        INST_CALL        = 0x13,  // 0x13 ; jump to stack[-1] (Value::Addr) and return to the caller position when `ret` is hit
-        INST_JUMP        = 0x14,  // 0x14 ; jump to stack[-1] (Value::Addr) and continue the execution
-        INST_JUMP_IF     = 0x15,  // 0x15 ; jump to stack[-2] (Value::Addr) if stack[-1] compares to true and continue the execution
-        INST_JUMP_IFN    = 0x16,  // 0x16 ; jump to stack[-2] (Value::Addr) if stack[-1] compares to false and continue the execution
-        INST_RET         = 0x17,  // 0x17 ; return from a segment
-        INST_GET_CWA     = 0x18,  // 0x18 ; push the current address in the bytecode on the stack as a Value::Addr (CWA stands for current working address)
-        INST_PERMUTATION = 0x19,  // 0x19 ; switch the two top values of the stack
-        INST_POP         = 0x1a,  // 0x1a ; pop the value off the stack (delete it)
-        INST_HALT        = 0x1b,  // 0x1b ; end the execution of the script
+        INST_DUP         = 0x1e,  // 0x1e ; duplicate the value at stack[-1]
+        INST_CALL        = 0x1f,  // 0x1f ; jump to stack[-1] (Value::Addr) and return to the caller position when `ret` is hit
+        INST_JUMP        = 0x20,  // 0x20 ; jump to stack[-1] (Value::Addr) and continue the execution
+        INST_JUMP_IF     = 0x21,  // 0x21 ; jump to stack[-2] (Value::Addr) if stack[-1] compares to true and continue the execution
+        INST_JUMP_IFN    = 0x22,  // 0x22 ; jump to stack[-2] (Value::Addr) if stack[-1] compares to false and continue the execution
+        INST_RET         = 0x23,  // 0x23 ; return from a segment
+        INST_GET_CWA     = 0x24,  // 0x24 ; push the current address in the bytecode on the stack as a Value::Addr (CWA stands for current working address)
+        INST_PERMUTATION = 0x25,  // 0x25 ; switch the two top values of the stack
+        INST_POP         = 0x26,  // 0x26 ; pop the value off the stack (delete it)
+        INST_HALT        = 0x27,  // 0x27 ; end the execution of the script
 
         // built-in procedures around numbers and booleans
-        INST_PROCEDURE   = 0x20,
+        INST_PROCEDURE   = 0x28,
     };
 
     enum Procedure

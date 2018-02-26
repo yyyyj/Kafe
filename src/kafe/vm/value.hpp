@@ -126,6 +126,7 @@ namespace kafe
     bool operator> (const Value& a, const Value& b);
 
     // custom types to create stacks and avoid to much verbosity
+    typedef Value::list_t list_t;
     typedef std::vector<Value> ValueStack_t;
     typedef std::unordered_map<std::string, Value> VarStack_t;
     struct Call
@@ -133,10 +134,10 @@ namespace kafe
         addr_t lastPos;
         addr_t lastStackSize;
         VarStack_t vars;
+        std::vector<str_t> refs_to_gscope;
     };
     typedef std::vector<Call> CallStack_t;
     typedef std::unordered_map<std::string, Structure> StructureMap_t;
-    typedef Value::list_t list_t;
 
     struct StructElem
     {

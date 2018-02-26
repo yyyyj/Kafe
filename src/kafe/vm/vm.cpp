@@ -66,7 +66,7 @@ namespace kafe
     Value VM::getVar(const std::string& varName)
     {
         // we can get a var from the upper scope, but we search it in the current scope before looking in the global scope
-        if ((m_call_stack.size() != 0 && m_call_stack[m_call_stack.size() - 1].vars.find(varName) == m_call_stack[m_call_stack.size() - 1].vars.end()) || m_call_stack.size() == 0)
+        if (m_call_stack.size() == 0 || (m_call_stack.size() != 0 && m_call_stack[m_call_stack.size() - 1].vars.find(varName) == m_call_stack[m_call_stack.size() - 1].vars.end())
             return m_variables[varName];
         return m_call_stack[m_call_stack.size() - 1].vars[varName];
     }
@@ -77,12 +77,32 @@ namespace kafe
         {
             if (!m_variables[varName].is_const)
                 return m_variables[varName];
-            raiseException(Exception::CRITIC, "Can not modify a const variable");
+            raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`");
         }
 
-        if (!m_call_stack[m_call_stack.size() - 1].vars[varName].is_const)
-            return m_call_stack[m_call_stack.size() - 1].vars[varName];
-        raiseException(Exception::CRITIC, "Can not modify a const variable");
+        // if we are here, we're in a segment because m_call_stack.size() != 0
+        // we assume that the VM checked that the variable does exists
+        // but it could have been found in the upper scope in read-only mode,
+        // so we must double check
+        if (m_call_stack[m_call_stack.size() - 1].vars.find(varName) != m_call_stack[m_call_stack.size() - 1].vars.end())
+        {
+            if (!m_call_stack[m_call_stack.size() - 1].vars[varName].is_const)
+                return m_call_stack[m_call_stack.size() - 1].vars[varName];
+            raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`");
+        }
+        // if we are now now, it means that the variable is either a const or do not exists
+        // in the current scope. we assume it exists in the global scope, but we must be
+        // sure we have put it in the write mode
+        if (m_call_stack[m_call_stack.size() - 1].refs_to_gscope.find(varName) != m_call_stack[m_call_stack.size() - 1].refs_to_gscope.end())
+        {
+            // we are now checking the const attribute
+            if (!m_variables[varName].is_const)
+                return m_variables[varName];
+            raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`");
+        }
+        // finally if we are here it means the variable wasn't found in the global scope,
+        // neither in the current scope, and isn't a nonlocal variable
+        raiseException(Exception::CRITIC, "Can not find variable `" + varName + "`");
     }
 
     void VM::setVar(const std::string& varName, Value v)

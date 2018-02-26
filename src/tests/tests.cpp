@@ -59,11 +59,13 @@ int start_tests(int mode)
     debug_mode = mode;
 
     std::cerr << "Useful pieces of information about Kafe" << std::endl;
-    std::cerr << "\tSizeof(Kafe::Value)    = " << sizeof(kafe::Value) << "B" << std::endl;
-    std::cerr << "\tSizeof(Kafe::VM)       = " << sizeof(kafe::VM) << "B" << std::endl;
-    std::cerr << "\tSizeOf(Kafe::State)    = " << sizeof(kafe::State) << "B" << std::endl;
-    std::cerr << "\tSizeof(Kafe::Function) = " << sizeof(kafe::Function) << "B" << std::endl;
-    std::cerr << "\tSizeof(Kafe::RefVar)   = " << sizeof(kafe::RefVar) << "B" << std::endl;
+    std::cerr << "\tSizeof(Kafe::Value)     = " << sizeof(kafe::Value) << "B" << std::endl;
+    std::cerr << "\tSizeof(Kafe::VM)        = " << sizeof(kafe::VM) << "B" << std::endl;
+    std::cerr << "\tSizeOf(Kafe::State)     = " << sizeof(kafe::State) << "B" << std::endl;
+    std::cerr << "\tSizeof(Kafe::Function)  = " << sizeof(kafe::Function) << "B" << std::endl;
+    std::cerr << "\tSizeof(Kafe::RefVar)    = " << sizeof(kafe::RefVar) << "B" << std::endl;
+    std::cerr << "\tSizeof(Kafe::Call)      = " << sizeof(kafe::Call) << "B" << std::endl;
+    std::cerr << "\tSizeof(Kafe::Structure) = " << sizeof(kafe::Structure) << "B" << std::endl;
     std::cerr << std::endl;
 
     TEST("int:18768, str:hello, bool:true", {
