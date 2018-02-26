@@ -18,7 +18,7 @@ namespace kafe
     }
 
     // Structure
-    uint_t Structure::ID = 0;
+    int_t Structure::ID = 0;
 
     void Structure::add(std::string name, Value val)
     {

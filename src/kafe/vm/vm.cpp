@@ -105,22 +105,12 @@ namespace kafe
         raiseException(Exception::CRITIC, "Can not find variable `" + varName + "`");
     }
 
-    void VM::setVar(const std::string& varName, Value v)
+    void VM::setVar(const std::string& varName, Value v, bool is_const)
     {
-        if (m_call_stack.size() == 0)
-        {
-            if (!m_variables[varName].is_const)
-                m_variables[varName] = v;
-            else
-                raiseException(Exception::CRITIC, "Can not modify a const variable");
-        }
-        else
-        {
-            if (!m_call_stack[m_call_stack.size() - 1].vars[varName].is_const)
-                m_call_stack[m_call_stack.size() - 1].vars[varName] = v;
-            else
-                raiseException(Exception::CRITIC, "Can not modify a const variable");
-        }
+        // just using the stuff we wrote before :)
+        Value& val = getRefVar(varName);
+        val = v;
+        val.is_const = is_const;
     }
 
     void VM::delVar(const std::string& varName)
@@ -232,6 +222,7 @@ namespace kafe
             raiseException(Exception::MALFORMED, "Can not return from a non-segment");
     }
 
+    /// ------------------------------------------------------------
     void VM::exec_handleDataTypesDecl(inst_t instruction)
     {
         switch (instruction)
@@ -343,21 +334,9 @@ namespace kafe
             case INST_STRUCT_GETM:
             case INST_STRUCT_SETM:
             case INST_STRUCT_HASM:
+            case INST_STRUCT_TID:
             {
                 exec_handleStructures(instruction);
-                break;
-            }
-
-            case INST_DEL_VAR:
-            {
-                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "delete variable" << std::endl;
-
-                std::string name = readString();
-                if (findVar(name))
-                    delVar(name);
-                else
-                    raiseException(Exception::LOGIC, "Can not delete a non-existing variable");
-
                 break;
             }
         }
@@ -381,7 +360,7 @@ namespace kafe
                     a.getRef<Structure>() = m_struct_definitions[struct_name];
                     // push the given arguments
                     micro_uint_t nb_args = read2BytesInt();
-                    for (micro_uint_t j=0; j < nb_args; ++j)
+                    for (micro_uint_t j = 0; j < nb_args; ++j)
                     {
                         Value name = pop();
                         Value val = pop();
@@ -419,7 +398,7 @@ namespace kafe
                 std::string name = readString();
                 micro_uint_t pairs_nb = read2BytesInt();
                 m_struct_definitions[name] = Structure();
-                for (micro_uint_t j=0; j < pairs_nb; ++j)
+                for (micro_uint_t j = 0; j < pairs_nb; ++j)
                 {
                     Value name = pop();
                     Value val = pop();
@@ -487,22 +466,54 @@ namespace kafe
 
                 break;
             }
+
+            case INST_STRUCT_TID:
+            {
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure type id" << std::endl;
+
+                std::string name = readString();
+                if (findVar(name))
+                {
+                    Value tid(ValueType::Int);
+                    tid.set<int_t>(getRefVar(name).getRef<Structure>().struct_id);
+                    push(tid);
+                }
+                else
+                    raiseException(Exception::LOGIC, "Can not get a member of a non-existing structure");
+
+                break;
+            }
         }
     }
 
-    void VM::exec_handleSegments(inst_t instruction)
+    void VM::exec_handleVariableThings(inst_t instruction)
     {
         switch (instruction)
         {
-            case INST_STORE_VAR:
+            case INST_STORE_DYN:
             {
-                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "store var" << std::endl;
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "store dyn" << std::endl;
 
                 Value var_name = pop();
                 Value val = pop();
 
                 if (var_name.type == ValueType::Var)
                     setVar(var_name.get<std::string>(), val);
+                else
+                    raiseException(Exception::LOGIC, "Can not store a value into a non-variable");
+
+                break;
+            }
+
+            case INST_STORE_CST:
+            {
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "store cst" << std::endl;
+
+                Value var_name = pop();
+                Value val = pop();
+
+                if (var_name.type == ValueType::Var)
+                    setVar(var_name.get<std::string>(), val, /* is_const */ true);
                 else
                     raiseException(Exception::LOGIC, "Can not store a value into a non-variable");
 
@@ -524,6 +535,66 @@ namespace kafe
                 break;
             }
 
+            case INST_DEL_VAR:
+            {
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "delete variable" << std::endl;
+
+                std::string name = readString();
+                if (findVar(name))
+                    delVar(name);
+                else
+                    raiseException(Exception::LOGIC, "Can not delete a non-existing variable");
+
+                break;
+            }
+
+            case INST_NONLOCAL:
+            {
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "nonlocal" << std::endl;
+
+                std::string name = readString();
+                if (findVar(name))
+                {
+                    if (m_call_stack.size() != 0)
+                        m_call_stack[m_call_stack.size() - 1].refs_to_gscope.push_back(name);
+                    else
+                        raiseException(Exception::LOGIC, "Can not declare a global scope variable as nonlocal in the global scope : `" + name + "`");
+                }
+                else
+                    raiseException(Exception::LOGIC, "Can not delete a non-existing variable");
+
+                break;
+            }
+
+            case INST_GET_TYPE:
+            {
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "get type" << std::endl;
+
+                std::string name = readString();
+                if (findVar(name))
+                {
+                    Value str_type(ValueType::String);
+                    str_type.set<str_t>(convertTypeToString(getVar(name).type));
+                    push(str_type);
+                }
+                else
+                    raiseException(Exception::LOGIC, "Can not delete a non-existing variable");
+
+                break;
+            }
+        }
+    }
+
+    void VM::exec_handleListThings(inst_t instruction)
+    {
+        switch (instruction)
+        { }
+    }
+
+    void VM::exec_handleSegments(inst_t instruction)
+    {
+        switch (instruction)
+        {
             case INST_DUP:
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "duplicate" << std::endl;
@@ -718,6 +789,7 @@ namespace kafe
             }
         }
     }
+    /// -----------------------------------------------------------
 
     void VM::raiseException(const Exception& exc)
     {
@@ -891,9 +963,13 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG)
                     std::cerr << "[" << m_ip << "] " << abc::hexstr((unsigned)instruction) << " ";
 
-                if (INST_INT_2B <= instruction && instruction <= INST_DEL_VAR)
+                if (INST_INT_2B <= instruction && instruction <= INST_STRUCT_TID)
                     exec_handleDataTypesDecl(instruction);
-                else if (INST_STORE_VAR <= instruction && instruction <= INST_POP)
+                else if (INST_STORE_DYN <= instruction && instruction <= INST_GET_TYPE)
+                    exec_handleVariableThings(instruction);
+                else if (INST_SIZE_LST <= instruction && instruction <= INST_CONS_LST)
+                    exec_handleListThings(instruction);
+                else if (INST_DUP <= instruction && instruction <= INST_POP)
                     exec_handleSegments(instruction);
                 else if (instruction == INST_HALT)
                 {

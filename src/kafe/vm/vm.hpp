@@ -49,7 +49,7 @@ namespace kafe
         bool   findVar   (const std::string& varName);
         Value  getVar    (const std::string& varName);
         Value& getRefVar (const std::string& name);
-        void   setVar    (const std::string& varName, Value v);
+        void   setVar    (const std::string& varName, Value v, bool is_const=false);
         void   delVar    (const std::string& varName);
         // about types
         inst_t      readByte     (addr_t i);
@@ -64,13 +64,16 @@ namespace kafe
         void        performJump   (bool registerCall=true);
         void        retFromSegment();
         // execution stuff
-        void exec_handleDataTypesDecl(inst_t instruction);
-        void exec_handleStructures   (inst_t instruction);
-        void exec_handleSegments     (inst_t instruction);
-        void exec_handleBuiltins     ();
-        void raiseException          (const Exception&);
-        void raiseException          (int error, const std::string& message);
-        void displayTraceback        ();
+        void exec_handleDataTypesDecl (inst_t instruction);
+        void exec_handleStructures    (inst_t instruction);
+        void exec_handleVariableThings(inst_t instruction);
+        void exec_handleListThings    (inst_t instruction);
+        void exec_handleSegments      (inst_t instruction);
+        void exec_handleBuiltins      ();
+        // error handling
+        void raiseException  (const Exception&);
+        void raiseException  (int error, const std::string& message);
+        void displayTraceback();
 
         void interactiveMode(inst_t instruction, bool displayOnly=false);
 

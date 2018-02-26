@@ -45,9 +45,9 @@ namespace kafe
         std::vector<StructElem> members;
         // in order to be able to identify a structure
         // each structure has the same struct_id as its base structure
-        uint_t struct_id;
+        int_t struct_id;
 
-        Structure() : struct_id(Structure::ID++) {}
+        Structure() : struct_id(++Structure::ID) {}
         Structure(const Structure& other) : members(other.members), struct_id(other.struct_id) {}
 
         void add(std::string name, Value val);
