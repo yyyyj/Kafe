@@ -53,67 +53,91 @@ namespace kafe
         StdLibVM::load(m_fdb);
     }
 
-    bool VM::findVar(const std::string& varName)
+    FindStatus VM::findVar(const str_t& varName)
     {
         if (m_call_stack.size() == 0)
-            return m_variables.find(varName) != m_variables.end();
+            return (m_variables.find(varName) != m_variables.end()) ? VarFound::InCurrentScopeGlobal : VarFound::NotFound;
         // if we didn't found the variable in the current scope, search for it in the upper scope
         if (m_call_stack[m_call_stack.size() - 1].vars.find(varName) == m_call_stack[m_call_stack.size() - 1].vars.end())
-            return m_variables.find(varName) != m_variables.end();
-        return true;
+            return (m_variables.find(varName) != m_variables.end()) ? VarFound::NotInCurrentScopeButInGlobal : VarFound::NotFound;
+        return VarFound::InCurrentScopeNotGlobal;
     }
 
-    Value VM::getVar(const std::string& varName)
+    Value VM::getVar(const str_t& varName, VarFound vf)
     {
         // we can get a var from the upper scope, but we search it in the current scope before looking in the global scope
-        if (m_call_stack.size() == 0 || (m_call_stack.size() != 0 && m_call_stack[m_call_stack.size() - 1].vars.find(varName) == m_call_stack[m_call_stack.size() - 1].vars.end())
+        if (vf == VarFound::InCurrentScopeGlobal || vf == VarFound::NotInCurrentScopeButInGlobal)
             return m_variables[varName];
-        return m_call_stack[m_call_stack.size() - 1].vars[varName];
+        else if (vf == VarFound::InCurrentScopeNotGlobal)
+            return m_call_stack[m_call_stack.size() - 1].vars[varName];
+        // vf == VarFound::NotFound
+        raiseException(Exception::CRITIC, "Can not get a missing variable `" + varName + "`. You are misusing the VM, please refer to the documentation (I have written it my self and I know there is anything you need in it :D )");
     }
 
-    Value& VM::getRefVar(const std::string& varName)
+    Value& VM::getRefVar(const str_t& varName, VarFound vf)
     {
-        if (m_call_stack.size() == 0)
+        if (vf == VarFound::InCurrentScopeGlobal)
         {
+            // the variable is in the global scope, and we are in the global scope, no problems
+            // we can read / write on it
             if (!m_variables[varName].is_const)
                 return m_variables[varName];
             raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`");
         }
-
-        // if we are here, we're in a segment because m_call_stack.size() != 0
-        // we assume that the VM checked that the variable does exists
-        // but it could have been found in the upper scope in read-only mode,
-        // so we must double check
-        if (m_call_stack[m_call_stack.size() - 1].vars.find(varName) != m_call_stack[m_call_stack.size() - 1].vars.end())
+        else if (vf == VarFound::NotInCurrentScopeButInGlobal)
         {
+            // we are trying to get a reference on a variable outside our current scope
+            // probably to modify it. we need to check if the variable is in the nonlocals vars list
+            if (m_call_stack[m_call_stack.size() - 1].refs_to_gscope.find(varName) != m_call_stack[m_call_stack.size() - 1].refs_to_gscope.end())
+            {
+                if (!m_call_stack[m_call_stack.size() - 1].vars[varName].is_const)
+                    return m_call_stack[m_call_stack.size() - 1].vars[varName];
+                raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`");
+            }
+            raiseException(Exception::CRITIC, "Can not get the wanted variable : `" + varName + "`, try declaring it as nonlocal");
+        }
+        else if (vf == VarFound::InCurrentScopeNotGlobal)
+        {
+            // we found the variable in the current scope
             if (!m_call_stack[m_call_stack.size() - 1].vars[varName].is_const)
                 return m_call_stack[m_call_stack.size() - 1].vars[varName];
             raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`");
         }
-        // if we are now now, it means that the variable is either a const or do not exists
-        // in the current scope. we assume it exists in the global scope, but we must be
-        // sure we have put it in the write mode
-        if (m_call_stack[m_call_stack.size() - 1].refs_to_gscope.find(varName) != m_call_stack[m_call_stack.size() - 1].refs_to_gscope.end())
-        {
-            // we are now checking the const attribute
-            if (!m_variables[varName].is_const)
-                return m_variables[varName];
-            raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`");
-        }
-        // finally if we are here it means the variable wasn't found in the global scope,
-        // neither in the current scope, and isn't a nonlocal variable
-        raiseException(Exception::CRITIC, "Can not find variable `" + varName + "`");
+        // vf == VarFound::NotFound
+        raiseException(Exception::CRITIC, "Can not get a missing variable `" + varName + "`. You are misusing the VM, please refer to the documentation (I have written it my self and I know there is anything you need in it :D )");
     }
 
-    void VM::setVar(const std::string& varName, Value v, bool is_const)
+    void VM::setVar(const str_t& varName, Value v, VarFound vf, bool is_const)
     {
-        // just using the stuff we wrote before :)
-        Value& val = getRefVar(varName);
-        val = v;
-        val.is_const = is_const;
+        // we are changing the value of a variable
+        if (vf != VarFound::NotFound)
+        {
+            // by calling getRefVar it will automatically resolve the visibility of the variable
+            Value& val = getRefVar(varName, vf);
+            val = v;
+            val.is_const = is_const;
+        }
+        else
+        {
+            // we create it
+            if (m_call_stack.size() == 0)
+            {
+                if (!m_variables[varName].is_const)
+                    m_variables[varName] = v;
+                else
+                    raiseException(Exception::CRITIC, "Can not modify a const variable");
+            }
+            else
+            {
+                if (!m_call_stack[m_call_stack.size() - 1].vars[varName].is_const)
+                    m_call_stack[m_call_stack.size() - 1].vars[varName] = v;
+                else
+                    raiseException(Exception::CRITIC, "Can not modify a const variable");
+            }
+        }
     }
 
-    void VM::delVar(const std::string& varName)
+    void VM::delVar(const str_t& varName)
     {
         if (m_call_stack.size() == 0)
             m_variables.erase(m_variables.find(varName));
@@ -352,7 +376,7 @@ namespace kafe
 
                 Value a(ValueType::Struct);
                 // getting the structure name
-                std::string struct_name = readString();
+                str_t struct_name = readString();
                 // to take the default data in it and fill the new object with those
                 if (m_struct_definitions.find(struct_name) != m_struct_definitions.end())
                 {
@@ -369,11 +393,11 @@ namespace kafe
                         if (name.type == ValueType::Var)
                         {
                             // and we perform some type checking
-                            StructElem* pse = a.getRef<Structure>().findMember(name.get<std::string>());
+                            StructElem* pse = a.getRef<Structure>().findMember(name.get<str_t>());
                             if (pse != nullptr)
                             {
                                 if (pse->val.type == val.type)
-                                    a.getRef<Structure>().add(name.get<std::string>(), val);
+                                    a.getRef<Structure>().add(name.get<str_t>(), val);
                                 else
                                     raiseException(Exception::LOGIC, "Type error while trying to set an argument of a structure");
                             }
@@ -395,7 +419,7 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "declare structure" << std::endl;
 
-                std::string name = readString();
+                str_t name = readString();
                 micro_uint_t pairs_nb = read2BytesInt();
                 m_struct_definitions[name] = Structure();
                 for (micro_uint_t j = 0; j < pairs_nb; ++j)
@@ -404,7 +428,7 @@ namespace kafe
                     Value val = pop();
 
                     if (name.type == ValueType::Var)
-                        m_struct_definitions[name.get<std::string>()].add(name.get<std::string>(), val);
+                        m_struct_definitions[name.get<str_t>()].add(name.get<str_t>(), val);
                     else
                         raiseException(Exception::LOGIC, "Expecting a variable when declaring a structure's member");
                 }
@@ -416,10 +440,11 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure get member" << std::endl;
 
-                std::string name = readString();
-                if (findVar(name))
+                str_t name = readString();
+                VarFound vf = findVar(name);
+                if (vf != VarFound::NotFound)
                 {
-                    std::string member = readString();
+                    str_t member = readString();
                     StructElem* pse = getRefVar(name).getRef<Structure>().findMember(member);
                     if (pse != nullptr)
                         push(pse->val);
@@ -436,11 +461,12 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure set member" << std::endl;
 
-                std::string name = readString();
-                if (findVar(name))
+                str_t name = readString();
+                VarFound vf = findVar(name);
+                if (vf != VarFound::NOT_FOUND)
                 {
-                    std::string member = readString();
-                    getRefVar(name).getRef<Structure>().set(member, pop());
+                    str_t member = readString();
+                    getRefVar(name, vf).getRef<Structure>().set(member, pop());
                 }
                 else
                     raiseException(Exception::LOGIC, "Can not set a member of a non-existing structure");
@@ -452,11 +478,12 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure has member" << std::endl;
 
-                std::string name = readString();
-                if (findVar(name))
+                str_t name = readString();
+                VarFound vf = findVar(name);
+                if (vf != VarFound::NotFound)
                 {
-                    std::string member = readString();
-                    if (getRefVar(name).getRef<Structure>().findMember(member) != nullptr)
+                    str_t member = readString();
+                    if (getRefVar(name, vf).getRef<Structure>().findMember(member) != nullptr)
                         push(Value(ValueType::Bool, true));
                     else
                         push(Value(ValueType::Bool, false));
@@ -471,11 +498,12 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure type id" << std::endl;
 
-                std::string name = readString();
-                if (findVar(name))
+                str_t name = readString();
+                VarFound vf = findVar(name);
+                if (vf != VarFound::NotFound)
                 {
                     Value tid(ValueType::Int);
-                    tid.set<int_t>(getRefVar(name).getRef<Structure>().struct_id);
+                    tid.set<int_t>(getRefVar(name, vf).getRef<Structure>().struct_id);
                     push(tid);
                 }
                 else
@@ -498,7 +526,7 @@ namespace kafe
                 Value val = pop();
 
                 if (var_name.type == ValueType::Var)
-                    setVar(var_name.get<std::string>(), val);
+                    setVar(var_name.get<str_t>(), val, findVar(var_name.get<str_t>()));
                 else
                     raiseException(Exception::LOGIC, "Can not store a value into a non-variable");
 
@@ -513,7 +541,7 @@ namespace kafe
                 Value val = pop();
 
                 if (var_name.type == ValueType::Var)
-                    setVar(var_name.get<std::string>(), val, /* is_const */ true);
+                    setVar(var_name.get<str_t>(), val, findVar(var_name.get<str_t>()), /* is_const */ true);
                 else
                     raiseException(Exception::LOGIC, "Can not store a value into a non-variable");
 
@@ -525,10 +553,11 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "push var" << std::endl;
 
                 // we read the size of the var name and read it
-                std::string v = readString();
+                str_t name = readString();
                 // if the variable can be found, push it on the stack
-                if (findVar(v))
-                    push(getVar(v));
+                VarFound vf = findVar(name)
+                if (vf != VarFound::NotFound)
+                    push(getVar(name, vf));
                 else
                     raiseException(Exception::RUNTIME, "Can not push an undefined variable onto the stack");
 
@@ -539,8 +568,8 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "delete variable" << std::endl;
 
-                std::string name = readString();
-                if (findVar(name))
+                str_t name = readString();
+                if (findVar(name) != VarFound::NotFound)
                     delVar(name);
                 else
                     raiseException(Exception::LOGIC, "Can not delete a non-existing variable");
@@ -552,8 +581,8 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "nonlocal" << std::endl;
 
-                std::string name = readString();
-                if (findVar(name))
+                str_t name = readString();
+                if (findVar(name) != VarFound::NotFound)
                 {
                     if (m_call_stack.size() != 0)
                         m_call_stack[m_call_stack.size() - 1].refs_to_gscope.push_back(name);
@@ -570,11 +599,12 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "get type" << std::endl;
 
-                std::string name = readString();
-                if (findVar(name))
+                str_t name = readString();
+                VarFound vf = findVar(name);
+                if (vf != VarFound::NotFound)
                 {
                     Value str_type(ValueType::String);
-                    str_type.set<str_t>(convertTypeToString(getVar(name).type));
+                    str_type.set<str_t>(convertTypeToString(getVar(name, vf).type));
                     push(str_type);
                 }
                 else
@@ -722,7 +752,7 @@ namespace kafe
                 Value r = StdLibVM::procName(instruction);
                 if (r.type != ValueType::Exception)
                 {
-                    Value c = m_fdb[r.get<std::string>()].call<Value, const Value&, const Value&>(a, b);
+                    Value c = m_fdb[r.get<str_t>()].call<Value, const Value&, const Value&>(a, b);
 
                     if (c.type != ValueType::Exception)
                         push(c);

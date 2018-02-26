@@ -33,6 +33,14 @@ namespace kafe
 
     std::string convertTypeToString(ValueType t);
 
+    enum class VarFound
+    {
+        InCurrentScopeGlobal,
+        NotInCurrentScopeButInGlobal,
+        InCurrentScopeNotGlobal,
+        NotFound
+    };
+
     // forward declaration for Structure
     struct StructElem;
     struct Value;
@@ -125,6 +133,8 @@ namespace kafe
     bool operator<=(const Value& a, const Value& b);
     bool operator> (const Value& a, const Value& b);
 
+    std::ostream& operator<<(std::ostream& os, const Structure& st);
+
     // custom types to create stacks and avoid to much verbosity
     typedef Value::list_t list_t;
     typedef std::vector<Value> ValueStack_t;
@@ -144,8 +154,6 @@ namespace kafe
         std::string name;
         Value val;
     };
-
-    std::ostream& operator<<(std::ostream& os, const Structure& st);
 
 }  // namespace kafe
 

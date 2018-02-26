@@ -42,15 +42,15 @@ namespace kafe
         FunctionDatabase m_fdb;
         FunctionDatabase m_fdb_user;
 
-        void   push      (Value value);
-        Value  pop       ();
-        void   clear     ();
-        void   loadLib   ();
-        bool   findVar   (const std::string& varName);
-        Value  getVar    (const std::string& varName);
-        Value& getRefVar (const std::string& name);
-        void   setVar    (const std::string& varName, Value v, bool is_const=false);
-        void   delVar    (const std::string& varName);
+        void     push     (Value value);
+        Value    pop      ();
+        void     clear    ();
+        void     loadLib  ();
+        VarFound findVar  (const str_t& varName);
+        Value    getVar   (const str_t& varName, VarFound status);
+        Value&   getRefVar(const str_t& name, VarFound status);
+        void     setVar   (const str_t& varName, Value v, VarFound vf, bool is_const=false);
+        void     delVar   (const str_t& varName);
         // about types
         inst_t      readByte     (addr_t i);
         uint_t      readXBytesInt(unsigned char bytesCount=2);
