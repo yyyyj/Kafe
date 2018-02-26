@@ -79,7 +79,7 @@ int start_tests(int mode)
     TEST("var = 1; push(var); push(9); add", {
         kafe::INST_INT_2B, 0x00, 0x01,
         kafe::INST_VAR, 'v', 'a', 'r', '\0',
-        kafe::INST_STORE_VAR,
+        kafe::INST_STORE_DYN,
         kafe::INST_LOAD_VAR, 'v', 'a', 'r', '\0',
         kafe::INST_INT_2B, 0x00, 0x09,
         kafe::INST_PROCEDURE, CALL_PROCEDURE(kafe::INST_ADD),
@@ -110,7 +110,7 @@ int start_tests(int mode)
     TEST("testing segments, jump and ret", {
         kafe::INST_BOOL, 0x00,
         kafe::INST_VAR, 'a', '\0',
-        kafe::INST_STORE_VAR,
+        kafe::INST_STORE_DYN,
         kafe::INST_ADDR, 0x00, 0x00, 0x00, 0x0d,
         kafe::INST_CALL,
         kafe::INST_HALT,
@@ -125,7 +125,7 @@ int start_tests(int mode)
     TEST("testing variable duplication and negatives numbers (-32767, 32767)", {
         kafe::INST_INT_2B, 0b10000000, 0b00000000,
         kafe::INST_VAR, 'h', '\0',
-        kafe::INST_STORE_VAR,
+        kafe::INST_STORE_DYN,
         kafe::INST_LOAD_VAR, 'h', '\0',
         kafe::INST_DUP,
         kafe::INST_INT_2B, 0b01111111, 0b11111111,
@@ -142,39 +142,39 @@ int start_tests(int mode)
         kafe::INST_HALT,
         // func fibonacci : int -- n : int   -----> ADDR: 0x0a
         kafe::INST_VAR, 'n', '\0',
-        kafe::INST_STORE_VAR,
+        kafe::INST_STORE_DYN,
 
         kafe::INST_INT_2B, 0x00, 0x00, // a = 0
         kafe::INST_VAR, 'a', '\0',
-        kafe::INST_STORE_VAR,
+        kafe::INST_STORE_DYN,
 
         kafe::INST_INT_2B, 0x00, 0x01, // b = 1
         kafe::INST_VAR, 'b', '\0',
-        kafe::INST_STORE_VAR,
+        kafe::INST_STORE_DYN,
 
         kafe::INST_INT_2B, 0x00, 0x00,  // i = 0
         kafe::INST_VAR, 'i', '\0',
-        kafe::INST_STORE_VAR,
+        kafe::INST_STORE_DYN,
 
         kafe::INST_LOAD_VAR, 'a', '\0',  // c = a   <-------------- 0x23
         kafe::INST_VAR, 'c', '\0',
-        kafe::INST_STORE_VAR,
+        kafe::INST_STORE_DYN,
 
         kafe::INST_LOAD_VAR, 'b', '\0',  // a = b
         kafe::INST_VAR, 'a', '\0',
-        kafe::INST_STORE_VAR,
+        kafe::INST_STORE_DYN,
 
         kafe::INST_LOAD_VAR, 'b', '\0',  // b = b + c
         kafe::INST_LOAD_VAR, 'c', '\0',
         kafe::INST_PROCEDURE, CALL_PROCEDURE(kafe::INST_ADD),
         kafe::INST_VAR, 'b', '\0',
-        kafe::INST_STORE_VAR,
+        kafe::INST_STORE_DYN,
 
         kafe::INST_LOAD_VAR, 'i', '\0',  // i = i + 1
         kafe::INST_INT_2B, 0x00, 0x01,
         kafe::INST_PROCEDURE, CALL_PROCEDURE(kafe::INST_ADD),
         kafe::INST_VAR, 'i', '\0',
-        kafe::INST_STORE_VAR,
+        kafe::INST_STORE_DYN,
 
         kafe::INST_ADDR, 0x00, 0x00, 0x00, 0x23,
 

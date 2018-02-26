@@ -446,7 +446,7 @@ namespace kafe
                 if (vf != VarFound::NotFound)
                 {
                     str_t member = readString();
-                    StructElem* pse = getRefVar(name).getRef<Structure>().findMember(member);
+                    StructElem* pse = getRefVar(name, vf).getRef<Structure>().findMember(member);
                     if (pse != nullptr)
                         push(pse->val);
                     else

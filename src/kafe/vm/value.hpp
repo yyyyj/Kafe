@@ -47,7 +47,7 @@ namespace kafe
 
     struct Structure
     {
-        static uint_t ID;
+        static int_t ID;
 
         // name of the variable : default value
         std::vector<StructElem> members;
