@@ -504,7 +504,8 @@ namespace kafe
                 if (vf != VarFound::NotFound)
                 {
                     Value tid(ValueType::Int);
-                    tid.set<int_t>(getRefVar(name, vf).getRef<Structure>().struct_id);
+                    Structure& s = getRefVar(name, vf).getRef<Structure>();
+                    tid.set<int_t>(s.struct_id[s.struct_id.size() - 1]);
                     push(tid);
                 }
                 else

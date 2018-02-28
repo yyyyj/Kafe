@@ -52,11 +52,15 @@ namespace kafe
         // name of the variable : default value
         std::vector<StructElem> members;
         // in order to be able to identify a structure
-        // each structure has the same struct_id as its base structure
-        int_t struct_id;
+        // each structure keeps track of the id of its parents and its own id
+        std::vector<int_t> struct_id;
 
-        Structure() : struct_id(++Structure::ID) {}
-        Structure(const Structure& other) : members(other.members), struct_id(other.struct_id) {}
+        Structure() { struct_id.push_back(++Structure::ID); }
+        Structure(const Structure& other) : members(other.members), struct_id(other.struct_id)
+        {
+            // inheritance
+            struct_id.push_back(++Structure::ID);
+        }
 
         void add(std::string name, Value val);
         void set(const std::string& name, Value val);
