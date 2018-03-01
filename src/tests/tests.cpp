@@ -196,6 +196,37 @@ int start_tests(int mode)
         0x00
         });
 
+    TEST("Fatorial", {
+        kafe::INST_INT_2B, 0x00, 0x12,  // 18! = 6402373705728000
+        kafe::INST_ADDR, 0x00, 0x00, 0x00, 0x0a,
+        kafe::INST_CALL,
+        kafe::INST_HALT,
+
+        // start of the function
+        kafe::INST_VAR, 'n', '\0',
+        kafe::INST_STORE_DYN,
+
+        kafe::INST_ADDR, 0x00, 0x00, 0x00, 0x21,  // addr = 33 --
+        kafe::INST_LOAD_VAR, 'n', '\0',                     //  |
+        kafe::INST_INT_2B, 0x00, 0x01,                      //  |
+        kafe::INST_PROCEDURE, CALL_PROCEDURE(kafe::INST_GR), // |
+        kafe::INST_JUMP_IF,                                  // |
+                                                             // |
+        kafe::INST_INT_2B, 0x00, 0x01,                       // |
+        kafe::INST_RET,                                      // |
+                                                             // |
+        kafe::INST_LOAD_VAR, 'n', '\0',    // <-----------------|
+        kafe::INST_INT_2B, 0x00, 0x01,
+        kafe::INST_PROCEDURE, CALL_PROCEDURE(kafe::INST_SUB),
+        kafe::INST_ADDR, 0x00, 0x00, 0x00, 0x0a,
+        kafe::INST_CALL,
+        kafe::INST_LOAD_VAR, 'n', '\0',
+        kafe::INST_PROCEDURE, CALL_PROCEDURE(kafe::INST_MUL),
+        kafe::INST_RET,
+
+        0x00
+        });
+
     
     tests_report();
 

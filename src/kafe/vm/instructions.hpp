@@ -64,29 +64,27 @@ namespace kafe
     {
         // [CODE] ; push the result of stack[-2] [OPERATOR] stack[-1]    OR    push the result of [OPERATOR] stack[-1]
         INST_ADD       = 0x0001,  // 0x0001 ; +
-        /// to implement !
-            INST_SUB       = 0x0002,  // 0x0002 ; -
-            INST_DIV       = 0x0003,  // 0x0003 ; /
-            INST_MUL       = 0x0004,  // 0x0004 ; *
-            INST_MOD       = 0x0005,  // 0x0005 ; %
-            INST_INC       = 0x0006,  // 0x0006 ; ++
-            INST_DEC       = 0x0007,  // 0x0007 ; --
-            INST_NEG       = 0x0008,  // 0x0008 ; - (negate, not subtract)
-            INST_BIN_AND   = 0x0009,  // 0x0009 ; &
-            INST_BIN_OR    = 0x000a,  // 0x000a ; |
-            INST_BIN_NOT   = 0x000b,  // 0x000b ; ~
-            INST_LSHIFT    = 0x000c,  // 0x000c ; <<
-            INST_RSHIFT    = 0x000d,  // 0x000d ; >>
-            INST_BIN_XOR   = 0x000e,  // 0x000e ; ^
-            INST_AND       = 0x000f,  // 0x000f ; &&
-            INST_OR        = 0x0010,  // 0x0010 ; ||
-            INST_NOT       = 0x0011,  // 0x0011 ; !
-            INST_LW        = 0x0012,  // 0x0012 ; <
-            INST_LE        = 0x0013,  // 0x0013 ; <=
-            INST_GR        = 0x0014,  // 0x0014 ; >
-            INST_GE        = 0x0015,  // 0x0015 ; >=
-            INST_EQ        = 0x0016,  // 0x0016 ; ==
-        // done :
+        INST_SUB       = 0x0002,  // 0x0002 ; -
+        INST_DIV       = 0x0003,  // 0x0003 ; /
+        INST_MUL       = 0x0004,  // 0x0004 ; *
+        INST_MOD       = 0x0005,  // 0x0005 ; %
+        INST_INC       = 0x0006,  // 0x0006 ; ++
+        INST_DEC       = 0x0007,  // 0x0007 ; --
+        INST_NEG       = 0x0008,  // 0x0008 ; - (negate, not subtract)
+        INST_BIN_AND   = 0x0009,  // 0x0009 ; &
+        INST_BIN_OR    = 0x000a,  // 0x000a ; |
+        INST_BIN_NOT   = 0x000b,  // 0x000b ; ~
+        INST_LSHIFT    = 0x000c,  // 0x000c ; <<
+        INST_RSHIFT    = 0x000d,  // 0x000d ; >>
+        INST_BIN_XOR   = 0x000e,  // 0x000e ; ^
+        INST_AND       = 0x000f,  // 0x000f ; &&
+        INST_OR        = 0x0010,  // 0x0010 ; ||
+        INST_NOT       = 0x0011,  // 0x0011 ; !
+        INST_LW        = 0x0012,  // 0x0012 ; <
+        INST_LE        = 0x0013,  // 0x0013 ; <=
+        INST_GR        = 0x0014,  // 0x0014 ; >
+        INST_GE        = 0x0015,  // 0x0015 ; >=
+        INST_EQ        = 0x0016,  // 0x0016 ; ==
         INST_NE        = 0x0017,  // 0x0017 ; !=
 
         // built-in functions

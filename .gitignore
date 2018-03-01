@@ -36,3 +36,5 @@ specs.txt
 *.cmd
 *.sh
 *.old.txt
+.github/logo.png
+.github/logo.svg

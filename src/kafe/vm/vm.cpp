@@ -746,12 +746,16 @@ namespace kafe
         switch (instruction)
         {
             case INST_ADD:
+            case INST_SUB:
+            case INST_MUL:
+            case INST_GR:
             {
-                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "add" << std::endl;
-
                 Value b = pop();
                 Value a = pop();
                 Value r = StdLibVM::procName(instruction);
+
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << r.get<str_t>() << std::endl;
+
                 if (r.type != ValueType::Exception)
                 {
                     Value c = m_fdb[r.get<str_t>()].call<Value, const Value&, const Value&>(a, b);
@@ -769,34 +773,6 @@ namespace kafe
                     r.getRef<Exception>().setLine(m_ip);
                     raiseException(r.get<Exception>());
                 }
-
-                break;
-            }
-
-            case INST_SUB:
-            {
-                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "sub" << std::endl;
-
-                Value b = pop();
-                Value a = pop();
-
-                if (a.type == b.type)
-                {
-                    if (a.type == ValueType::Int)
-                    {
-                        Value c(ValueType::Int, a.get<int_t>() - b.get<int_t>());
-                        push(c);
-                    }
-                    else if (a.type == ValueType::Double)
-                    {
-                        Value c(ValueType::Double, a.get<double>() - b.get<double>());
-                        push(c);
-                    }
-                    else
-                        raiseException(Exception::LOGIC, "Can not substract two " + convertTypeToString(a.type));
-                }
-                else
-                    raiseException(Exception::LOGIC, "Can not substract two variables of heterogeneous types");
 
                 break;
             }

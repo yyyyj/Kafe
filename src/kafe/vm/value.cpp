@@ -110,7 +110,7 @@ namespace kafe
 
     std::ostream& operator<<(std::ostream& os, const Structure& st)
     {
-        os << "Struct id [" << st.struct_id << "]" << std::endl;
+        os << "Struct id [" << st.struct_id[st.struct_id.size() - 1] << "]" << std::endl;
         for (auto m : st.members)
             os << "\t" << m.name << " [" << convertTypeToString(m.val.type) << "]" << m.val << std::endl;
         return os;
