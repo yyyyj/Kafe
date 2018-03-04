@@ -40,7 +40,7 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
     if (cond(vm.getStack(), vm.getVariables()))
         passed_tests++;
     else
-        std::cerr << "FAILED TEST" << std::endl;
+        std::cerr << std::endl << "FAILED TEST" << std::endl;
 
     std::cerr << std::endl << "=================================" << std::endl << std::endl;
 }
@@ -104,7 +104,7 @@ int start_tests(int mode)
         kafe::Value l_int2(kafe::ValueType::Int);
         l_int2.set<kafe::int_t>(10);
 
-        return v.size() == 1 && v.find("a") != v.end() && v["a"] == l_int && s.size() == 1 && s[0] == l_int2;
+        return v.size() == 1 && v.find("var") != v.end() && v["var"] == l_int && s.size() == 1 && s[0] == l_int2;
     });
 
 
@@ -145,13 +145,13 @@ int start_tests(int mode)
         0x00
         },
     [](kafe::ValueStack_t& s, kafe::VarStack_t& v) -> bool {
-        kafe::Value l_int(kafe::ValueType::Int);
-        l_int.set<kafe::int_t>(0);
+        kafe::Value l_bool2(kafe::ValueType::Bool);
+        l_bool2.set<bool>(false);
 
         kafe::Value l_bool(kafe::ValueType::Bool);
-        l_bool.set<bool>(false);
+        l_bool.set<bool>(true);
 
-        return v.size() == 1 && v.find("a") != v.end() && v["a"] == l_int && s.size() == 1 && s[0] == l_bool;
+        return v.size() == 1 && v.find("a") != v.end() && v["a"] == l_bool2 && s.size() == 1 && s[0] == l_bool;
     });
 
 
