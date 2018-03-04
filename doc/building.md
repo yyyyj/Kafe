@@ -22,3 +22,5 @@ $ make
 ```
 
 Depending on your operating system, either a `kafe.exe` or a `kafe` should be generated. You'll need the files in the `folder-where-you-extracted-kafe/dist` to run it (copy them and put them alongside the program).
+
+*tip: To use the Hopscotch secured hash map, build with KAFE_BUILD_WITH_TSL defined*

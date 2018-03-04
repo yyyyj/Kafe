@@ -36,10 +36,13 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
         for (auto& element : vm.getVariables())
             std::cerr << element.first << " = " << element.second << " (" << kafe::convertTypeToString(element.second.type) << ")" << std::endl;
     }
-    std::cerr << std::endl << "=================================" << std::endl << std::endl;
 
     if (cond(vm.getStack(), vm.getVariables()))
         passed_tests++;
+    else
+        std::cerr << "FAILED TEST" << std::endl;
+
+    std::cerr << std::endl << "=================================" << std::endl << std::endl;
 }
 
 void TEST(const std::string& name, kafe::bytecode_t bytecode, std::function<bool(kafe::ValueStack_t&, kafe::VarStack_t&)> cond)
