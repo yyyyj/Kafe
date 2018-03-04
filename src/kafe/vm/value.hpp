@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <variant>
 #include <utility>
+#include <hopscotch/hopscotch_map.h>
 
 #include "../types.hpp"
 #include "../exc.hpp"
@@ -65,10 +66,12 @@ namespace kafe
         void add(std::string name, Value val);
         void set(const std::string& name, Value val);
         StructElem* findMember(const std::string& name);
+        bool hasParent(const Structure& other);
 
         bool operator==(const Structure& other) const
         {
-            return (other.struct_id == struct_id);
+            // we only compare the current id
+            return other.struct_id[other.struct_id.size() - 1] == struct_id[struct_id.size() - 1];
         }
     };
 
@@ -142,7 +145,13 @@ namespace kafe
     // custom types to create stacks and avoid to much verbosity
     typedef Value::list_t list_t;
     typedef std::vector<Value> ValueStack_t;
+
+#ifndef KAFE_BUILD_WITH_TSL
     typedef std::unordered_map<std::string, Value> VarStack_t;
+#else
+    typedef tsl::hopscotch_sc_map<std::string, Value> VarStack_t;
+#endif  // ifndef KAFE_BUILD_WITH_TSL
+
     struct Call
     {
         addr_t lastPos;
@@ -151,7 +160,12 @@ namespace kafe
         std::vector<str_t> refs_to_gscope;
     };
     typedef std::vector<Call> CallStack_t;
+
+#ifndef KAFE_BUILD_WITH_TSL
     typedef std::unordered_map<std::string, Structure> StructureMap_t;
+#else
+    typedef tsl::hopscotch_sc_map<std::string, Structure> StructureMap_t;
+#endif  // ifndef KAFE_BUILD_WITH_TSL
 
     struct StructElem
     {

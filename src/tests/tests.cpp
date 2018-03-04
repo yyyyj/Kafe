@@ -8,7 +8,7 @@ static int passed_tests = 0;
 static int tests_count = 0;
 static int debug_mode = kafe::VM::FLAG_DEFAULT_MODE;
 
-void test_vm(const std::string& test_name, const std::string& filename, kafe::bytecode_t bytecode)
+void test_vm(const std::string& test_name, const std::string& filename, kafe::bytecode_t bytecode, std::function<bool(kafe::ValueStack_t&, kafe::VarStack_t&)> cond)
 {
     tests_count++;
 
@@ -38,13 +38,13 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
     }
     std::cerr << std::endl << "=================================" << std::endl << std::endl;
 
-    // todo : do something intelligent with that shit
-    passed_tests++;
+    if (cond(vm.getStack(), vm.getVariables()))
+        passed_tests++;
 }
 
-void TEST(const std::string& name, kafe::bytecode_t bytecode)
+void TEST(const std::string& name, kafe::bytecode_t bytecode, std::function<bool(kafe::ValueStack_t&, kafe::VarStack_t&)> cond)
 {
-    test_vm(name, "bytecode" + kafe::abc::str<int>(tests_count), bytecode);
+    test_vm(name, "bytecode" + kafe::abc::str<int>(tests_count), bytecode, cond);
 }
 
 void tests_report()
@@ -73,7 +73,16 @@ int start_tests(int mode)
         kafe::INST_STR, 'h', 'e', 'l', 'l', 'o', '\0',
         kafe::INST_BOOL, 'A',
         0x00
-        });
+        },
+    [](kafe::ValueStack_t& s, kafe::VarStack_t& v) -> bool {
+        kafe::Value l_str(kafe::ValueType::String);
+        l_str.set<kafe::str_t>("hello");
+
+        kafe::Value l_int(kafe::ValueType::Int);
+        l_int.set<kafe::int_t>(18768);
+
+        return v.size() == 0 && s.size() == 3 && s[2] == kafe::Value(kafe::ValueType::Bool, true) && s[1] == l_str && s[0] == l_int;
+    });
 
 
     TEST("var = 1; push(var); push(9); add", {
@@ -84,7 +93,16 @@ int start_tests(int mode)
         kafe::INST_INT_2B, 0x00, 0x09,
         kafe::INST_PROCEDURE, CALL_PROCEDURE(kafe::INST_ADD),
         0x00
-        });
+        },
+    [](kafe::ValueStack_t& s, kafe::VarStack_t& v) -> bool {
+        kafe::Value l_int(kafe::ValueType::Int);
+        l_int.set<kafe::int_t>(1);
+
+        kafe::Value l_int2(kafe::ValueType::Int);
+        l_int2.set<kafe::int_t>(10);
+
+        return v.size() == 1 && v.find("a") != v.end() && v["a"] == l_int && s.size() == 1 && s[0] == l_int2;
+    });
 
 
     TEST("push true, jump if => 15, push false, jump => 7, jump if not, halt", {
@@ -98,7 +116,10 @@ int start_tests(int mode)
         kafe::INST_ADDR, 0x00, 0x00, 0x00, 0x08,
         kafe::INST_JUMP,
         0x00
-        });
+        },
+    [](kafe::ValueStack_t& s, kafe::VarStack_t& v) -> bool {
+        return v.size() == 0 && s.size() == 0;
+    });
 
 
     /* equivalent :
@@ -119,7 +140,16 @@ int start_tests(int mode)
         kafe::INST_PROCEDURE, CALL_PROCEDURE(kafe::INST_NE),
         kafe::INST_RET,
         0x00
-        });
+        },
+    [](kafe::ValueStack_t& s, kafe::VarStack_t& v) -> bool {
+        kafe::Value l_int(kafe::ValueType::Int);
+        l_int.set<kafe::int_t>(0);
+
+        kafe::Value l_bool(kafe::ValueType::Bool);
+        l_bool.set<bool>(false);
+
+        return v.size() == 1 && v.find("a") != v.end() && v["a"] == l_int && s.size() == 1 && s[0] == l_bool;
+    });
 
 
     TEST("testing variable duplication and negatives numbers (-32767, 32767)", {
@@ -130,7 +160,16 @@ int start_tests(int mode)
         kafe::INST_DUP,
         kafe::INST_INT_2B, 0b01111111, 0b11111111,
         0x00
-        });
+        },
+    [](kafe::ValueStack_t& s, kafe::VarStack_t& v) -> bool {
+        kafe::Value l_int(kafe::ValueType::Int);
+        l_int.set<kafe::int_t>(32767);
+
+        kafe::Value l_int2(kafe::ValueType::Int);
+        l_int2.set<kafe::int_t>(-32768);
+
+        return v.size() == 1 && v.find("h") != v.end() && v["h"] == l_int2 && s.size() == 3 && s[2] == l_int && s[1] == s[0] && s[1] == l_int2;
+    });
 
 
     TEST("Fibonacci", {
@@ -194,7 +233,13 @@ int start_tests(int mode)
 
         kafe::INST_RET,
         0x00
-        });
+        },
+    [](kafe::ValueStack_t& s, kafe::VarStack_t& v) -> bool {
+        kafe::Value l_int(kafe::ValueType::Int);
+        l_int.set<kafe::int_t>(102334155);
+
+        return v.size() == 0 && s.size() == 1 && s[0] == l_int;
+    });
 
     TEST("Fatorial", {
         kafe::INST_INT_2B, 0x00, 0x12,  // 18! = 6402373705728000
@@ -225,7 +270,13 @@ int start_tests(int mode)
         kafe::INST_RET,
 
         0x00
-        });
+        },
+    [](kafe::ValueStack_t& s, kafe::VarStack_t& v) -> bool {
+        kafe::Value l_int(kafe::ValueType::Int);
+        l_int.set<kafe::int_t>(6402373705728000);
+
+        return v.size() == 0 && s.size() == 1 && s[0] == l_int;
+    });
 
     
     tests_report();

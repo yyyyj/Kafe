@@ -45,6 +45,11 @@ namespace kafe
         return nullptr;
     }
 
+    bool Structure::hasParent(const Structure& other)
+    {
+        return std::find(struct_id.begin(), struct_id.end(), other.struct_id[other.struct_id.size() - 1]) != struct_id.end();
+    }
+
     // Value
     template <> ValueType Value::guessType<int_t>()     { return ValueType::Int; }
     template <> ValueType Value::guessType<double>()    { return ValueType::Double; }

@@ -24,7 +24,8 @@ namespace kafe
         INST_STRUCT_GETM = 0x12,  // 0x12 [name] [member name] ; push the value of the member (if it exists) onto the stack
         INST_STRUCT_SETM = 0x13,  // 0x13 [name] [member name] ; takes the last value on the stack and put it into the member (if it exists or not)
         INST_STRUCT_HASM = 0x14,  // 0x14 [name] [member name] ; check if the struct has a member "name" : push true or false
-        INST_STRUCT_TID  = 0x15,  // 0x15 [name] ; push the type id (integer) of a struct "name" on the stack
+        INST_STRUCT_HASPARENT = 0x15,  // 0x15 [parent name] [name] ; check if parent name (can either be an instantiated struct or not) is a parent of name (must be instantiated this time)
+        INST_STRUCT_TID  = 0x16,  // 0x16 [name] ; push the type id (integer) of a struct "name" on the stack
         
         // variables
         INST_STORE_DYN   = 0x20,  // 0x20 ; store the value at stack[-2] in stack[-1] (create a DYN variable)

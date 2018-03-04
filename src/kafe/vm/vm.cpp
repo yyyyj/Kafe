@@ -39,11 +39,14 @@ namespace kafe
     void VM::clear()
     {
         // cleaning the VM to run it again without creating a new instance
-        m_stack.clear();
         m_stack_size = m_ip = m_interactive_advance = 0;
+
+        m_stack.clear();
+        m_call_stack.clear();
         m_variables.clear();
         m_struct_definitions.clear();
         m_exceptions.clear();
+        m_exceptions.reserve(5);
         m_fdb_user.clear();
     }
 
@@ -334,6 +337,7 @@ namespace kafe
 
                 smol_uint_t nb_elements = read4BytesInt();
                 Value c(ValueType::List);
+                c.getRef<list_t>().reserve(nb_elements);
                 while (nb_elements != 0)
                 {
                     c.getRef<list_t>().insert(c.getRef<list_t>().begin(), pop());
@@ -491,6 +495,41 @@ namespace kafe
                 }
                 else
                     raiseException(Exception::LOGIC, "Can not get a member of a non-existing structure");
+
+                break;
+            }
+
+            case INST_STRUCT_HASPARENT:
+            {
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "struct has parent" << std::endl;
+
+                str_t parent_name = readString();
+                VarFound vf = findVar(parent_name);
+                if (vf != VarFound::NotFound)
+                {
+                    // the parent_name thing is an instantiated structure
+                    str_t child = readString();
+                    VarFound vf2 = findVar(child);
+                    if (vf2 != VarFound::NotFound)
+                        push(Value(ValueType::Bool, getRefVar(child, vf2).getRef<Structure>().hasParent(getRefVar(parent_name, vf).getRef<Structure>())));
+                    else
+                        raiseException(Exception::RUNTIME, "Can not find the structure to perform the parenting check");
+                }
+                else
+                {
+                    // the wanted structure isn't instantiated
+                    if (m_struct_definitions.find(parent_name) != m_struct_definitions.end())
+                    {
+                        str_t child = readString();
+                        VarFound vf2 = findVar(child);
+                        if (vf2 != VarFound::NotFound)
+                            push(Value(ValueType::Bool, getRefVar(child, vf2).getRef<Structure>().hasParent(m_struct_definitions[parent_name])));
+                        else
+                            raiseException(Exception::RUNTIME, "Can not find the structure to perform the parenting check");
+                    }
+                    else
+                        raiseException(Exception::LOGIC, "Can not find the wanted structure to determine if another one is its child or not");
+                }
 
                 break;
             }
@@ -957,6 +996,8 @@ namespace kafe
         if (m_fdb.size() == 0)
             loadLib();
         m_bytecode = bytecode;
+        m_stack.reserve(m_bytecode.size() * 2);
+        m_call_stack.reserve((m_bytecode.size() > 36) ? ((m_bytecode.size() > 128) ? ((m_bytecode.size() > 512) ? m_bytecode.size() * 2 : 1024) : 256) : 64);
     }
 
     int VM::exec()
