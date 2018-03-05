@@ -1,4 +1,5 @@
 #include <iostream>
+#include <termcolor.hpp>
 
 #include "exc.hpp"
 
@@ -41,7 +42,7 @@ namespace kafe
 
     std::ostream& operator<<(std::ostream& os, const Exception& exc)
     {
-        os << "[" << Exception::errorCodeToString(exc.m_code) << " @ byte no " << exc.m_line << "] " << exc.m_message;
+        os << "[" << termcolor::magenta << Exception::errorCodeToString(exc.m_code) << termcolor::reset << " @ byte no " << termcolor::cyan << exc.m_line << termcolor::reset << "] " << exc.m_message;
         return os;
     }
 

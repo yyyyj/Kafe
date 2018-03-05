@@ -9,7 +9,10 @@
 #include <unordered_map>
 #include <variant>
 #include <utility>
-#include <hopscotch/hopscotch_map.h>
+
+#ifdef KAFE_BUILD_WITH_TSL
+    #include <hopscotch/hopscotch_map.h>
+#endif
 
 #include "../types.hpp"
 #include "../exc.hpp"
