@@ -17,11 +17,11 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
     vm.setMode(debug_mode);
     vm.load(bytecode);
 
-    std::cerr << termcolor::cyan << "[ " << test_name << " ]" << termcolor::reset << std::endl << std::endl;
+    std::cerr << "[ " << test_name << " ]" << std::endl << std::endl;
     if (debug_mode & kafe::VM::FLAG_BASIC_DEBUG)
     {
         std::cerr << std::endl << "Calling order" << std::endl;
-        std::cerr << termcolor::magenta << "-------------" << termcolor::reset << std::endl;
+        std::cerr << "-------------" << std::endl;
     }
 
     vm.exec(); vm.setMode(0);
@@ -31,10 +31,10 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
     if (vm.getStack().size())
     {
         std::cerr << std::endl << "Stack (" << vm.getStack().size() << ")" << std::endl;
-        std::cerr << termcolor::magenta << "-------------" << termcolor::reset << std::endl;
+        std::cerr << "-------------" << std::endl;
         for (std::size_t j = vm.getStack().size(); j > 0; --j)
         {
-            std::cerr << "[" << termcolor::blue << j - 1 << termcolor::reset << "] ";
+            std::cerr << "[" << termcolor::cyan << j - 1 << termcolor::reset << "] ";
             std::cerr << termcolor::green << kafe::convertTypeToString(vm.getStack()[j - 1].type) << termcolor::reset << " ";
             std::cerr << termcolor::yellow << vm.getStack()[j - 1] << termcolor::reset << std::endl;
         }
@@ -42,12 +42,12 @@ void test_vm(const std::string& test_name, const std::string& filename, kafe::by
     if (vm.getVariables().size())
     {
         std::cerr << std::endl << std::endl << "Variables (" << vm.getVariables().size() << ")" << std::endl;
-        std::cerr << termcolor::magenta << "-------------" << termcolor::reset << std::endl;
+        std::cerr << "-------------" << std::endl;
         for (auto& element : vm.getVariables())
         {
-            std::cerr << termcolor::blue << element.first << termcolor::reset << " = ";
+            std::cerr << termcolor::cyan << element.first << termcolor::reset << " = ";
             std::cerr << termcolor::green << element.second << termcolor::reset << " (";
-            std::cerr << termcolor::yellow << kafe::convertTypeToString(element.second.type) << termcolor::yellow << ")" << std::endl;
+            std::cerr << termcolor::yellow << kafe::convertTypeToString(element.second.type) << termcolor::reset << ")" << std::endl;
         }
     }
 

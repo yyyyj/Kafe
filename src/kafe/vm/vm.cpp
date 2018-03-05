@@ -3,6 +3,9 @@
 #include <cstdlib>
 #include <iomanip>
 #include <algorithm>
+#include <termcolor.hpp>
+
+#undef max
 
 #include "vm.hpp"
 #include "vm_lib.hpp"
@@ -863,22 +866,22 @@ namespace kafe
     void VM::interactiveMode(inst_t instruction, bool displayOnly)
     {
         // display stack + variables
-        std::cerr << std::endl << "IP = " << std::setw(4) << m_ip << " | Bytecode size = " << std::setw(5) << m_bytecode.size() << " | "
-                  << "Instruction = " << abc::hexstr((unsigned) instruction)    << std::endl
+        std::cerr << std::endl << "IP = " << std::setw(4) << termcolor::cyan << m_ip << termcolor::reset << " | Bytecode size = " << std::setw(5) << termcolor::cyan << m_bytecode.size() << termcolor::reset << " | "
+                  << "Instruction = " << abc::hexstr((unsigned) instruction) << std::endl
                   << "Stack                     | Variables                   " << std::endl
                   << "--------------------------|-----------------------------" << std::endl;
         VarStack_t::iterator it = m_variables.begin();
         for (std::size_t i=0; i < std::max(m_stack.size(), m_variables.size()); ++i)
         {
             if (i < m_stack.size())
-                std::cerr << std::setw(6) << convertTypeToString(m_stack[i].type) << " " << std::setw(18) << m_stack[i];
+                std::cerr << std::setw(6) << termcolor::green << convertTypeToString(m_stack[i].type) << termcolor::reset << " " << std::setw(18) << termcolor::yellow << m_stack[i] << termcolor::reset;
             else
                 std::cerr << "                         ";
             std::cerr << " | ";
             if (i < m_variables.size())
             {
                 std::ostringstream out;
-                out << std::setw(12) << it->first << " = " << std::setw(6) << convertTypeToString(it->second.type) << " " << it->second;
+                out << std::setw(12) << it->first << " = " << std::setw(6) << termcolor::green << convertTypeToString(it->second.type) << termcolor::reset << " " << termcolor::yellow << it->second << termcolor::reset;
                 if (it->second.is_const)
                     out << " (CONST)";
                 std::cerr << out.str();
@@ -892,8 +895,9 @@ namespace kafe
             std::string command = "";
             while (command == "")
             {
-                std::cerr << std::endl << "> ";
+                std::cerr << std::endl << termcolor::green << "> " << termcolor::yellow;
                 std::getline(std::cin, command);
+                std::cerr << termcolor::reset;
 
                 if (command == "help")
                 {
@@ -949,7 +953,7 @@ namespace kafe
                 }
                 else
                 {
-                    std::cerr << "Unrecognized command `" << command << "`" << std::endl;
+                    std::cerr << termcolor::red << "Unrecognized command `" << command << "`" << termcolor::reset << std::endl;
                     command = "";
                 }
             }

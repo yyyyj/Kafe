@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 #include <chrono>
+#include <termcolor.hpp>
 
 #define BENCHMARK_INIT() benchmark::Main benchmarkobj; benchmarkobj.start();
 #define BENCHMARK_STOP() benchmarkobj.stop();
@@ -65,9 +66,9 @@ namespace benchmark
                 std::cerr << "Benchmark of " << name << " on ";
             else
                 std::cerr << "Benchmark on ";
-            std::cerr << r << " run(s) = " << val << mode << std::endl;
+            std::cerr << r << " run(s) = " << termcolor::cyan << val << termcolor::reset << mode << std::endl;
             if (r > 1)
-                std::cerr << "Average = " << val / double(r) << mode << std::endl;
+                std::cerr << "\tAverage = " << termcolor::green << val / double(r) << termcolor::reset << mode << std::endl;
         }
 
         void format_ticks(const std::string& name, const std::string& mode)
@@ -76,7 +77,7 @@ namespace benchmark
                 std::cerr << "Benchmark of " << name << " on ";
             else
                 std::cerr << "Benchmark on ";
-            std::cerr << m_ticks.size() << " run(s) = ";
+            std::cerr << termcolor::cyan << m_ticks.size() << termcolor::reset << " run(s) took ";
 
             clock_t::duration total(std::chrono::nanoseconds::zero());
             clock_t::duration t_max(std::chrono::nanoseconds::zero()), t_min(std::chrono::nanoseconds::zero());
@@ -95,28 +96,28 @@ namespace benchmark
                 median = m_ticks[m_ticks.size() / 2];
             else
                 median = m_ticks[(1 + m_ticks.size()) / 2];
+            
+            double av = to_ticks<std::chrono::nanoseconds>(total).count() / double(m_ticks.size());
+            double me = to_ticks<std::chrono::nanoseconds>(median).count();
 
             if (mode == "ns")
-                std::cerr << to_ticks<std::chrono::nanoseconds>(total).count() << mode << ", "
-                          << "min = " << to_ticks<std::chrono::nanoseconds>(t_min).count() << mode << ", "
-                          << "max = " << to_ticks<std::chrono::nanoseconds>(t_max).count() << mode << ", "
-                          << "average = " << to_ticks<std::chrono::nanoseconds>(total).count() / double(m_ticks.size()) << mode << ", "
-                          << "median = " << to_ticks<std::chrono::nanoseconds>(median).count() << mode
-                          << std::endl;
+                std::cerr                   << termcolor::green << to_ticks<std::chrono::nanoseconds>(total).count() << mode << termcolor::reset << std::endl
+                          << "\tMin = "     << termcolor::green << to_ticks<std::chrono::nanoseconds>(t_min).count() << mode << termcolor::reset << std::endl
+                          << "\tMax = "     << termcolor::green << to_ticks<std::chrono::nanoseconds>(t_max).count() << mode << termcolor::reset << std::endl
+                          << "\tAverage = " << (av > me ? termcolor::red : termcolor::green) << to_ticks<std::chrono::nanoseconds>(total).count() / double(m_ticks.size()) << mode << termcolor::reset << std::endl
+                          << "\tMedian = "  << (av > me ? termcolor::green : termcolor::red) << to_ticks<std::chrono::nanoseconds>(median).count() << mode << termcolor::reset << std::endl;
             else if (mode == "us")
-                std::cerr << to_ticks<std::chrono::microseconds>(total).count() << mode << ", "
-                          << "min = " << to_ticks<std::chrono::microseconds>(t_min).count() << mode << ", "
-                          << "max = " << to_ticks<std::chrono::microseconds>(t_max).count() << mode << ", "
-                          << "average = " << to_ticks<std::chrono::microseconds>(total).count() / double(m_ticks.size()) << mode << ", "
-                          << "median = " << to_ticks<std::chrono::microseconds>(median).count() << mode
-                          << std::endl;
+                std::cerr                   << termcolor::green << to_ticks<std::chrono::microseconds>(total).count() << mode << termcolor::reset << std::endl
+                          << "\tMin = "     << termcolor::green << to_ticks<std::chrono::microseconds>(t_min).count() << mode << termcolor::reset << std::endl
+                          << "\tMax = "     << termcolor::green << to_ticks<std::chrono::microseconds>(t_max).count() << mode << termcolor::reset << std::endl
+                          << "\tAverage = " << (av > me ? termcolor::red : termcolor::green) << to_ticks<std::chrono::microseconds>(total).count() / double(m_ticks.size()) << mode << termcolor::reset << std::endl
+                          << "\tMedian = "  << (av > me ? termcolor::green : termcolor::red) << to_ticks<std::chrono::microseconds>(median).count() << mode << termcolor::reset << std::endl;
             else if (mode == "ms")
-                std::cerr << to_ticks<std::chrono::milliseconds>(total).count() << mode << ", "
-                          << "min = " << to_ticks<std::chrono::milliseconds>(t_min).count() << mode << ", "
-                          << "max = " << to_ticks<std::chrono::milliseconds>(t_max).count() << mode << ", "
-                          << "average = " << to_ticks<std::chrono::milliseconds>(total).count() / double(m_ticks.size()) << mode << ", "
-                          << "median = " << to_ticks<std::chrono::milliseconds>(median).count() << mode
-                          << std::endl;
+                std::cerr                   << termcolor::green << to_ticks<std::chrono::milliseconds>(total).count() << mode << termcolor::reset << std::endl
+                          << "\tMin = "     << termcolor::green << to_ticks<std::chrono::milliseconds>(t_min).count() << mode << termcolor::reset << std::endl
+                          << "\tMax = "     << termcolor::green << to_ticks<std::chrono::milliseconds>(t_max).count() << mode << termcolor::reset << std::endl
+                          << "\tAverage = " << (av > me ? termcolor::red : termcolor::green) << to_ticks<std::chrono::milliseconds>(total).count() / double(m_ticks.size()) << mode << termcolor::reset << std::endl
+                          << "\tMedian = "  << (av > me ? termcolor::green : termcolor::red) << to_ticks<std::chrono::milliseconds>(median).count() << mode << termcolor::reset << std::endl;
             else
                 std::cerr << "INVALID UNIT";
         }
