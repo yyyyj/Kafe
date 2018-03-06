@@ -16,8 +16,8 @@ if 1 + 1 == 2 then
     end
 
     for j in range(5 20) do
-        print(j * 10 + 5)
-    end
+        print(j * 10 + 5
+    end$
 else
     print("hello world   bis")
 end

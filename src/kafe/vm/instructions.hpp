@@ -57,8 +57,10 @@ namespace kafe
         INST_POP         = 0x48,  // 0x48 ; pop the value off the stack (delete it)
         INST_HALT        = 0x49,  // 0x49 ; end the execution of the script
 
-        // built-in procedures around numbers and booleans
-        INST_PROCEDURE   = 0x50
+        // built-in procedures
+        INST_PROCEDURE   = 0x50,  // 0x50 [procedure code on 2 bytes]
+        // user defined methods
+        INST_USER_PROC   = 0x51  // 0x51 [name] [number of arguments on 1 byte = X] ; 0 <= X <= ??
     };
 
     enum Procedure

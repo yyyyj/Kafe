@@ -87,6 +87,6 @@ namespace kafe
         }
 
     }  // namespace abc
-}  // namespace abc
+}  // namespace kafe
 
 #endif // kafe_utils

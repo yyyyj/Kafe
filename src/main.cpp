@@ -1,10 +1,10 @@
+#include <clipp.hpp>
 #include <iostream>
 #include <vector>
 #include <string>
 
 #include "kafe/kafe.hpp"
 #include "tests/tests.hpp"
-#include <clipp.hpp>
 
 int getDebugMode(bool verbose, bool interactive)
 {

@@ -662,7 +662,48 @@ namespace kafe
     void VM::exec_handleListThings(inst_t instruction)
     {
         switch (instruction)
-        { }
+        {
+            case INST_SIZE_LST:
+            {
+                break;
+            }
+
+            case INST_POP_LST:
+            {
+                break;
+            }
+
+            case INST_APPEND_LST:
+            {
+                break;
+            }
+
+            case INST_GNTH_LST:
+            {
+                break;
+            }
+
+            case INST_SNTH_LST:
+            {
+                break;
+            }
+
+            case INST_GSLICE_LST:
+            {
+                break;
+            }
+
+            case INST_SSLICE_LST:
+            {
+                break;
+            }
+
+            case INST_CONS_LST:
+            {
+
+                break;
+            }
+        }
     }
 
     void VM::exec_handleSegments(inst_t instruction)
