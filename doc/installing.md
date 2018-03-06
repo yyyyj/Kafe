@@ -1,5 +1,7 @@
 # Installing
 
+*If you don't want to build the VM yourself, this is a good solution to rely on the lazy developper I am to get fresh releases*
+
 Download the ZIP of the latest release of the Kafe VM : https://github.com/Loodoor/Kafe/releases and extract it where you want to install it. Nothing else is needed.
 
 *uh, an entire page only for this ?*

@@ -19,7 +19,7 @@
 namespace kafe
 {
 
-    void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool ast=false);
+    void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool save_ast=false);
 
     void testANTLR();
 

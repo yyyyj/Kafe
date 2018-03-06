@@ -23,4 +23,15 @@ $ make
 
 Depending on your operating system, either a `kafe.exe` or a `kafe` should be generated. You'll need the files in the `folder-where-you-extracted-kafe/dist` to run it (copy them and put them alongside the program).
 
-*tip: To use the Hopscotch secured hash map, build with KAFE_BUILD_WITH_TSL defined*
+### In case you generated a Visual Studio solution (Windows only)
+
+Launch the `KafeBuilder.sln` in Visual Studio. Under Project > Properties > Debug, you'll need to set the following things (when the `All configurations` thing is enabled) :
+
+|
+------------|-----------------------------------------------------
+Environment | `PATH=%PATH%;$(SolutionDir)..\dist\$(Configuration)`
+Working dir | `$(SolutionDir)..`
+
+Finally step, right click on the `Kafe` solution to set it as StartUp Project. You're done ! You can build and run using `CTRL`+`F5`
+
+*tip: To use the Hopscotch secured hash map, build with `KAFE_BUILD_WITH_TSL` defined*
