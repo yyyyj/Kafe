@@ -1,5 +1,5 @@
 
-// Generated from Kafe.g by ANTLR 4.7.1
+// Generated from Kafe.g4 by ANTLR 4.7.1
 
 
 
@@ -19,7 +19,7 @@ KafeParser::~KafeParser() {
 }
 
 std::string KafeParser::getGrammarFileName() const {
-  return "Kafe.g";
+  return "Kafe.g4";
 }
 
 const std::vector<std::string>& KafeParser::getRuleNames() const {

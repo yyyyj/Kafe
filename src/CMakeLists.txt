@@ -8,7 +8,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 
-ANTLR(INPUT Kafe.g)
+ANTLR(INPUT Kafe.g4)
 
 file(GLOB_RECURSE INCLUDE_FILES "kafe/*.hpp" "tests/*.hpp")
 file(GLOB_RECURSE SRC_FILES "kafe/*.cpp" "tests/*.cpp" "main.cpp")

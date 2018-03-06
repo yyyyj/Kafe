@@ -1,5 +1,5 @@
 
-// Generated from Kafe.g by ANTLR 4.7.1
+// Generated from Kafe.g4 by ANTLR 4.7.1
 
 
 #include "KafeLexer.h"
@@ -18,7 +18,7 @@ KafeLexer::~KafeLexer() {
 }
 
 std::string KafeLexer::getGrammarFileName() const {
-  return "Kafe.g";
+  return "Kafe.g4";
 }
 
 const std::vector<std::string>& KafeLexer::getRuleNames() const {

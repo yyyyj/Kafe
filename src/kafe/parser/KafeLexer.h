@@ -1,5 +1,5 @@
 
-// Generated from Kafe.g by ANTLR 4.7.1
+// Generated from Kafe.g4 by ANTLR 4.7.1
 
 #pragma once
 
