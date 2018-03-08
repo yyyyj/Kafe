@@ -1,26 +1,29 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 cmake_policy(SET CMP0015 NEW)
 
 project(Kafe)
 
-# generating the parser
-message(STATUS "The grammar ${CMAKE_SOURCE_DIR}/grammar/Kafe.g4 should be now used to generate a new parser")
-execute_process(
-  COMMAND java -jar antlr/antlr-4.7.1-complete.jar -Dlanguage=Cpp -no-listener -no-visitor -o include/kafe/parser grammar/Kafe.g4
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-)
-
 message(STATUS "Building project Kafe")
 
-set(INCROOT ${CMAKE_SOURCE_DIR}/include/kafe)
-set(SRCROOT ${CMAKE_SOURCE_DIR}/src/kafe)
+file(GLOB_RECURSE INCLUDE_FILES "${KafeBuilder_SOURCE_DIR}/include/kafe/*.hpp" "${KafeBuilder_SOURCE_DIR}/tests/*.hpp")
+file(GLOB_RECURSE SOURCES_FILES "${KafeBuilder_SOURCE_DIR}/src/kafe/*.cpp" "${CMAKE_SOURCE_DIR}/tests/*.cpp")
 
-file(GLOB_RECURSE INCLUDE_FILES "${CMAKE_SOURCE_DIR}/tests/*.hpp")
-file(GLOB_RECURSE SOURCE_FILES "${SRCROOT}/*.cpp" "${CMAKE_SOURCE_DIR}/tests/*.cpp" "${CMAKE_SOURCE_DIR}/main.cpp")
+include_directories(${KafeBuilder_SOURCE_DIR}/include)
+include_directories(${KafeBuilder_SOURCE_DIR}/thirdparty)
 
-add_executable(Kafe "${CMAKE_SOURCE_DIR}/main.cpp" ${INCLUDE_FILES} ${SOURCES_FILES})
+add_executable(Kafe "${KafeBuilder_SOURCE_DIR}/main.cpp" ${INCLUDE_FILES} ${SOURCES_FILES})
+
 target_link_libraries(Kafe antlr4_shared)
-link_directories(GLOB_RECURSE "${CMAKE_SOURCE_DIR}/dist")
+
+add_custom_command(
+    TARGET Kafe POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${KafeBuilder_SOURCE_DIR}/dist/$<CONFIGURATION>"
+        $<TARGET_FILE_DIR:Kafe>
+)
+
+set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Kafe)
+set_target_properties(Kafe PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)

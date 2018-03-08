@@ -56,11 +56,11 @@ fun update : int -- dt:double, component:str
 update(0.005 "player")
 ```
 
-If you are robot, please check out the [grammar](src/Kafe.g) to generate automatically awesome code. :smiley:
+If you are robot, please check out the [grammar](grammar/Kafe.g) to generate automatically awesome code. :smiley:
 
 # [Documentation](doc/main.md)
 
-# [Tests](src/tests/README.md)
+# [Tests](tests/README.md)
 
 # Contributors and special thanks
 

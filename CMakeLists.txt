@@ -5,12 +5,15 @@ project(KafeBuilder)
 
 # Build the ANTLR runtime.
 add_subdirectory(${CMAKE_SOURCE_DIR}/antlr/cpp_runtime/)
-
 include_directories(${CMAKE_SOURCE_DIR}/antlr/cpp_runtime/runtime/src)
-include_directories(${CMAKE_SOURCE_DIR}/thirdparty)
-include_directories(${CMAKE_SOURCE_DIR}/include)
+
+# Generating the parser
+message(STATUS "The grammar ${CMAKE_SOURCE_DIR}/grammar/Kafe.g4 should be now used to generate a new parser")
+execute_process(
+    COMMAND java -jar antlr/antlr-4.7.1-complete.jar -Dlanguage=Cpp -no-listener -no-visitor -o include/kafe/parser grammar/Kafe.g4
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
 
 #-------------------------------------------------------------------------------
 
 add_subdirectory(src/kafe)
-set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Kafe)

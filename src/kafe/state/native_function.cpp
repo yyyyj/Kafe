@@ -1,4 +1,4 @@
-#include <kafe/native_function.hpp>
+#include <kafe/state/native_function.hpp>
 #include <kafe/state/state.hpp>
 
 namespace kafe
