@@ -1,5 +1,5 @@
 
-// Generated from Kafe.g4 by ANTLR 4.7.1
+// Generated from grammar/Kafe.g4 by ANTLR 4.7.1
 
 
 
@@ -7,7 +7,6 @@
 
 
 using namespace antlrcpp;
-using namespace kafe;
 using namespace antlr4;
 
 KafeParser::KafeParser(TokenStream *input) : Parser(input) {

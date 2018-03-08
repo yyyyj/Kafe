@@ -1,4 +1,4 @@
-#include "kafe.hpp"
+#include <kafe/kafe.hpp>
 
 namespace kafe
 {

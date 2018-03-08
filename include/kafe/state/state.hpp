@@ -1,11 +1,11 @@
 #ifndef kafe_state_state
 #define kafe_state_state
 
-#include "../vm/vm.hpp"
-#include "../parser.hpp"
-#include "../types.hpp"
-#include "fct.hpp"
-#include "refvar.hpp"
+#include <kafe/vm/vm.hpp>
+#include <kafe/parser.hpp>
+#include <kafe/types.hpp>
+#include <kafe/state/native_function.hpp>
+#include <kafe/state/refvar.hpp>
 
 #include <string>
 #include <unordered_map>

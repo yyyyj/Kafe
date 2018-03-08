@@ -4,7 +4,7 @@
 // must be included before everything else to avoid `ERRORS` in ATNSimulator to be replaced by 0 thanks to a shitty macro
 #include "antlr4-runtime.h"
 
-#include "constants.hpp"
+#include <kafe/constants.hpp>
 
 #include <iostream>
 #include <stdexcept>
@@ -12,14 +12,14 @@
 #include <fstream>
 #include <termcolor.hpp>
 
-#include "parser/KafeLexer.h"
-#include "parser/KafeParser.h"
-#include "KafeErrorListener.hpp"
+#include <kafe/parser/KafeLexer.h>
+#include <kafe/parser/KafeParser.h>
+#include <kafe/KafeErrorListener.hpp>
 
 namespace kafe
 {
 
-    void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool save_ast=false);
+    void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool save_ast=false, bool disable_errors=false);
 
     void testANTLR();
 

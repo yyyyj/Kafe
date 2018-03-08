@@ -1,4 +1,4 @@
-#include "refvar.hpp"
+#include <kafe/state/refvar.hpp>
 
 namespace kafe
 {

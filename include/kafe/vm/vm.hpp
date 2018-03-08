@@ -1,11 +1,11 @@
 #ifndef kafe_vm
 #define kafe_vm
 
-#include "instructions.hpp"
-#include "../types.hpp"
-#include "../utils.hpp"
-#include "value.hpp"
-#include "../exc.hpp"
+#include <kafe/vm/instructions.hpp>
+#include <kafe/types.hpp>
+#include <kafe/utils.hpp>
+#include <kafe/vm/value.hpp>
+#include <kafe/KafeException.hpp>
 
 #include <string>
 #include <vector>

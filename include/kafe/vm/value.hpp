@@ -11,11 +11,12 @@
 #include <utility>
 
 #ifdef KAFE_BUILD_WITH_TSL
-    #include <hopscotch/hopscotch_map.h>
+    #include <hopscotch/hopscotch_sc_map.h>
 #endif
 
-#include "../types.hpp"
-#include "../exc.hpp"
+#include <kafe/types.hpp>
+#include <kafe/KafeException.hpp>
+#include <kafe/constants.hpp>
 
 namespace kafe
 {

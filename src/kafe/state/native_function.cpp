@@ -1,5 +1,5 @@
-#include "fct.hpp"
-#include "state.hpp"
+#include <kafe/native_function.hpp>
+#include <kafe/state/state.hpp>
 
 namespace kafe
 {

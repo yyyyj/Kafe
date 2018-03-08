@@ -12,7 +12,6 @@ namespace kafe
     {
     private:
         std::stringstream m_os;
-        std::size_t m_errCount;
     
     public:
         KafeErrorListener();

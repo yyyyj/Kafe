@@ -1,5 +1,5 @@
 
-// Generated from Kafe.g4 by ANTLR 4.7.1
+// Generated from grammar/Kafe.g4 by ANTLR 4.7.1
 
 #pragma once
 
@@ -7,7 +7,6 @@
 #include "antlr4-runtime.h"
 
 
-namespace kafe {
 
 
 class  KafeLexer : public antlr4::Lexer {
@@ -67,4 +66,3 @@ private:
   static Initializer _init;
 };
 
-}  // namespace kafe

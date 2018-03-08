@@ -1,7 +1,7 @@
 #include <iostream>
 #include <termcolor.hpp>
 
-#include "exc.hpp"
+#include <kafe/KafeException.hpp>
 
 namespace kafe
 {

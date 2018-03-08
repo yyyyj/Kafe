@@ -7,6 +7,8 @@
 
 [How the VM works](vm.md)
 
+[How to create plugins for the VM](plugins.md)
+
 [Language documentation](lang/main.md)
 
 [Code examples](examples.md)

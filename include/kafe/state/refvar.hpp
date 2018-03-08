@@ -1,7 +1,7 @@
 #ifndef kafe_state_refvar
 #define kafe_state_refvar
 
-#include "../vm/value.hpp"
+#include <kafe/vm/value.hpp>
 
 #include <variant>
 #include <exception>

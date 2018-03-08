@@ -1,5 +1,5 @@
 
-// Generated from Kafe.g4 by ANTLR 4.7.1
+// Generated from grammar/Kafe.g4 by ANTLR 4.7.1
 
 
 #include "KafeLexer.h"
@@ -7,7 +7,6 @@
 
 using namespace antlr4;
 
-using namespace kafe;
 
 KafeLexer::KafeLexer(CharStream *input) : Lexer(input) {
   _interpreter = new atn::LexerATNSimulator(this, _atn, _decisionToDFA, _sharedContextCache);

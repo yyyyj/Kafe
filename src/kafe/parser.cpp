@@ -1,10 +1,10 @@
-#include "parser.hpp"
+#include <kafe/parser.hpp>
 
 namespace kafe
 {
 
 
-    void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool save_ast)
+    void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool save_ast, bool disable_errors)
     {
         bool flag_errors = false;
         if (!files.empty())
@@ -26,8 +26,11 @@ namespace kafe
                     std::size_t lexerErr = lexer.getNumberOfSyntaxErrors();
                     if (lexerErr > 0)
                     {
-                        std::cerr << "Lexer syntax error" << (lexerErr > 1 ? "s" : "") << " (" << lexerErr << ")" << std::endl;
-                        std::cerr << lexer_err_listener << std::endl;
+                        if (!disable_errors)
+                        {
+                            std::cerr << "Lexer syntax error" << (lexerErr > 1 ? "s" : "") << " (" << lexerErr << ")" << std::endl;
+                            std::cerr << lexer_err_listener << std::endl;
+                        }
                         flag_errors = true;
                         break;
                     }
@@ -41,8 +44,11 @@ namespace kafe
                     std::size_t parserErr = parser.getNumberOfSyntaxErrors();
                     if (parserErr > 0)
                     {
-                        std::cerr << "Parser syntax error" << (parserErr > 1 ? "s" : "") << " (" << parserErr << ")" << std::endl;
-                        std::cerr << parser_err_listener << std::endl;
+                        if (!disable_errors)
+                        {
+                            std::cerr << "Parser syntax error" << (parserErr > 1 ? "s" : "") << " (" << parserErr << ")" << std::endl;
+                            std::cerr << parser_err_listener << std::endl;
+                        }
                         flag_errors = true;
                         break;
                     }

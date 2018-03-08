@@ -86,6 +86,11 @@ namespace kafe
             return f.good();
         }
 
+        inline int createVersionNumber(unsigned char major, unsigned char minor, unsigned char patch)
+        {
+            return ((int)major << 16) | ((int)minor << 8) | (patch);
+        }
+
     }  // namespace abc
 }  // namespace kafe
 

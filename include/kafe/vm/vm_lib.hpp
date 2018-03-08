@@ -5,9 +5,9 @@
 #include <vector>
 #include <string>
 
-#include "instructions.hpp"
-#include "../exc.hpp"
-#include "value.hpp"
+#include <kafe/vm/instructions.hpp>
+#include <kafe/KafeException.hpp>
+#include <kafe/vm/value.hpp>
 
 namespace kafe
 {

@@ -2,7 +2,7 @@
 #define kafe_exc
 
 #include <string>
-#include "types.hpp"
+#include <kafe/types.hpp>
 
 namespace kafe
 {

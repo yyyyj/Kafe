@@ -1,4 +1,4 @@
-#include "vm_lib.hpp"
+#include <kafe/vm/vm_lib.hpp>
 
 namespace kafe
 {

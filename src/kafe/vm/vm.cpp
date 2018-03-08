@@ -7,8 +7,8 @@
 
 #undef max
 
-#include "vm.hpp"
-#include "vm_lib.hpp"
+#include <kafe/vm/vm.hpp>
+#include <kafe/vm/vm_lib.hpp>
 
 #ifdef _MSC_VER
     // if compiling with visual studio, disable those warnings

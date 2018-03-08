@@ -1,5 +1,5 @@
-#include "value.hpp"
-#include "../utils.hpp"
+#include <kafe/vm/value.hpp>
+#include <kafe/utils.hpp>
 
 namespace kafe
 {

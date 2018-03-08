@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 
-#include "kafe/kafe.hpp"
+#include <kafe/kafe.hpp>
 #include "tests/tests.hpp"
 
 int getDebugMode(bool verbose, bool interactive)

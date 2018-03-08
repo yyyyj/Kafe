@@ -1,7 +1,7 @@
 #ifndef kafe_tests
 #define kafe_tests
 
-#include "../kafe/kafe.hpp"
+#include <kafe/kafe.hpp>
 
 #include <string>
 #include <functional>
