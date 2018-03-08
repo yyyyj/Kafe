@@ -6,7 +6,7 @@ project(Kafe)
 message(STATUS "Building project Kafe")
 
 file(GLOB_RECURSE INCLUDE_FILES "${KafeBuilder_SOURCE_DIR}/include/kafe/*.hpp" "${KafeBuilder_SOURCE_DIR}/tests/*.hpp")
-file(GLOB_RECURSE SOURCES_FILES "${KafeBuilder_SOURCE_DIR}/src/kafe/*.cpp" "${CMAKE_SOURCE_DIR}/tests/*.cpp")
+file(GLOB_RECURSE SOURCES_FILES "${KafeBuilder_SOURCE_DIR}/include/kafe/parser/*.cpp" "${KafeBuilder_SOURCE_DIR}/src/kafe/*.cpp" "${CMAKE_SOURCE_DIR}/tests/*.cpp")
 
 include_directories(${KafeBuilder_SOURCE_DIR}/include)
 include_directories(${KafeBuilder_SOURCE_DIR}/thirdparty)
@@ -17,9 +17,7 @@ target_link_libraries(Kafe antlr4_shared)
 
 add_custom_command(
     TARGET Kafe POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${KafeBuilder_SOURCE_DIR}/dist/$<CONFIGURATION>"
-        $<TARGET_FILE_DIR:Kafe>
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${KafeBuilder_SOURCE_DIR}/dist/$<CONFIGURATION>" $<TARGET_FILE_DIR:Kafe>
 )
 
 set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Kafe)
