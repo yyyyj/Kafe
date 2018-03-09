@@ -19,6 +19,7 @@
 #include <kafe/types.hpp>
 #include <kafe/parser.hpp>
 #include <kafe/constants.hpp>
+#include <kafe/plugins/loader.hpp>
 
 namespace kafe
 {

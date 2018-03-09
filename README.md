@@ -85,3 +85,5 @@ Special thanks addressed to
 * benchmark::Main, released under MIT license, (c) 2018 by SuperFola
 
 * ANTLR4, released under BSD-3 clause license, Copyright (c) 2012-2017 The ANTLR Project. All rights reserved
+
+* JsonCPP, under public domain, by Baptiste Lepilleur

@@ -15,5 +15,6 @@
 
 #include <kafe/vm/value.hpp>
 #include <kafe/constants.hpp>
+#include <kafe/plugins/base.hpp>
 
 #endif  // kafe_api
