@@ -1,3 +1,15 @@
+/*
+ * Kafe - A programming language running on a VM
+ * 
+ * Copyright (c) 2018 SuperFola and the Kafe open source project
+ * Licensed under MPL-2.0
+ * 
+ * This notice may not be removed or altered from any source ditribution
+ * 
+ * See https://superfola.github.io/Kafe/CONTRIBUTORS.txt for the list of Kafe project authors
+ * See https://superfola.github.io/Kafe/LICENSE for license information
+ */
+
 #include <clipp.hpp>
 #include <iostream>
 #include <vector>
@@ -6,10 +18,10 @@
 #include <kafe/kafe.hpp>
 #include "tests/tests.hpp"
 
-int getDebugMode(bool verbose, bool interactive)
+int getDebugMode(bool debug, bool interactive)
 {
     int debug_mode = 0;
-    if (verbose)
+    if (debug)
         debug_mode |= kafe::VM::FLAG_BASIC_DEBUG;
     if (interactive)
         debug_mode |= kafe::VM::FLAG_INTERACTIVE;
@@ -27,7 +39,7 @@ int main(int argc, char* argv[])
     std::string output_bytecode_file = "";
     bool display_ast_flag = false;
     std::vector<std::string> infiles;
-    bool verbose = false;
+    bool debug = false;
     bool interactive = false;
     std::vector<std::string> wrong;
 
@@ -50,7 +62,7 @@ int main(int argc, char* argv[])
                      )
                     | (command("tests").set(selected, mode::tests))
                     ,
-                    (option("-v", "--verbose").set(verbose) % "Print detailed report")
+                    (option("-d", "--debug").set(debug) % "Enable debug mode")
                     ,
                     (option("-i", "--interactive").set(interactive) % "Start a CLI to be able to execute a file instruction per instruction")
                 ),
@@ -81,7 +93,7 @@ int main(int argc, char* argv[])
         case mode::exec:
         {
             kafe::VM vm;
-            vm.setMode(getDebugMode(verbose, interactive));
+            vm.setMode(getDebugMode(debug, interactive));
             vm.execFromFile(input_file);
             break;
         }
@@ -90,7 +102,7 @@ int main(int argc, char* argv[])
             std::cout << "antlr" << std::endl;
             kafe::testANTLR();
             std::cout << "end" << std::endl;
-            return start_tests(getDebugMode(verbose, interactive));
+            return start_tests(getDebugMode(debug, interactive));
         }
     }
     else

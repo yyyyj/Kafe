@@ -1,0 +1,17 @@
+For the purpose of tracking copyright, this is the list of individuals and organizations who have contributed source code to Kafe.
+
+By signing on the bottom regarding the given format `date, GitHub ID, full name <email address>`, each contributor is warranting that
+he/she is the creator of all his/her contributions submitted. By doing so, he/she is hereby granting the Kafe open source project a
+non-exclusive, irrevocable, royalty-free, worldwide license to reproduce, distribute, prepare derivative works, and otherwise use this
+contribution as part of the Kafe open source project.
+
+If a contributor is violating another's rights, liability lies to him/her.
+
+# Copyright holder
+
+- SuperFola
+
+# Contributors
+
+YYYY/MM/DD, GitHub ID, full name <email address>
+2017/12/10, SuperFola, Plateau Alexandre <folaefolc@outlook.fr>

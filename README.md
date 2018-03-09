@@ -71,3 +71,17 @@ Special thanks addressed to
 * Sygmei, for supporting me and my stupid questions everyday
 
 * the-new-sky, Ahze, FrenchMS, just for being there and admiring this small project
+
+[List](CONTRIBUTORS.md) of all the contributors
+
+## Third-party libraries already included and licenses
+
+* CLIPP, released under MIT license, (c) 2017 André Müller; foss@andremueller-online.de
+
+* termcolor, released under BSD license, (c) 2013 by Ihor Kalnytsky
+
+* hopscotch hash map, released under MIT license, Copyright (c) 2017 Tessil
+
+* benchmark::Main, released under MIT license, (c) 2018 by SuperFola
+
+* ANTLR4, released under BSD-3 clause license, Copyright (c) 2012-2017 The ANTLR Project. All rights reserved
