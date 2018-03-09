@@ -17,3 +17,4 @@ execute_process(
 #-------------------------------------------------------------------------------
 
 add_subdirectory(src/kafe)
+add_subdirectory(lib)

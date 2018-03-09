@@ -35,12 +35,13 @@ int main(int argc, char* argv[])
 
     enum class mode {help, build, exec, tests};
     mode selected;
-    std::string input_file = "";
+    std::vector<std::string> infiles;
     std::string output_bytecode_file = "";
     bool display_ast_flag = false;
-    std::vector<std::string> infiles;
+    std::string input_file = "";
     bool debug = false;
     bool interactive = false;
+    bool version = false;
     std::vector<std::string> wrong;
 
     auto cli = (
@@ -65,7 +66,8 @@ int main(int argc, char* argv[])
                     (option("-d", "--debug").set(debug) % "Enable debug mode")
                     ,
                     (option("-i", "--interactive").set(interactive) % "Start a CLI to be able to execute a file instruction per instruction")
-                ),
+                )
+                | (command("--version").set(version, true) % "Display version number"),
                 any_other(wrong)
                 );
 
