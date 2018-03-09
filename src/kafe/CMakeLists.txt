@@ -3,7 +3,7 @@ cmake_policy(SET CMP0015 NEW)
 
 project(Kafe)
 
-message(STATUS "Building project Kafe")
+message(STATUS "Building project ${PROJECT_NAME}")
 
 file(GLOB_RECURSE INCLUDE_FILES "${KafeBuilder_SOURCE_DIR}/include/kafe/*.hpp" "${KafeBuilder_SOURCE_DIR}/tests/*.hpp")
 file(GLOB_RECURSE SOURCES_FILES "${KafeBuilder_SOURCE_DIR}/include/kafe/parser/*.cpp" "${KafeBuilder_SOURCE_DIR}/src/kafe/*.cpp" "${CMAKE_SOURCE_DIR}/tests/*.cpp")

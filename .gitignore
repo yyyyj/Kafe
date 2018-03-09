@@ -11,6 +11,9 @@ out/
 *.lib
 *.so
 *.a
+*.dll
+*.ilk
+*.pdb
 
 # projects files
 .vs/
@@ -38,3 +41,5 @@ specs.txt
 *.old.txt
 .github/logo.png
 .github/logo.svg
+lib/
+dist/

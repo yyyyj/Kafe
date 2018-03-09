@@ -100,7 +100,16 @@ namespace kafe
 
         inline unsigned long createVersionNumber(unsigned char major, unsigned char minor, unsigned char patch)
         {
-            return ((int)major << 16) + ((int)minor << 8) + (patch);
+            return ((int)major << 16) | ((int)minor << 8) | (patch);
+        }
+
+        inline std::string beautifyVersionNumber(unsigned long version)
+        {
+            int major = (version & (255 << 16)) >> 16
+                , minor = (version & (255 << 8)) >> 8
+                , patch = version & 255;
+
+            return str<int>(major) + "." + str<int>(minor) + "." + str<int>(patch);
         }
 
     }  // namespace abc

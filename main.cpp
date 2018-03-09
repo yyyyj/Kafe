@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 {
     using namespace clipp;
 
-    enum class mode {help, build, exec, tests};
+    enum class mode {help, build, exec, tests, version};
     mode selected;
     std::vector<std::string> infiles;
     std::string output_bytecode_file = "";
@@ -41,7 +41,6 @@ int main(int argc, char* argv[])
     std::string input_file = "";
     bool debug = false;
     bool interactive = false;
-    bool version = false;
     std::vector<std::string> wrong;
 
     auto cli = (
@@ -67,7 +66,7 @@ int main(int argc, char* argv[])
                     ,
                     (option("-i", "--interactive").set(interactive) % "Start a CLI to be able to execute a file instruction per instruction")
                 )
-                | (command("--version").set(version, true) % "Display version number"),
+                | (command("--version").set(selected, mode::version) % "Display version number"),
                 any_other(wrong)
                 );
 
@@ -105,6 +104,10 @@ int main(int argc, char* argv[])
             kafe::testANTLR();
             std::cout << "end" << std::endl;
             return start_tests(getDebugMode(debug, interactive));
+
+        case mode::version:
+            std::cout << kafe::abc::beautifyVersionNumber(KAFE_API_VERSION) << std::endl;
+            break;
         }
     }
     else

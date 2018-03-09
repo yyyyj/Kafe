@@ -19,16 +19,16 @@ The VM is designed to read and execute bytecode, but it can also turn your Kafe 
 
 ```bash
 /kafe-master/$ kafe help
-SYNOPSIS
-        /kafe-master/kafe help
-        /kafe-master/kafe build <file>... -o <outfile> [-a]
-        /kafe-master/kafe ((exec <file>) | tests) [-v] [-i]
-
-OPTIONS
+Usage:
+        kafe help
+        kafe build <file>... -o <outfile> [-a]
+        kafe ((exec <file>) | tests) [-d] [-i]
+        kafe --version
+Options:
         -a, --ast                   Save the generated AST to <outfile>.ast
-        -v, --verbose               Print detailed report
+        -d, --debug                 Enable debug mode
         -i, --interactive           Start a CLI to be able to execute a file instruction per instruction
-
+        --version                   Display version number
 LICENSE
         Mozilla Public License 2.0
 ```
