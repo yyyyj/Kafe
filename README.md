@@ -78,7 +78,7 @@ Special thanks addressed to
 
 * CLIPP, released under MIT license, (c) 2017 André Müller; foss@andremueller-online.de
 
-* termcolor, released under BSD license, (c) 2013 by Ihor Kalnytsky
+* termcolor, released under BSD license, (c) 2013 by Ihor Kalnytskyi
 
 * hopscotch hash map, released under MIT license, Copyright (c) 2017 Tessil
 
