@@ -100,13 +100,13 @@ int main(int argc, char* argv[])
         }
 
         case mode::tests:
-            std::cout << "antlr" << std::endl;
+            std::cerr << "antlr" << std::endl;
             kafe::testANTLR();
-            std::cout << "end" << std::endl;
+            std::cerr << "end" << std::endl;
             return start_tests(getDebugMode(debug, interactive));
 
         case mode::version:
-            std::cout << kafe::abc::beautifyVersionNumber(KAFE_API_VERSION) << std::endl;
+            std::cerr << "Kafe " << kafe::abc::beautifyVersionNumber(KAFE_API_VERSION) << std::endl;
             break;
         }
     }
