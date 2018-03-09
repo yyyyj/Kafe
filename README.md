@@ -72,7 +72,7 @@ Special thanks addressed to
 
 * the-new-sky, Ahze, FrenchMS, just for being there and admiring this small project
 
-[List](CONTRIBUTORS.md) of all the contributors
+[List](CONTRIBUTORS.txt) of all the contributors
 
 ## Third-party libraries already included and licenses
 
