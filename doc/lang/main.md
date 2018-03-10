@@ -15,9 +15,9 @@ It's possible to read upper scope variables, but not to modify them. By upper sc
 To be able to modify an upper scope variable in a function, it must be declared as following :
 
 ```
-dyn a : str = "hello"
+dyn a = "hello"
 
-fun yourfunction : int  # remember we can't return nil/None/null, because it do not exists in Kafe
+fun yourfunction() -> int  # remember we can't return nil/None/null, because it do not exists in Kafe
     # we must return a status code if the same function in C for example would have been of return type `void`
     print(a)  # we can only read it
     a = 10  # would raise an exception and terminate the program

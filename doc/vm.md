@@ -2,7 +2,7 @@
 
 ## Bytecode instructions
 
-### Types, structures
+### Types
 
 Instruction code  | Use in the bytecode
 ----------------- | -------------------
@@ -15,34 +15,64 @@ INST_BOOL        = 0x06 | 0x06 [value on 1 byte] ; if value > 0x00 => true
 INST_ADDR        = 0x07 | 0x07 [size of a segment name on 2 bytes] [name] ; used to store the address of a segment (kind of pointer, only pointing on something in the bytecode)
 INST_LIST        = 0x08 | 0x08 [number of elements on 4 bytes = X] ; takes the X last elements put on the stack and put them into a list
 INST_VAR         = 0x09 | 0x09 [var name size on 2 bytes] [name]
-INST_STRUCT      = 0x0a | 0x0a [struct name size on 2 bytes] [name] [number of pair<Value::Var, Value> = X] ; read X pair from the stack, var_name=stack[-1], value=stack[-2]
-INST_DECL_STRUCT = 0x0b | 0x0b [struct name size on 2 bytes] [name] [number of pair<Value::Var, Value> = X] ; read X pair from the stack, var_name=stack[-1], value=stack[-2]
-INST_STRUCT_GETM = 0x0c | 0x0c [struct name size on 2 bytes] [name] [member name on 2 bytes] [name] ; push the value of the member (if it exists) onto the stack
-INST_STRUCT_SETM = 0x0d | 0x0d [struct name size on 2 bytes] [name] [member name on 2 bytes] [name] ; takes the last value on the stack and put it into the member (if it exists or not)
-INST_STRUCT_HASM = 0x0e | 0x0e [struct name size on 2 bytes] [name] [member name on 2 bytes] [name] ; check if the struct has a member "name" : push true or false
-INST_DEL_VAR     = 0x0f | 0x0f [var name size on 2 bytes] [name]
 
-### Segments, jumps, addresses and variables
+### Structures (alias Obj)
 
 Instruction code  | Use in the bytecode
 ----------------- | -------------------
-INST_STORE_VAR   = 0x10 | 0x10 ; store the value at stack[-2] in stack[-1]
-INST_LOAD_VAR    = 0x11 | 0x11 [name] ; push its value on the stack
-INST_DUP         = 0x12 | 0x12 ; duplicate the value at stack[-1]
-INST_CALL        = 0x13 | 0x13 ; jump to stack[-1] (Value::Addr) and return to the caller position when `ret` is hit
-INST_JUMP        = 0x14 | 0x14 ; jump to stack[-1] (Value::Addr) and continue the execution
-INST_JUMP_IF     = 0x15 | 0x15 ; jump to stack[-2] (Value::Addr) if stack[-1] compares to true and continue the execution
-INST_JUMP_IFN    = 0x16 | 0x16 ; jump to stack[-2] (Value::Addr) if stack[-1] compares to false and continue the execution
-INST_RET         = 0x17 | 0x17 ; return from a segment
-INST_GET_CWA     = 0x18 | 0x18 ; push the current address in the bytecode on the stack as a Value::Addr (CWA stands for current working address)
-INST_PERMUTATION = 0x19 | 0x19 ; switch the two top values of the stack
-INST_POP         = 0x1a | 0x1a ; pop the value off the stack (delete it)
-INST_HALT        = 0x1b | 0x1b ; end the execution of the script
+INST_STRUCT      = 0x10 | 0x10 [struct name size on 2 bytes] [name] [number of pair<Value::Var, Value> = X] ; read X pair from the stack, var_name=stack[-1], value=stack[-2]
+INST_DECL_STRUCT = 0x11 | 0x11 [struct name size on 2 bytes] [name] [number of pair<Value::Var, Value> = X] ; read X pair from the stack, var_name=stack[-1], value=stack[-2]
+INST_STRUCT_GETM = 0x12 | 0x12 [struct name size on 2 bytes] [name] [member name on 2 bytes] [name] ; push the value of the member (if it exists) onto the stack
+INST_STRUCT_SETM = 0x13 | 0x13 [struct name size on 2 bytes] [name] [member name on 2 bytes] [name] ; takes the last value on the stack and put it into the member (if it exists or not)
+INST_STRUCT_HASM = 0x14 | 0x14 [struct name size on 2 bytes] [name] [member name on 2 bytes] [name] ; check if the struct has a member "name" : push true or false
+INST_STRUCT_HASPARENT = 0x15 | 0x15 [parent name] [name] ; check if parent name (can either be an instantiated struct or not) is a parent of name (must be instantiated this time)
+INST_STRUCT_TID  = 0x16 | 0x16 [name] ; push the type id (integer) of a struct "name" on the stack
 
-### Built-in procedures
+### Variables
+
 Instruction code  | Use in the bytecode
 ----------------- | -------------------
-INST_PROCEDURE   = 0x20 | 0x20 [instruction code on 2 bytes]
+INST_STORE_DYN   = 0x20 | 0x20 ; store the value at stack[-2] in stack[-1] (create a DYN variable)
+INST_STORE_CST   = 0x21 | 0x21 ; store the value at stack[-2] in stack[-1] (create a CONST variable)
+INST_LOAD_VAR    = 0x22 | 0x22 [name] ; push its value on the stack
+INST_DEL_VAR     = 0x23 | 0x23 [name] ; delete the selected variable
+INST_NONLOCAL    = 0x24 | 0x24 [name] ; set a global scope variable as local scope variable with writing permissions (only in segments)
+INST_GET_TYPE    = 0x25 | 0x25 [name] ; name must a living variable in the current scope. push the string version of the type name. return "struct" for the structures
+
+### Lists
+
+Instruction code  | Use in the bytecode
+----------------- | -------------------
+INST_SIZE_LST    = 0x30  | 0x30 ; push the size, on the stack, of the list at stack[-1]
+INST_POP_LST     = 0x31  | 0x31 [integer on 6 bytes = X] ; pop the element at stack[-1][X] (stack[-1] must be a list), handling negatives indexes. raises an exception if the index isn't in range
+INST_APPEND_LST  = 0x32 | 0x32 ; push the element at stack[-2] in the list at stack[-1]
+INST_GNTH_LST    = 0x33 |  0x33 [integer on 6 bytes = X] ; push on the stack the elemenet at stack[-1][X] (stack[-1] must be a list), handling negatives indexes. raises an exception if the index isn't in range
+INST_SNTH_LST    = 0x34 |  0x34 [integer on 6 bytes = X] ; push the element at stack[-2] in stack[-1][X] (which must be a list). raises and exception if stack[-1] isn't a list
+INST_GSLICE_LST  = 0x35 |  0x35 [integer on 6 bytes = X] [integer on 6 bytes = Y] [integer on 6 bytes = P] ; push the value of stack[-1][X:Y:P] on the stack. the values touched are in [X, Y[ with a step of P. raises an exception if X > Y or stack[-1] isn't a list
+INST_SSLICE_LST  = 0x36 |  0x36 [integer on 6 bytes = X] [integer on 6 bytes = Y] [integer on 6 bytes = P] ; set the value of stack[-1][X:Y:P] as stack[-2], each one must be lists (raises an exception if not, also if the indexes aren't correct)
+INST_CONS_LST    = 0x37 |  0x37 ; construct a new list from the objects x and y, with x=stack[-2] and y=stack[-1]
+
+### Segments and blocs
+
+Instruction code  | Use in the bytecode
+----------------- | -------------------
+INST_DUP         = 0x40 | 0x40 ; duplicate the value at stack[-1]
+INST_CALL        = 0x41 | 0x41 ; jump to stack[-1] (Value::Addr) and return to the caller position when `ret` is hit
+INST_JUMP        = 0x42 | 0x42 ; jump to stack[-1] (Value::Addr) and continue the execution
+INST_JUMP_IF     = 0x43 | 0x43 ; jump to stack[-2] (Value::Addr) if stack[-1] compares to true and continue the execution
+INST_JUMP_IFN    = 0x44 | 0x44 ; jump to stack[-2] (Value::Addr) if stack[-1] compares to false and continue the execution
+INST_RET         = 0x45 | 0x45 ; return from a segment
+INST_GET_CWA     = 0x46 | 0x46 ; push the current address in the bytecode on the stack as a Value::Addr (CWA stands for current working address)
+INST_PERMUTATION = 0x47 | 0x47 ; switch the two top values of the stack
+INST_POP         = 0x48 | 0x48 ; pop the value off the stack (delete it)
+INST_HALT        = 0x49 | 0x49 ; end the execution of the script
+
+### Built-in procedures and user defined methods
+
+Instruction code  | Use in the bytecode
+----------------- | -------------------
+INST_PROCEDURE   = 0x50 | 0x50 [procedure code on 2 bytes]
+INST_USER_PROC   = 0x51 | 0x51 [name] [number of arguments on 1 byte = X] ; 0 <= X <= ??
 
 #### Procedures code
 [CODE] | push the result of stack[-2] [OPERATOR] stack[-1] OR push the result of [OPERATOR] stack[-1]

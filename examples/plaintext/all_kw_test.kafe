@@ -1,14 +1,14 @@
-struct car
-    dyn size : int = 10
+Obj car
+    dyn size = 10
 
-    fun main : bool -- me : struct car
-        print("hello  world" me.size)
+    fun main() -> bool
+        print("hello  world" .. self.size)
         ret true
 end
 
 # this is a comment which should be skipped
-dyn i : int = 10 #same here
-dyn v : list = [0 2 4 6 8]
+dyn i = 10 #same here
+dyn v = [0 2 4 6 8]
 
 if 1 + 1 == 2 then
     while i != 0 do
@@ -16,8 +16,8 @@ if 1 + 1 == 2 then
     end
 
     for j in range(5 20) do
-        print(j * 10 + 5
-    end$
+        print(j * 10 + 5)
+    end
 else
     print("hello world   bis")
 end
