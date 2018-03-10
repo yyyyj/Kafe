@@ -22,20 +22,20 @@ public:
     T__44 = 45, T__45 = 46, T__46 = 47, T__47 = 48, T__48 = 49, T__49 = 50, 
     T__50 = 51, T__51 = 52, T__52 = 53, T__53 = 54, T__54 = 55, T__55 = 56, 
     T__56 = 57, T__57 = 58, T__58 = 59, T__59 = 60, T__60 = 61, T__61 = 62, 
-    T__62 = 63, T__63 = 64, T__64 = 65, T__65 = 66, T__66 = 67, NAME = 68, 
-    NORMALSTRING = 69, CHARSTRING = 70, INT = 71, HEX = 72, FLOAT = 73, 
-    HEX_FLOAT = 74, COMMENT = 75, WS = 76
+    T__62 = 63, T__63 = 64, T__64 = 65, T__65 = 66, T__66 = 67, T__67 = 68, 
+    NAME = 69, NORMALSTRING = 70, CHARSTRING = 71, INT = 72, HEX = 73, FLOAT = 74, 
+    HEX_FLOAT = 75, COMMENT = 76, WS = 77
   };
 
   enum {
     RuleChunk = 0, RuleBlock = 1, RuleStat = 2, RuleRetstat = 3, RuleVarqualifier = 4, 
-    RuleType = 5, RuleExplist = 6, RuleGetstructmember = 7, RuleFunctioncall = 8, 
-    RuleExp = 9, RuleArgslist = 10, RuleFuncbody = 11, RuleStructbody = 12, 
-    RuleOperatorOr = 13, RuleOperatorAnd = 14, RuleOperatorComparison = 15, 
-    RuleOperatorStrcat = 16, RuleOperatorAddSub = 17, RuleOperatorMulDivMod = 18, 
-    RuleOperatorBitwise = 19, RuleOperatorUnary = 20, RuleOperatorPower = 21, 
-    RuleOperatorMathAffectation = 22, RuleNumber = 23, RuleString = 24, 
-    RuleList = 25
+    RuleType = 5, RuleNamelist = 6, RuleExplist = 7, RuleGetstructmember = 8, 
+    RuleFunctioncall = 9, RuleExp = 10, RuleArgslist = 11, RuleFuncbody = 12, 
+    RuleStructbody = 13, RuleOperatorOr = 14, RuleOperatorAnd = 15, RuleOperatorComparison = 16, 
+    RuleOperatorStrcat = 17, RuleOperatorAddSub = 18, RuleOperatorMulDivMod = 19, 
+    RuleOperatorBitwise = 20, RuleOperatorUnary = 21, RuleOperatorPower = 22, 
+    RuleOperatorMathAffectation = 23, RuleNumber = 24, RuleString = 25, 
+    RuleList = 26
   };
 
   KafeParser(antlr4::TokenStream *input);
@@ -54,6 +54,7 @@ public:
   class RetstatContext;
   class VarqualifierContext;
   class TypeContext;
+  class NamelistContext;
   class ExplistContext;
   class GetstructmemberContext;
   class FunctioncallContext;
@@ -106,16 +107,18 @@ public:
     VarqualifierContext *varqualifier();
     std::vector<antlr4::tree::TerminalNode *> NAME();
     antlr4::tree::TerminalNode* NAME(size_t i);
-    TypeContext *type();
-    ExplistContext *explist();
+    std::vector<ExplistContext *> explist();
+    ExplistContext* explist(size_t i);
+    NamelistContext *namelist();
     OperatorMathAffectationContext *operatorMathAffectation();
     FunctioncallContext *functioncall();
     std::vector<ExpContext *> exp();
     ExpContext* exp(size_t i);
     std::vector<BlockContext *> block();
     BlockContext* block(size_t i);
-    FuncbodyContext *funcbody();
     ArgslistContext *argslist();
+    TypeContext *type();
+    FuncbodyContext *funcbody();
     StructbodyContext *structbody();
     GetstructmemberContext *getstructmember();
 
@@ -155,6 +158,18 @@ public:
   };
 
   TypeContext* type();
+
+  class  NamelistContext : public antlr4::ParserRuleContext {
+  public:
+    NamelistContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<antlr4::tree::TerminalNode *> NAME();
+    antlr4::tree::TerminalNode* NAME(size_t i);
+
+   
+  };
+
+  NamelistContext* namelist();
 
   class  ExplistContext : public antlr4::ParserRuleContext {
   public:

@@ -1,0 +1,33 @@
+Obj Graphics
+    dyn firstmember
+    dyn secondmember
+    
+    fun render(viewID: int) -> int
+        if self.firstmember == viewID then
+            ret 1
+        elif self.secondmember == viewID then
+            ret 2
+        else
+            print("what the heck is going on dude " .. viewID)
+        end
+        
+        ret -1
+    
+    fun getWidth() -> int
+        ret 480
+end
+
+
+fun test(g: Graphics) -> int
+    dyn a = 5
+    cst b = g.getWidth()
+    ret a
+
+dyn big_g : Graphics(12, 42)  # firstmember=12, secondmember=42
+test(big_g)
+
+fun try_it_out() -> bool
+    nonlocal big_g
+    ret big_g.render(12) == 1
+
+cst a = try_it_out()

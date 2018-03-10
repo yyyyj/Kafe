@@ -21,16 +21,17 @@ block
     ;
 
 stat
-    : varqualifier NAME ':' type '=' explist
-    | 'nonlocal' NAME NAME*
+    : varqualifier NAME '=' explist
+    | varqualifier NAME ':' NAME '(' explist* ')'
+    | 'nonlocal' namelist
     | NAME '=' explist
     | NAME operatorMathAffectation explist
     | functioncall
     | 'for' NAME 'in' exp 'do' block 'end'
     | 'if' exp 'then' block ('elif' exp 'then' block)* ('else' block)? 'end'
     | 'while' exp 'do' block 'end'
-    | 'fun' NAME ':' type argslist? funcbody
-    | 'struct' NAME argslist? structbody
+    | 'fun' NAME argslist '->' type funcbody
+    | 'Obj' NAME structbody
     | getstructmember
     ;
 
@@ -51,8 +52,12 @@ type
     | 'struct' NAME
     ;
 
+namelist
+    : NAME (','? NAME)*
+    ;
+
 explist
-    : exp exp*
+    : exp (','? exp)*
     ;
 
 getstructmember
@@ -83,7 +88,7 @@ exp
     ;
 
 argslist
-    : '--' (NAME ':' type ','?)+
+    : '(' (NAME ':' type ','?)* ')'
     ;
 
 funcbody
