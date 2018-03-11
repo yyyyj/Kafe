@@ -28,9 +28,14 @@ namespace kafe
             clear();
         }
 
-        void BytecodeBlocksMaker::setup(FNRAISE raise)
+        void BytecodeBlocksMaker::raiseException(int error, const std::string& msg)
         {
-            raiseException = raise;
+            m_errh.raiseException(error, msg);
+        }
+
+        void BytecodeBlocksMaker::setup(ErrorHandler* errh)
+        {
+            m_errh = errh;
         }
 
         void BytecodeBlocksMaker::setTypeCheck(bool typecheck)

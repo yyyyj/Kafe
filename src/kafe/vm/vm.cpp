@@ -36,7 +36,7 @@ namespace kafe
 
     VM::VM() : m_stack_size(0), m_ip(0), m_bbm(m_ip, m_bytecode), m_debug_mode(0), m_interactive_advance(0), m_has_been_dirty_clean(false)
     {
-        m_bbm.setup(&raiseException);
+        m_bbm.setup(errorHandler);
     }
 
     VM::~VM()

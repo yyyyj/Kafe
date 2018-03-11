@@ -50,6 +50,7 @@ namespace kafe
         addr_t m_interactive_advance;
         bool m_has_been_dirty_clean;
         // storing all the exceptions to display them when the time has come
+        /// todo : put that in errorHandler.hpp/cpp
         std::vector<Exception> m_exceptions;
         // we'll store the procedures and all that stuff inside this db, and use another one for user define functions
         FunctionDatabase m_fdb;
@@ -76,6 +77,7 @@ namespace kafe
         void exec_handleSegments      (inst_t instruction);
         void exec_handleBuiltins      ();
         // error handling
+        /// todo : put that in errorHandler.hpp/cpp
         void raiseException  (const Exception&);
         void raiseException  (int error, const std::string& message);
         void displayTraceback();

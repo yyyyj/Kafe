@@ -122,7 +122,7 @@ namespace kafe
                 set<T>({});
             return std::get<T>(value);
         }
-        template <typename T> void set(T&& val) { value = std::forward(val); }
+        template <typename T> void set(T&& val) { value = std::move(val); }
         template <typename T> void set(const T& val) { value = T(val); }
 
         bool operator==(const Value& other) const

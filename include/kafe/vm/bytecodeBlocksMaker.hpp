@@ -15,20 +15,18 @@
 
 #include <vector>
 #include <variant>
-#include <functional>
+#include <string>
 #include <unordered_map>
 
 #include <kafe/types.hpp>
 #include <kafe/utils.hpp>
+#include <kafe/errorHandler.hpp>
 #include <kafe/KafeException.hpp>
 
 namespace kafe
 {
     namespace abc
     {
-
-        // forward declaration
-        class VM;
 
         constexpr int EXP_DOUBLE_LIMIT = 0b0100110100;  // (308) exponent limit for a double
         constexpr int EXP_DOUBLE_SIGN = 0b1000000000;   // (512)
@@ -39,7 +37,7 @@ namespace kafe
 
             template <typename T> bool holds() { return std::holds_alternative<T>(val); }
             template <typename T> T    get() { return std::get<T>(val); }
-            template <typename T> void set(T&& v) { val = std::forward(v); }
+            template <typename T> void set(T&& v) { val = std::move(v); }
         };
         
         class BytecodeBlocksMaker
@@ -52,15 +50,15 @@ namespace kafe
             // mapping instruction pointer to object
             std::unordered_map<addr_t, Block> m_objects;
 
-            typedef void(VM::*FNRAISE)(int, const std::string&);
-            //typedef std::function<void(int, const std::string&)> FNRAISE;
-            FNRAISE raiseException;
+            ErrorHandler* m_errh;  // TODO: use smart pointer or reference ?
+
+            void raiseException(int, const std::string&);
 
         public:
             BytecodeBlocksMaker(addr_t&, bytecode_t&);
             ~BytecodeBlocksMaker();
 
-            void setup(FNRAISE);
+            void setup(ErrorHandler*);
             void setTypeCheck(bool);
 
             // about types
