@@ -18,6 +18,7 @@
 #include <kafe/utils.hpp>
 #include <kafe/vm/value.hpp>
 #include <kafe/KafeException.hpp>
+#include <kafe/vm/bytecodeBlocksMaker.hpp>
 
 #include <string>
 #include <vector>
@@ -28,8 +29,6 @@
 
 namespace kafe
 {
-    constexpr int EXP_DOUBLE_LIMIT = 0b0100110100;
-    constexpr int EXP_DOUBLE_SIGN = 0b1000000000;
 
     class VM
     {
@@ -46,32 +45,26 @@ namespace kafe
         StructureMap_t m_struct_definitions;
         // keeping the loaded bytecode into the VM to use easily without passing it around
         bytecode_t m_bytecode;
+        abc::BytecodeBlocksMaker m_bbm;
         int m_debug_mode;
         addr_t m_interactive_advance;
+        bool m_has_been_dirty_clean;
         // storing all the exceptions to display them when the time has come
         std::vector<Exception> m_exceptions;
         // we'll store the procedures and all that stuff inside this db, and use another one for user define functions
         FunctionDatabase m_fdb;
         FunctionDatabase m_fdb_user;
 
-        void     push     (Value value);
-        Value    pop      ();
-        void     clear    ();
-        void     loadLib  ();
-        VarFound findVar  (const str_t& varName);
-        Value    getVar   (const str_t& varName, VarFound vf);
-        Value&   getRefVar(const str_t& varName, VarFound vf);
-        void     setVar   (const str_t& varName, Value v, VarFound vf, bool is_const=false);
-        void     delVar   (const str_t& varName);
-        // about types
-        inst_t      readByte     (addr_t i);
-        uint_t      readXBytesInt(unsigned char bytesCount=2);
-        micro_int_t read2BytesInt();
-        smol_int_t  read4BytesInt();
-        int_t       read8BytesInt();
-        double      readDouble   ();
-        str_t       readString   ();
-        bool        readBool     ();
+        void     push      (Value value);
+        Value    pop       ();
+        void     dirtyClear();
+        void     clear     ();
+        void     loadLib   ();
+        VarFound findVar   (const str_t& varName);
+        Value    getVar    (const str_t& varName, VarFound vf);
+        Value&   getRefVar (const str_t& varName, VarFound vf);
+        void     setVar    (const str_t& varName, Value v, VarFound vf, bool is_const=false);
+        void     delVar    (const str_t& varName);
         // about segments and jumps
         void        performJump   (bool registerCall=true);
         void        retFromSegment();
@@ -97,6 +90,7 @@ namespace kafe
         static const int FLAG_DEFAULT_MODE = 0;
         static const int FLAG_BASIC_DEBUG = 1 << 0;
         static const int FLAG_INTERACTIVE = 1 << 1;
+        static const int FLAG_TYPECHECK   = 1 << 2;
 
         bytecode_t readFile(const std::string& filePath);
 

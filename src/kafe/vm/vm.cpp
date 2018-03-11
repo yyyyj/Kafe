@@ -17,7 +17,9 @@
 #include <algorithm>
 #include <termcolor.hpp>
 
-#undef max
+#ifdef max
+    #undef max  // macro complificting with std::max
+#endif  // max
 
 #include <kafe/vm/vm.hpp>
 #include <kafe/vm/vm_lib.hpp>
@@ -32,9 +34,15 @@
 namespace kafe
 {
 
-    VM::VM() : m_stack_size(0), m_ip(0), m_debug_mode(0), m_interactive_advance(0) {}
+    VM::VM() : m_stack_size(0), m_ip(0), m_bbm(m_ip, m_bytecode), m_debug_mode(0), m_interactive_advance(0), m_has_been_dirty_clean(false)
+    {
+        m_bbm.setup(&raiseException);
+    }
 
-    VM::~VM() { clear(); }
+    VM::~VM()
+    {
+        clear();
+    }
 
     void VM::push(Value value)
     {
@@ -51,7 +59,7 @@ namespace kafe
             raiseException(Exception::CRITIC, "Can not pop from an empty value stack");
     }
 
-    void VM::clear()
+    void VM::dirtyClear()
     {
         // cleaning the VM to run it again without creating a new instance
         m_stack_size = m_ip = m_interactive_advance = 0;
@@ -59,10 +67,18 @@ namespace kafe
         m_stack.clear();
         m_call_stack.clear();
         m_variables.clear();
-        m_struct_definitions.clear();
         m_exceptions.clear();
         m_exceptions.reserve(5);
-        m_fdb_user.clear();
+
+        m_has_been_dirty_clean = true;
+    }
+
+    void VM::clear()
+    {
+        dirtyClear();
+
+        m_struct_definitions.clear();
+        m_bbm.clear();
     }
 
     void VM::loadLib()
@@ -164,66 +180,6 @@ namespace kafe
             m_call_stack[m_call_stack.size() - 1].vars.erase(m_call_stack[m_call_stack.size() - 1].vars.find(varName));
     }
 
-    inst_t VM::readByte(addr_t i)
-    {
-        if (i < m_bytecode.size())
-            return m_bytecode[i];
-        raiseException(Exception::CRITIC, "Index out of range, can not get next byte");
-    }
-
-    uint_t VM::readXBytesInt(unsigned char bytesCount)
-    {
-        uint_t v = readByte(++m_ip);
-        for (unsigned char k=1; k < bytesCount; ++k)
-            v = (v << 8) + readByte(++m_ip);
-        return v;
-    }
-
-    micro_int_t VM::read2BytesInt()
-    {
-        return abc::setSign((micro_int_t) readXBytesInt(2), /* bytesCount */ 2);
-    }
-
-    smol_int_t VM::read4BytesInt()
-    {
-        return abc::setSign((smol_int_t) readXBytesInt(4), /* bytesCount */ 4);
-    }
-
-    int_t VM::read8BytesInt()
-    {
-        return abc::setSign((int_t) readXBytesInt(8), /* bytesCount */ 8);
-    }
-
-    double VM::readDouble()
-    {
-        smol_uint_t int_part = read4BytesInt();
-        micro_int_t exp = abc::abs(read2BytesInt());
-        exp = (exp > EXP_DOUBLE_LIMIT) ? EXP_DOUBLE_LIMIT : ((exp < -EXP_DOUBLE_LIMIT) ? -EXP_DOUBLE_LIMIT : exp);
-        exp *= (exp & EXP_DOUBLE_SIGN) ? (-1) : (+1);
-        return double(int_part) * std::pow(10, exp);
-    }
-
-    str_t VM::readString()
-    {
-        str_t work = "";
-        ++m_ip;
-        while (true)
-        {
-            inst_t byte = readByte(m_ip++);
-            if (byte != 0x00)
-                work += byte;
-            else
-                break;
-        }
-        --m_ip;
-        return work;
-    }
-
-    bool VM::readBool()
-    {
-        return readByte(++m_ip) > 0;
-    }
-
     void VM::performJump(bool registerCall)
     {
         addr_t last_pos;
@@ -275,7 +231,7 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "int 2B" << std::endl;
 
                 Value v(ValueType::Int);
-                v.set<int_t>(read2BytesInt());
+                v.set<int_t>(m_bbm.read2BytesInt());
                 push(v);
 
                 break;
@@ -286,7 +242,7 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "int 4B" << std::endl;
 
                 Value v(ValueType::Int);
-                v.set<int_t>(read4BytesInt());
+                v.set<int_t>(m_bbm.read4BytesInt());
                 push(v);
 
                 break;
@@ -297,7 +253,7 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "int 8B" << std::endl;
 
                 Value v(ValueType::Int);
-                v.set<int_t>(read8BytesInt());
+                v.set<int_t>(m_bbm.read8BytesInt());
                 push(v);
 
                 break;
@@ -308,7 +264,7 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "double" << std::endl;
 
                 Value v(ValueType::Double);
-                v.set<double>(readDouble());
+                v.set<double>(m_bbm.readDouble());
                 push(v);
 
                 break;
@@ -319,7 +275,7 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "str" << std::endl;
 
                 Value a(ValueType::String);
-                a.set<str_t>(readString());
+                a.set<str_t>(m_bbm.readString());
                 push(a);
 
                 break;
@@ -329,7 +285,7 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "bool" << std::endl;
 
-                Value a(ValueType::Bool, readBool());
+                Value a(ValueType::Bool, m_bbm.readBool());
                 push(a);
 
                 break;
@@ -340,7 +296,7 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "addr" << std::endl;
 
                 Value a(ValueType::Addr);
-                a.set<addr_t>(read4BytesInt());
+                a.set<addr_t>(m_bbm.read4BytesInt());
                 push(a);
 
                 break;
@@ -350,7 +306,7 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "list" << std::endl;
 
-                smol_uint_t nb_elements = read4BytesInt();
+                smol_uint_t nb_elements = m_bbm.read4BytesInt();
                 Value c(ValueType::List);
                 c.getRef<list_t>().reserve(nb_elements);
                 while (nb_elements != 0)
@@ -367,7 +323,7 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "var" << std::endl;
 
                 Value a(ValueType::Var);
-                a.set<str_t>(readString());
+                a.set<str_t>(m_bbm.readString());
                 push(a);
 
                 break;
@@ -396,14 +352,14 @@ namespace kafe
 
                 Value a(ValueType::Struct);
                 // getting the structure name
-                str_t struct_name = readString();
+                str_t struct_name = m_bbm.readString();
                 // to take the default data in it and fill the new object with those
                 if (m_struct_definitions.find(struct_name) != m_struct_definitions.end())
                 {
                     // init the newly created structure from its "parent"
                     a.getRef<Structure>() = m_struct_definitions[struct_name];
                     // push the given arguments
-                    micro_uint_t nb_args = read2BytesInt();
+                    micro_uint_t nb_args = m_bbm.read2BytesInt();
                     for (micro_uint_t j = 0; j < nb_args; ++j)
                     {
                         Value name = pop();
@@ -439,8 +395,8 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "declare structure" << std::endl;
 
-                str_t name = readString();
-                micro_uint_t pairs_nb = read2BytesInt();
+                str_t name = m_bbm.readString();
+                micro_uint_t pairs_nb = m_bbm.read2BytesInt();
                 m_struct_definitions[name] = Structure();
                 for (micro_uint_t j = 0; j < pairs_nb; ++j)
                 {
@@ -460,11 +416,11 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure get member" << std::endl;
 
-                str_t name = readString();
+                str_t name = m_bbm.readString();
                 VarFound vf = findVar(name);
                 if (vf != VarFound::NotFound)
                 {
-                    str_t member = readString();
+                    str_t member = m_bbm.readString();
                     StructElem* pse = getRefVar(name, vf).getRef<Structure>().findMember(member);
                     if (pse != nullptr)
                         push(pse->val);
@@ -481,11 +437,11 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure set member" << std::endl;
 
-                str_t name = readString();
+                str_t name = m_bbm.readString();
                 VarFound vf = findVar(name);
                 if (vf != VarFound::NotFound)
                 {
-                    str_t member = readString();
+                    str_t member = m_bbm.readString();
                     getRefVar(name, vf).getRef<Structure>().set(member, pop());
                 }
                 else
@@ -498,11 +454,11 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure has member" << std::endl;
 
-                str_t name = readString();
+                str_t name = m_bbm.readString();
                 VarFound vf = findVar(name);
                 if (vf != VarFound::NotFound)
                 {
-                    str_t member = readString();
+                    str_t member = m_bbm.readString();
                     if (getRefVar(name, vf).getRef<Structure>().findMember(member) != nullptr)
                         push(Value(ValueType::Bool, true));
                     else
@@ -518,12 +474,12 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "struct has parent" << std::endl;
 
-                str_t parent_name = readString();
+                str_t parent_name = m_bbm.readString();
                 VarFound vf = findVar(parent_name);
                 if (vf != VarFound::NotFound)
                 {
                     // the parent_name thing is an instantiated structure
-                    str_t child = readString();
+                    str_t child = m_bbm.readString();
                     VarFound vf2 = findVar(child);
                     if (vf2 != VarFound::NotFound)
                         push(Value(ValueType::Bool, getRefVar(child, vf2).getRef<Structure>().hasParent(getRefVar(parent_name, vf).getRef<Structure>())));
@@ -535,7 +491,7 @@ namespace kafe
                     // the wanted structure isn't instantiated
                     if (m_struct_definitions.find(parent_name) != m_struct_definitions.end())
                     {
-                        str_t child = readString();
+                        str_t child = m_bbm.readString();
                         VarFound vf2 = findVar(child);
                         if (vf2 != VarFound::NotFound)
                             push(Value(ValueType::Bool, getRefVar(child, vf2).getRef<Structure>().hasParent(m_struct_definitions[parent_name])));
@@ -553,7 +509,7 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "structure type id" << std::endl;
 
-                str_t name = readString();
+                str_t name = m_bbm.readString();
                 VarFound vf = findVar(name);
                 if (vf != VarFound::NotFound)
                 {
@@ -609,7 +565,7 @@ namespace kafe
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "push var" << std::endl;
 
                 // we read the size of the var name and read it
-                str_t name = readString();
+                str_t name = m_bbm.readString();
                 // if the variable can be found, push it on the stack
                 VarFound vf = findVar(name);
                 if (vf != VarFound::NotFound)
@@ -624,7 +580,7 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "delete variable" << std::endl;
 
-                str_t name = readString();
+                str_t name = m_bbm.readString();
                 if (findVar(name) != VarFound::NotFound)
                     delVar(name);
                 else
@@ -637,7 +593,7 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "nonlocal" << std::endl;
 
-                str_t name = readString();
+                str_t name = m_bbm.readString();
                 if (findVar(name) != VarFound::NotFound)
                 {
                     if (m_call_stack.size() != 0)
@@ -655,7 +611,7 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "get type" << std::endl;
 
-                str_t name = readString();
+                str_t name = m_bbm.readString();
                 VarFound vf = findVar(name);
                 if (vf != VarFound::NotFound)
                 {
@@ -836,7 +792,7 @@ namespace kafe
 
     void VM::exec_handleBuiltins()
     {
-        micro_uint_t instruction = read2BytesInt();
+        micro_uint_t instruction = m_bbm.read2BytesInt();
 
         switch (instruction)
         {
@@ -1044,6 +1000,11 @@ namespace kafe
     void VM::setMode(int mode)
     {
         m_debug_mode = mode;
+
+        if (mode & VM::FLAG_TYPECHECK)
+            m_bbm.setTypeCheck(true);
+        else
+            m_bbm.setTypeCheck(false);
     }
 
     void VM::load(bytecode_t bytecode)
@@ -1061,11 +1022,14 @@ namespace kafe
     {
         if (m_bytecode.size() != 0)
         {
-            clear();
+            // if the VM is runned multiple times with the same bytecode, just keep a few things
+            if (!m_has_been_dirty_clean)
+                dirtyClear();
+
             addr_t old_ip = 0;
             for (m_ip=0; m_ip < m_bytecode.size(); ++m_ip)
             {
-                inst_t instruction = readByte(m_ip);
+                inst_t instruction = m_bbm.readByte(m_ip);
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG)
                     std::cerr << "[" << m_ip << "] " << abc::hexstr((unsigned)instruction) << " ";
 
@@ -1105,6 +1069,9 @@ namespace kafe
                 ++old_ip;
             }
             if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << std::endl << std::endl;
+
+            // reset the flag
+            m_has_been_dirty_clean = false;
 
             return 0;
         }
