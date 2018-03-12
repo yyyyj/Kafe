@@ -34,10 +34,8 @@
 namespace kafe
 {
 
-    VM::VM() : m_stack_size(0), m_ip(0), m_bbm(m_ip, m_bytecode), m_debug_mode(0), m_interactive_advance(0), m_has_been_dirty_clean(false)
-    {
-        m_bbm.setup(errorHandler);
-    }
+    VM::VM() : m_stack_size(0), m_ip(0), m_bbm(m_ip, m_bytecode, m_errh), m_debug_mode(0), m_interactive_advance(0), m_has_been_dirty_clean(false)
+    {}
 
     VM::~VM()
     {
@@ -56,7 +54,7 @@ namespace kafe
         if (m_stack_size - 1 >= 0)
             return abc::pop(m_stack, --m_stack_size);
         else
-            raiseException(Exception::CRITIC, "Can not pop from an empty value stack");
+            m_errh.raiseException(Exception::CRITIC, "Can not pop from an empty value stack", m_ip);
     }
 
     void VM::dirtyClear()
@@ -67,8 +65,7 @@ namespace kafe
         m_stack.clear();
         m_call_stack.clear();
         m_variables.clear();
-        m_exceptions.clear();
-        m_exceptions.reserve(5);
+        m_errh.clear();
 
         m_has_been_dirty_clean = true;
     }
@@ -105,7 +102,7 @@ namespace kafe
         else if (vf == VarFound::InCurrentScopeNotGlobal)
             return m_call_stack[m_call_stack.size() - 1].vars[varName];
         // vf == VarFound::NotFound
-        raiseException(Exception::CRITIC, "Can not get a missing variable `" + varName + "`. You are misusing the VM, please refer to the documentation (I have written it my self and I know there is anything you need in it :D )");
+        m_errh.raiseException(Exception::CRITIC, "Can not get a missing variable `" + varName + "`. You are misusing the VM, please refer to the documentation (I have written it my self and I know there is anything you need in it :D )", m_ip);
     }
 
     Value& VM::getRefVar(const str_t& varName, VarFound vf)
@@ -116,7 +113,7 @@ namespace kafe
             // we can read / write on it
             if (!m_variables[varName].is_const)
                 return m_variables[varName];
-            raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`");
+            m_errh.raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`", m_ip);
         }
         else if (vf == VarFound::NotInCurrentScopeButInGlobal)
         {
@@ -127,19 +124,19 @@ namespace kafe
             {
                 if (!m_call_stack[m_call_stack.size() - 1].vars[varName].is_const)
                     return m_call_stack[m_call_stack.size() - 1].vars[varName];
-                raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`");
+                m_errh.raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`", m_ip);
             }
-            raiseException(Exception::CRITIC, "Can not get the wanted variable : `" + varName + "`, try declaring it as nonlocal");
+            m_errh.raiseException(Exception::CRITIC, "Can not get the wanted variable : `" + varName + "`, try declaring it as nonlocal", m_ip);
         }
         else if (vf == VarFound::InCurrentScopeNotGlobal)
         {
             // we found the variable in the current scope
             if (!m_call_stack[m_call_stack.size() - 1].vars[varName].is_const)
                 return m_call_stack[m_call_stack.size() - 1].vars[varName];
-            raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`");
+            m_errh.raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`", m_ip);
         }
         // vf == VarFound::NotFound
-        raiseException(Exception::CRITIC, "Can not get a missing variable `" + varName + "`. You are misusing the VM, please refer to the documentation (I have written it my self and I know there is anything you need in it :D )");
+        m_errh.raiseException(Exception::CRITIC, "Can not get a missing variable `" + varName + "`. You are misusing the VM, please refer to the documentation (I have written it my self and I know there is anything you need in it :D )", m_ip);
     }
 
     void VM::setVar(const str_t& varName, Value v, VarFound vf, bool is_const)
@@ -160,14 +157,14 @@ namespace kafe
                 if (!m_variables[varName].is_const)
                     m_variables[varName] = v;
                 else
-                    raiseException(Exception::CRITIC, "Can not modify a const variable");
+                    m_errh.raiseException(Exception::CRITIC, "Can not modify a const variable", m_ip);
             }
             else
             {
                 if (!m_call_stack[m_call_stack.size() - 1].vars[varName].is_const)
                     m_call_stack[m_call_stack.size() - 1].vars[varName] = v;
                 else
-                    raiseException(Exception::CRITIC, "Can not modify a const variable");
+                    m_errh.raiseException(Exception::CRITIC, "Can not modify a const variable", m_ip);
             }
         }
     }
@@ -188,7 +185,7 @@ namespace kafe
         // jump to the segment
         Value p = pop();
         if (p.type != ValueType::Addr)
-            raiseException(Exception::LOGIC, "Can not jump to something which isn't an address");
+            m_errh.raiseException(Exception::LOGIC, "Can not jump to something which isn't an address", m_ip);
         // -1 because we're doing this right before the end of a loop, so we'll do a ++m_ip after
         m_ip = p.get<addr_t>() - 1;
 
@@ -218,7 +215,7 @@ namespace kafe
             }
         }
         else
-            raiseException(Exception::MALFORMED, "Can not return from a non-segment");
+            m_errh.raiseException(Exception::MALFORMED, "Can not return from a non-segment", m_ip);
     }
 
     /// ------------------------------------------------------------
@@ -375,17 +372,17 @@ namespace kafe
                                 if (pse->val.type == val.type)
                                     a.getRef<Structure>().add(name.get<str_t>(), val);
                                 else
-                                    raiseException(Exception::LOGIC, "Type error while trying to set an argument of a structure");
+                                    m_errh.raiseException(Exception::LOGIC, "Type error while trying to set an argument of a structure", m_ip);
                             }
                             else
-                                raiseException(Exception::RUNTIME, "Can not set a non-member of a structure using a structure declaration");
+                                m_errh.raiseException(Exception::RUNTIME, "Can not set a non-member of a structure using a structure declaration", m_ip);
                         }
                         else
-                            raiseException(Exception::LOGIC, "The name of the member to set in the given structure isn't a string");
+                            m_errh.raiseException(Exception::LOGIC, "The name of the member to set in the given structure isn't a string", m_ip);
                     }
                 }
                 else
-                    raiseException(Exception::LOGIC, "Can not use an undefined structure");
+                    m_errh.raiseException(Exception::LOGIC, "Can not use an undefined structure", m_ip);
                 push(a);
 
                 break;
@@ -406,7 +403,7 @@ namespace kafe
                     if (name.type == ValueType::Var)
                         m_struct_definitions[name.get<str_t>()].add(name.get<str_t>(), val);
                     else
-                        raiseException(Exception::LOGIC, "Expecting a variable when declaring a structure's member");
+                        m_errh.raiseException(Exception::LOGIC, "Expecting a variable when declaring a structure's member", m_ip);
                 }
 
                 break;
@@ -425,10 +422,10 @@ namespace kafe
                     if (pse != nullptr)
                         push(pse->val);
                     else
-                        raiseException(Exception::RUNTIME, "Can not get a non-existing member of a structure");
+                        m_errh.raiseException(Exception::RUNTIME, "Can not get a non-existing member of a structure", m_ip);
                 }
                 else
-                    raiseException(Exception::LOGIC, "Can not get a member of a non-existing structure");
+                    m_errh.raiseException(Exception::LOGIC, "Can not get a member of a non-existing structure", m_ip);
 
                 break;
             }
@@ -445,7 +442,7 @@ namespace kafe
                     getRefVar(name, vf).getRef<Structure>().set(member, pop());
                 }
                 else
-                    raiseException(Exception::LOGIC, "Can not set a member of a non-existing structure");
+                    m_errh.raiseException(Exception::LOGIC, "Can not set a member of a non-existing structure", m_ip);
 
                 break;
             }
@@ -465,7 +462,7 @@ namespace kafe
                         push(Value(ValueType::Bool, false));
                 }
                 else
-                    raiseException(Exception::LOGIC, "Can not get a member of a non-existing structure");
+                    m_errh.raiseException(Exception::LOGIC, "Can not get a member of a non-existing structure", m_ip);
 
                 break;
             }
@@ -484,7 +481,7 @@ namespace kafe
                     if (vf2 != VarFound::NotFound)
                         push(Value(ValueType::Bool, getRefVar(child, vf2).getRef<Structure>().hasParent(getRefVar(parent_name, vf).getRef<Structure>())));
                     else
-                        raiseException(Exception::RUNTIME, "Can not find the structure to perform the parenting check");
+                        m_errh.raiseException(Exception::RUNTIME, "Can not find the structure to perform the parenting check", m_ip);
                 }
                 else
                 {
@@ -496,10 +493,10 @@ namespace kafe
                         if (vf2 != VarFound::NotFound)
                             push(Value(ValueType::Bool, getRefVar(child, vf2).getRef<Structure>().hasParent(m_struct_definitions[parent_name])));
                         else
-                            raiseException(Exception::RUNTIME, "Can not find the structure to perform the parenting check");
+                            m_errh.raiseException(Exception::RUNTIME, "Can not find the structure to perform the parenting check", m_ip);
                     }
                     else
-                        raiseException(Exception::LOGIC, "Can not find the wanted structure to determine if another one is its child or not");
+                        m_errh.raiseException(Exception::LOGIC, "Can not find the wanted structure to determine if another one is its child or not", m_ip);
                 }
 
                 break;
@@ -519,7 +516,7 @@ namespace kafe
                     push(tid);
                 }
                 else
-                    raiseException(Exception::LOGIC, "Can not get a member of a non-existing structure");
+                    m_errh.raiseException(Exception::LOGIC, "Can not get a member of a non-existing structure", m_ip);
 
                 break;
             }
@@ -540,7 +537,7 @@ namespace kafe
                 if (var_name.type == ValueType::Var)
                     setVar(var_name.get<str_t>(), val, findVar(var_name.get<str_t>()));
                 else
-                    raiseException(Exception::LOGIC, "Can not store a value into a non-variable");
+                    m_errh.raiseException(Exception::LOGIC, "Can not store a value into a non-variable", m_ip);
 
                 break;
             }
@@ -555,7 +552,7 @@ namespace kafe
                 if (var_name.type == ValueType::Var)
                     setVar(var_name.get<str_t>(), val, findVar(var_name.get<str_t>()), /* is_const */ true);
                 else
-                    raiseException(Exception::LOGIC, "Can not store a value into a non-variable");
+                    m_errh.raiseException(Exception::LOGIC, "Can not store a value into a non-variable", m_ip);
 
                 break;
             }
@@ -571,7 +568,7 @@ namespace kafe
                 if (vf != VarFound::NotFound)
                     push(getVar(name, vf));
                 else
-                    raiseException(Exception::RUNTIME, "Can not push an undefined variable onto the stack");
+                    m_errh.raiseException(Exception::RUNTIME, "Can not push an undefined variable onto the stack", m_ip);
 
                 break;
             }
@@ -584,7 +581,7 @@ namespace kafe
                 if (findVar(name) != VarFound::NotFound)
                     delVar(name);
                 else
-                    raiseException(Exception::LOGIC, "Can not delete a non-existing variable");
+                    m_errh.raiseException(Exception::LOGIC, "Can not delete a non-existing variable", m_ip);
 
                 break;
             }
@@ -599,10 +596,10 @@ namespace kafe
                     if (m_call_stack.size() != 0)
                         m_call_stack[m_call_stack.size() - 1].refs_to_gscope.push_back(name);
                     else
-                        raiseException(Exception::LOGIC, "Can not declare a global scope variable as nonlocal in the global scope : `" + name + "`");
+                        m_errh.raiseException(Exception::LOGIC, "Can not declare a global scope variable as nonlocal in the global scope : `" + name + "`", m_ip);
                 }
                 else
-                    raiseException(Exception::LOGIC, "Can not delete a non-existing variable");
+                    m_errh.raiseException(Exception::LOGIC, "Can not delete a non-existing variable", m_ip);
 
                 break;
             }
@@ -620,7 +617,7 @@ namespace kafe
                     push(str_type);
                 }
                 else
-                    raiseException(Exception::LOGIC, "Can not delete a non-existing variable");
+                    m_errh.raiseException(Exception::LOGIC, "Can not delete a non-existing variable", m_ip);
 
                 break;
             }
@@ -690,7 +687,7 @@ namespace kafe
                     push(a); push(a);
                 }
                 else
-                    raiseException(Exception::LOGIC, "Can not duplicate the last value of the stack if there isn't any");
+                    m_errh.raiseException(Exception::LOGIC, "Can not duplicate the last value of the stack if there isn't any", m_ip);
 
                 break;
             }
@@ -804,6 +801,7 @@ namespace kafe
                 Value b = pop();
                 Value a = pop();
                 Value r = StdLibVM::procName(instruction);
+                addr_t last = m_ip;
 
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << r.get<str_t>() << std::endl;
 
@@ -815,14 +813,14 @@ namespace kafe
                         push(c);
                     else
                     {
-                        c.getRef<Exception>().setLine(m_ip);
-                        raiseException(c.get<Exception>());
+                        c.getRef<Exception>().setLine(last);
+                        m_errh.raiseException(c.get<Exception>());
                     }
                 }
                 else
                 {
-                    r.getRef<Exception>().setLine(m_ip);
-                    raiseException(r.get<Exception>());
+                    r.getRef<Exception>().setLine(last);
+                    m_errh.raiseException(r.get<Exception>());
                 }
 
                 break;
@@ -843,34 +841,12 @@ namespace kafe
 
             default:
             {
-                raiseException(Exception::MALFORMED, "Invalid byte used to identify a non-existing procedure : " +
-                                         abc::str((unsigned) instruction));
+                m_errh.raiseException(Exception::MALFORMED, "Invalid byte used to identify a non-existing procedure : " +
+                                         abc::str((unsigned) instruction), m_ip);
             }
         }
     }
     /// -----------------------------------------------------------
-
-    void VM::raiseException(const Exception& exc)
-    {
-        m_exceptions.push_back(exc);
-        if (exc.errorCode() == Exception::CRITIC)
-            displayTraceback();
-    }
-
-    void VM::raiseException(int error, const std::string& message)
-    {
-        raiseException(Exception(error, message, m_ip));
-    }
-
-    void VM::displayTraceback()
-    {
-        // display exception list
-        std::cerr << std::endl << "Traceback (most recent call last) :" << std::endl;
-        for (auto& e : m_exceptions)
-            std::cerr << '\t' << e << std::endl;
-        // exit the program
-        throw std::runtime_error("Fatal error occured, see traceback");
-    }
 
     void VM::interactiveMode(inst_t instruction, bool displayOnly)
     {
@@ -1051,7 +1027,7 @@ namespace kafe
                 else
                 {
                     if (instruction != 0x00)
-                        raiseException(Exception::MALFORMED, "Can not identify the instruction " + abc::hexstr((unsigned) instruction));
+                        m_errh.raiseException(Exception::MALFORMED, "Can not identify the instruction " + abc::hexstr((unsigned) instruction), m_ip);
                 }
 
                 if (m_debug_mode & VM::FLAG_INTERACTIVE && (m_interactive_advance == 0 || m_interactive_advance <= old_ip))
@@ -1063,8 +1039,8 @@ namespace kafe
                 else if (m_debug_mode & VM::FLAG_INTERACTIVE && m_interactive_advance > old_ip)
                     interactiveMode(instruction, /* displayOnly= */ true);
                 
-                if (!m_exceptions.empty())
-                    displayTraceback();
+                if (!m_errh.empty())
+                    m_errh.displayTraceback();
 
                 ++old_ip;
             }

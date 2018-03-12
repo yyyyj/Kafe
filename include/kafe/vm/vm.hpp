@@ -19,6 +19,7 @@
 #include <kafe/vm/value.hpp>
 #include <kafe/KafeException.hpp>
 #include <kafe/vm/bytecodeBlocksMaker.hpp>
+#include <kafe/vm/errorHandler.hpp>
 
 #include <string>
 #include <vector>
@@ -49,9 +50,7 @@ namespace kafe
         int m_debug_mode;
         addr_t m_interactive_advance;
         bool m_has_been_dirty_clean;
-        // storing all the exceptions to display them when the time has come
-        /// todo : put that in errorHandler.hpp/cpp
-        std::vector<Exception> m_exceptions;
+        ErrorHandler m_errh;
         // we'll store the procedures and all that stuff inside this db, and use another one for user define functions
         FunctionDatabase m_fdb;
         FunctionDatabase m_fdb_user;
@@ -76,11 +75,6 @@ namespace kafe
         void exec_handleListThings    (inst_t instruction);
         void exec_handleSegments      (inst_t instruction);
         void exec_handleBuiltins      ();
-        // error handling
-        /// todo : put that in errorHandler.hpp/cpp
-        void raiseException  (const Exception&);
-        void raiseException  (int error, const std::string& message);
-        void displayTraceback();
 
         void interactiveMode(inst_t instruction, bool displayOnly=false);
 

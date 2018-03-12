@@ -18,7 +18,7 @@ namespace kafe
     namespace abc
     {
 
-        BytecodeBlocksMaker::BytecodeBlocksMaker(addr_t& ip, bytecode_t& bytecode) : m_ip(ip), m_bytecode(bytecode), m_size(0), m_typecheck(false)
+        BytecodeBlocksMaker::BytecodeBlocksMaker(addr_t& ip, bytecode_t& bytecode, ErrorHandler& errh) : m_ip(ip), m_bytecode(bytecode), m_errh(errh), m_size(0), m_typecheck(false)
         {
             m_objects.reserve(24);
         }

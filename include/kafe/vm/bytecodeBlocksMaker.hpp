@@ -20,7 +20,7 @@
 
 #include <kafe/types.hpp>
 #include <kafe/utils.hpp>
-#include <kafe/errorHandler.hpp>
+#include <kafe/vm/errorHandler.hpp>
 #include <kafe/KafeException.hpp>
 
 namespace kafe
@@ -45,17 +45,16 @@ namespace kafe
         private:
             addr_t& m_ip;
             bytecode_t& m_bytecode;
+            ErrorHandler& m_errh;
             std::size_t m_size;
             bool m_typecheck;
             // mapping instruction pointer to object
             std::unordered_map<addr_t, Block> m_objects;
 
-            ErrorHandler* m_errh;  // TODO: use smart pointer or reference ?
-
             void raiseException(int, const std::string&);
 
         public:
-            BytecodeBlocksMaker(addr_t&, bytecode_t&);
+            BytecodeBlocksMaker(addr_t&, bytecode_t&, ErrorHandler&);
             ~BytecodeBlocksMaker();
 
             void setup(ErrorHandler*);
