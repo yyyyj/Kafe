@@ -34,6 +34,7 @@ namespace kafe
         struct Block
         {
             std::variant<micro_int_t, smol_int_t, int_t, double, str_t, bool> val;
+            std::size_t size;
 
             template <typename T> bool holds() { return std::holds_alternative<T>(val); }
             template <typename T> T    get() { return std::get<T>(val); }
