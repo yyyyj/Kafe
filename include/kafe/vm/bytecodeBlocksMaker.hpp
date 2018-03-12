@@ -33,12 +33,17 @@ namespace kafe
 
         struct Block
         {
-            std::variant<uint_t, micro_int_t, smol_int_t, int_t, double, str_t, bool> val;
+            std::variant<micro_int_t, smol_int_t, int_t, double, str_t, bool> val;
 
             template <typename T> bool holds() { return std::holds_alternative<T>(val); }
             template <typename T> T    get() { return std::get<T>(val); }
             template <typename T> void set(T&& v) { val = std::move(v); }
         };
+
+        inline bool checkIP(addr_t ip, addr_t size)
+        {
+            return (ip == 0) ? true : (ip >= size);
+        }
         
         class BytecodeBlocksMaker
         {
@@ -57,7 +62,6 @@ namespace kafe
             BytecodeBlocksMaker(addr_t&, bytecode_t&, ErrorHandler&);
             ~BytecodeBlocksMaker();
 
-            void setup(ErrorHandler*);
             void setTypeCheck(bool);
 
             // about types

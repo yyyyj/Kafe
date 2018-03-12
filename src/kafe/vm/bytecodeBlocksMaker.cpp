@@ -30,12 +30,7 @@ namespace kafe
 
         void BytecodeBlocksMaker::raiseException(int error, const std::string& msg)
         {
-            m_errh.raiseException(error, msg);
-        }
-
-        void BytecodeBlocksMaker::setup(ErrorHandler* errh)
-        {
-            m_errh = errh;
+            m_errh.raiseException(error, msg, m_ip);
         }
 
         void BytecodeBlocksMaker::setTypeCheck(bool typecheck)
@@ -52,33 +47,15 @@ namespace kafe
 
         uint_t BytecodeBlocksMaker::readXBytesInt(unsigned char bytesCount)
         {
-            if (m_ip > m_size)
-            {
-                // read and register
-                addr_t last = m_ip;
-
-                uint_t v = readByte(++m_ip);
-                for (unsigned char k = 1; k < bytesCount; ++k)
-                    v = (v << 8) + readByte(++m_ip);
-
-                Block b;
-                b.set<uint_t>(std::move(v));
-                m_objects[last] = b;
-                m_size += (m_ip - last);
-
-                return b.get<uint_t>();
-            }
-            if (m_typecheck)
-            {
-                if (!m_objects[m_ip].holds<uint_t>())
-                    raiseException(Exception::CRITIC, "Type error when trying to retrieve a previously stored 8 bytes integer");
-            }
-            return m_objects[m_ip].get<uint_t>();
+            uint_t v = readByte(++m_ip);
+            for (unsigned char k = 1; k < bytesCount; ++k)
+                v = (v << 8) + readByte(++m_ip);
+            return v;
         }
 
         micro_int_t BytecodeBlocksMaker::read2BytesInt()
         {
-            if (m_ip > m_size)
+            if (checkIP(m_ip, m_size))
             {
                 // read and register
                 addr_t last = m_ip;
@@ -100,7 +77,7 @@ namespace kafe
 
         smol_int_t BytecodeBlocksMaker::read4BytesInt()
         {
-            if (m_ip > m_size)
+            if (checkIP(m_ip, m_size))
             {
                 // read and register
                 addr_t last = m_ip;
@@ -122,7 +99,7 @@ namespace kafe
 
         int_t BytecodeBlocksMaker::read8BytesInt()
         {
-            if (m_ip > m_size)
+            if (checkIP(m_ip, m_size))
             {
                 // read and register
                 addr_t last = m_ip;
@@ -144,7 +121,7 @@ namespace kafe
 
         double BytecodeBlocksMaker::readDouble()
         {
-            if (m_ip > m_size)
+            if (checkIP(m_ip, m_size))
             {
                 // read and register
                 addr_t last = m_ip;
@@ -171,7 +148,7 @@ namespace kafe
 
         str_t BytecodeBlocksMaker::readString()
         {
-            if (m_ip > m_size)
+            if (checkIP(m_ip, m_size))
             {
                 // read and register
                 addr_t last = m_ip;
@@ -205,7 +182,7 @@ namespace kafe
 
         bool BytecodeBlocksMaker::readBool()
         {
-            if (m_ip > m_size)
+            if (checkIP(m_ip, m_size))
             {
                 // read and register
                 addr_t last = m_ip;
