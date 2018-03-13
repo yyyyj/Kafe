@@ -18,7 +18,7 @@ namespace kafe
     namespace abc
     {
 
-        BytecodeBlocksMaker::BytecodeBlocksMaker(addr_t& ip, bytecode_t& bytecode, ErrorHandler& errh) : m_ip(ip), m_bytecode(bytecode), m_errh(errh), m_size(0), m_typecheck(false)
+        BytecodeBlocksMaker::BytecodeBlocksMaker(addr_t& ip, Bytecode& bytecode, ErrorHandler& errh) : m_ip(ip), m_bytecode(bytecode), m_errh(errh), m_typecheck(false)
         {
             m_objects.reserve(24);
         }
@@ -56,14 +56,15 @@ namespace kafe
         micro_int_t BytecodeBlocksMaker::read2BytesInt()
         {
             addr_t last = m_ip;
-            if (checkIP(m_ip, m_size))
+            if (!m_bytecode.at(m_ip).read)
             {
                 // read and register
+                m_bytecode.at(m_ip).read = true;
+
                 Block b;
                 b.set<micro_int_t>(abc::setSign((micro_int_t)readXBytesInt(2), /* bytesCount */ 2));
                 b.size = (m_ip - last);
                 m_objects[last] = b;
-                m_size += b.size;
 
                 return b.get<micro_int_t>();
             }
@@ -79,14 +80,15 @@ namespace kafe
         smol_int_t BytecodeBlocksMaker::read4BytesInt()
         {
             addr_t last = m_ip;
-            if (checkIP(m_ip, m_size))
+            if (!m_bytecode.at(m_ip).read)
             {
                 // read and register
+                m_bytecode.at(m_ip).read = true;
+                
                 Block b;
                 b.set<smol_int_t>(abc::setSign((smol_int_t)readXBytesInt(4), /* bytesCount */ 4));
                 b.size = (m_ip - last);
                 m_objects[last] = b;
-                m_size += b.size;
 
                 return b.get<smol_int_t>();
             }
@@ -102,14 +104,15 @@ namespace kafe
         int_t BytecodeBlocksMaker::read8BytesInt()
         {
             addr_t last = m_ip;
-            if (checkIP(m_ip, m_size))
+            if (!m_bytecode.at(m_ip).read)
             {
                 // read and register
+                m_bytecode.at(m_ip).read = true;
+
                 Block b;
                 b.set<int_t>(abc::setSign((int_t)readXBytesInt(8), /* bytesCount */ 8));
                 b.size = (m_ip - last);
                 m_objects[last] = b;
-                m_size += b.size;
 
                 return b.get<int_t>();
             }
@@ -125,9 +128,11 @@ namespace kafe
         double BytecodeBlocksMaker::readDouble()
         {
             addr_t last = m_ip;
-            if (checkIP(m_ip, m_size))
+            if (!m_bytecode.at(m_ip).read)
             {
                 // read and register
+                m_bytecode.at(m_ip).read = true;
+
                 smol_uint_t int_part = read4BytesInt();
                 micro_int_t exp = abc::abs(read2BytesInt());
                 exp = (exp > EXP_DOUBLE_LIMIT) ? EXP_DOUBLE_LIMIT : ((exp < -EXP_DOUBLE_LIMIT) ? -EXP_DOUBLE_LIMIT : exp);
@@ -137,7 +142,6 @@ namespace kafe
                 b.set<double>(double(int_part) * std::pow(10, exp));
                 b.size = (m_ip - last);
                 m_objects[last] = b;
-                m_size += b.size;
 
                 return b.get<double>();
             }
@@ -153,9 +157,11 @@ namespace kafe
         str_t BytecodeBlocksMaker::readString()
         {
             addr_t last = m_ip;
-            if (checkIP(m_ip, m_size))
+            if (!m_bytecode.at(m_ip).read)
             {
                 // read and register
+                m_bytecode.at(m_ip).read = true;
+
                 str_t work = "";
                 while (true)
                 {
@@ -170,7 +176,6 @@ namespace kafe
                 b.set<str_t>(std::move(work));
                 b.size = (m_ip - last);
                 m_objects[last] = b;
-                m_size += b.size;
 
                 return b.get<str_t>();
             }
@@ -186,14 +191,15 @@ namespace kafe
         bool BytecodeBlocksMaker::readBool()
         {
             addr_t last = m_ip;
-            if (checkIP(m_ip, m_size))
+            if (!m_bytecode.at(m_ip).read)
             {
                 // read and register
+                m_bytecode.at(m_ip).read = true;
+
                 Block b;
                 b.set<bool>(readByte(++m_ip) > 0);
                 b.size = (m_ip - last);
                 m_objects[last] = b;
-                m_size += b.size;
 
                 return b.get<bool>();
             }
@@ -208,7 +214,6 @@ namespace kafe
 
         void BytecodeBlocksMaker::clear()
         {
-            m_size = 0;
             m_objects.clear();
         }
 

@@ -20,6 +20,7 @@
 #include <kafe/KafeException.hpp>
 #include <kafe/vm/bytecodeBlocksMaker.hpp>
 #include <kafe/vm/errorHandler.hpp>
+#include <kafe/vm/bytecode.hpp>
 
 #include <string>
 #include <vector>
@@ -45,7 +46,7 @@ namespace kafe
         // name of the struct : object Structure (.elements => name of the var : default value)
         StructureMap_t m_struct_definitions;
         // keeping the loaded bytecode into the VM to use easily without passing it around
-        bytecode_t m_bytecode;
+        abc::Bytecode m_bytecode;
         abc::BytecodeBlocksMaker m_bbm;
         int m_debug_mode;
         addr_t m_interactive_advance;

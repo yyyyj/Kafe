@@ -989,7 +989,7 @@ namespace kafe
         // load the default procedures if the table if empty
         if (m_fdb.size() == 0)
             loadLib();
-        m_bytecode = bytecode;
+        m_bytecode.load(bytecode);
         m_stack.reserve(m_bytecode.size() * 2);
         m_call_stack.reserve((m_bytecode.size() > 36) ? ((m_bytecode.size() > 128) ? ((m_bytecode.size() > 512) ? m_bytecode.size() * 2 : 1024) : 256) : 64);
     }
@@ -1068,7 +1068,8 @@ namespace kafe
     void VM::saveBytecode(const std::string& filename)
     {
         std::ofstream output(filename, std::ios::binary);
-        output.write((char*)&m_bytecode[0], m_bytecode.size());
+        bytecode_t bytecode(m_bytecode.get());
+        output.write((char*)&bytecode[0], bytecode.size());
         output.close();
     }
 

@@ -22,6 +22,7 @@
 #include <kafe/utils.hpp>
 #include <kafe/vm/errorHandler.hpp>
 #include <kafe/KafeException.hpp>
+#include <kafe/vm/bytecode.hpp>
 
 namespace kafe
 {
@@ -40,19 +41,13 @@ namespace kafe
             template <typename T> T    get() { return std::get<T>(val); }
             template <typename T> void set(T&& v) { val = std::move(v); }
         };
-
-        inline bool checkIP(addr_t ip, addr_t size)
-        {
-            return (ip == 0) ? true : (ip >= size);
-        }
         
         class BytecodeBlocksMaker
         {
         private:
             addr_t& m_ip;
-            bytecode_t& m_bytecode;
+            Bytecode& m_bytecode;
             ErrorHandler& m_errh;
-            std::size_t m_size;
             bool m_typecheck;
             // mapping instruction pointer to object
             std::unordered_map<addr_t, Block> m_objects;
@@ -60,7 +55,7 @@ namespace kafe
             void raiseException(int, const std::string&);
 
         public:
-            BytecodeBlocksMaker(addr_t&, bytecode_t&, ErrorHandler&);
+            BytecodeBlocksMaker(addr_t&, Bytecode&, ErrorHandler&);
             ~BytecodeBlocksMaker();
 
             void setTypeCheck(bool);
