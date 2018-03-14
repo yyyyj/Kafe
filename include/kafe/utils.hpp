@@ -18,6 +18,8 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <exception>
+#include <stdexcept>
 
 #ifdef _MSC_VER
     // if compiling with visual studio, disable those warnings
@@ -47,30 +49,35 @@ namespace kafe
         }
 
         template<typename T>
-        T pop(std::vector<T>& obj, int i)
+        T pop(std::vector<T>& obj, const int i)
         {
-            T element {};
-
-            if (0 <= i && (unsigned)i < obj.size())
+            if ((i == -1 || unsigned(i) == obj.size() - 1) && !!obj.size())
             {
-                element = obj[i];
+                T e(obj[(i >= 0 ? i : obj.size() + i)]);
+                obj.pop_back();
+                return e;
+            }
+            if (0 <= i && unsigned(i) < obj.size())
+            {
+                T e(obj[i]);
                 obj.erase(obj.begin() + i);
+                return e;
             }
-            else if (i < 0 && (unsigned)(-i) <= obj.size())
+            if (i < 0 && unsigned(-i) <= obj.size())
             {
-                element = obj[obj.size() + i];
+                T e(obj[obj.size() + i]);
                 obj.erase(obj.begin() + obj.size() + i);
+                return e;
             }
-
-            return element;
+            throw std::runtime_error("Could not pop wanted element from vector");
         }
 
         template<typename T>
         void popNoReturn(std::vector<T>& obj, int i)
         {
-            if (0 <= i && (unsigned)i < obj.size())
+            if (0 <= i && unsigned(i) < obj.size())
                 obj.erase(obj.begin() + i);
-            else if (i < 0 && (unsigned)(-i) <= obj.size())
+            else if (i < 0 && unsigned(-i) <= obj.size())
                 obj.erase(obj.begin() + obj.size() + i);
         }
 
