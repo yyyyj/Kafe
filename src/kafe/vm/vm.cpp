@@ -286,8 +286,7 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "addr" << std::endl;
 
-                Value v = m_bbm.get4BytesInt();
-                v.type = ValueType::Addr;
+                Value v = m_bbm.getAddr();
                 push(v);
 
                 break;

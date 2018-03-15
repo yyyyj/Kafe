@@ -60,6 +60,7 @@ namespace kafe
             Value&      getDouble    ();
             Value&      getString    ();
             Value&      getBool      ();
+            Value&      getAddr      ();
         };
 
     }  // namespace abc

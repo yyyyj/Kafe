@@ -89,103 +89,120 @@ namespace kafe
         Value& BytecodeBlocksMaker::get2BytesInt()
         {
             addr_t last = m_ip;
-            if (!m_bytecode.at(m_ip).read)
+            if (!m_bytecode.at(last).read)
             {
                 // read and register
-                m_bytecode.at(m_ip).read = true;
-                m_bytecode.at(m_ip).evaluated.type = ValueType::Int;
-                m_bytecode.at(m_ip).evaluated.set<int_t>(read2BytesInt());
-                m_bytecode.at(m_ip).size = m_ip - last;
+                m_bytecode.at(last).read = true;
+                m_bytecode.at(last).evaluated.type = ValueType::Int;
+                m_bytecode.at(last).evaluated.set<int_t>(read2BytesInt());
+                m_bytecode.at(last).size = m_ip - last;
 
-                return m_bytecode.at(m_ip).evaluated;
+                return m_bytecode.at(last).evaluated;
             }
-            m_ip += m_bytecode.at(m_ip).size;
-            return m_bytecode.at(m_ip).evaluated;
+            m_ip += m_bytecode.at(last).size;
+            return m_bytecode.at(last).evaluated;
         }
 
         Value& BytecodeBlocksMaker::get4BytesInt()
         {
             addr_t last = m_ip;
-            if (!m_bytecode.at(m_ip).read)
+            if (!m_bytecode.at(last).read)
             {
                 // read and register
-                m_bytecode.at(m_ip).read = true;
-                m_bytecode.at(m_ip).evaluated.type = ValueType::Int;
-                m_bytecode.at(m_ip).evaluated.set<int_t>(read4BytesInt());
-                m_bytecode.at(m_ip).size = m_ip - last;
+                m_bytecode.at(last).read = true;
+                m_bytecode.at(last).evaluated.type = ValueType::Int;
+                m_bytecode.at(last).evaluated.set<int_t>(read4BytesInt());
+                m_bytecode.at(last).size = m_ip - last;
 
-                return m_bytecode.at(m_ip).evaluated;
+                return m_bytecode.at(last).evaluated;
             }
-            m_ip += m_bytecode.at(m_ip).size;
-            return m_bytecode.at(m_ip).evaluated;
+            m_ip += m_bytecode.at(last).size;
+            return m_bytecode.at(last).evaluated;
         }
 
         Value& BytecodeBlocksMaker::get8BytesInt()
         {
             addr_t last = m_ip;
-            if (!m_bytecode.at(m_ip).read)
+            if (!m_bytecode.at(last).read)
             {
                 // read and register
-                m_bytecode.at(m_ip).read = true;
-                m_bytecode.at(m_ip).evaluated.type = ValueType::Int;
-                m_bytecode.at(m_ip).evaluated.set<int_t>(read8BytesInt());
-                m_bytecode.at(m_ip).size = m_ip - last;
+                m_bytecode.at(last).read = true;
+                m_bytecode.at(last).evaluated.type = ValueType::Int;
+                m_bytecode.at(last).evaluated.set<int_t>(read8BytesInt());
+                m_bytecode.at(last).size = m_ip - last;
 
-                return m_bytecode.at(m_ip).evaluated;
+                return m_bytecode.at(last).evaluated;
             }
-            m_ip += m_bytecode.at(m_ip).size;
-            return m_bytecode.at(m_ip).evaluated;
+            m_ip += m_bytecode.at(last).size;
+            return m_bytecode.at(last).evaluated;
         }
 
         Value& BytecodeBlocksMaker::getDouble()
         {
             addr_t last = m_ip;
-            if (!m_bytecode.at(m_ip).read)
+            if (!m_bytecode.at(last).read)
             {
                 // read and register
-                m_bytecode.at(m_ip).read = true;
-                m_bytecode.at(m_ip).evaluated.type = ValueType::Double;
-                m_bytecode.at(m_ip).evaluated.set<double>(readDouble());
-                m_bytecode.at(m_ip).size = m_ip - last;
+                m_bytecode.at(last).read = true;
+                m_bytecode.at(last).evaluated.type = ValueType::Double;
+                m_bytecode.at(last).evaluated.set<double>(readDouble());
+                m_bytecode.at(last).size = m_ip - last;
 
-                return m_bytecode.at(m_ip).evaluated;
+                return m_bytecode.at(last).evaluated;
             }
-            m_ip += m_bytecode.at(m_ip).size;
-            return m_bytecode.at(m_ip).evaluated;
+            m_ip += m_bytecode.at(last).size;
+            return m_bytecode.at(last).evaluated;
         }
 
         Value& BytecodeBlocksMaker::getString()
         {
             addr_t last = m_ip;
-            if (!m_bytecode.at(m_ip).read)
+            if (!m_bytecode.at(last).read)
             {
                 // read and register
-                m_bytecode.at(m_ip).read = true;
-                m_bytecode.at(m_ip).evaluated.type = ValueType::String;
-                m_bytecode.at(m_ip).evaluated.set<str_t>(readString());
-                m_bytecode.at(m_ip).size = m_ip - last;
+                m_bytecode.at(last).read = true;
+                m_bytecode.at(last).evaluated.type = ValueType::String;
+                m_bytecode.at(last).evaluated.set<str_t>(readString());
+                m_bytecode.at(last).size = m_ip - last;
 
-                return m_bytecode.at(m_ip).evaluated;
+                return m_bytecode.at(last).evaluated;
             }
-            m_ip += m_bytecode.at(m_ip).size;
-            return m_bytecode.at(m_ip).evaluated;
+            m_ip += m_bytecode.at(last).size;
+            return m_bytecode.at(last).evaluated;
         }
 
         Value& BytecodeBlocksMaker::getBool()
         {
             addr_t last = m_ip;
-            if (!m_bytecode.at(m_ip).read)
+            if (!m_bytecode.at(last).read)
             {
                 // read and register
-                m_bytecode.at(m_ip).read = true;
-                m_bytecode.at(m_ip).evaluated.type = ValueType::Bool;
-                m_bytecode.at(m_ip).evaluated.set<bool>(readBool());
-                m_bytecode.at(m_ip).size = m_ip - last;
+                m_bytecode.at(last).read = true;
+                m_bytecode.at(last).evaluated.type = ValueType::Bool;
+                m_bytecode.at(last).evaluated.set<bool>(readBool());
+                m_bytecode.at(last).size = m_ip - last;
 
-                return m_bytecode.at(m_ip).evaluated;
+                return m_bytecode.at(last).evaluated;
             }
-            m_ip += m_bytecode.at(m_ip).size;
-            return m_bytecode.at(m_ip).evaluated;
+            m_ip += m_bytecode.at(last).size;
+            return m_bytecode.at(last).evaluated;
+        }
+
+        Value& BytecodeBlocksMaker::getAddr()
+        {
+            addr_t last = m_ip;
+            if (!m_bytecode.at(last).read)
+            {
+                // read and register
+                m_bytecode.at(last).read = true;
+                m_bytecode.at(last).evaluated.type = ValueType::Addr;
+                m_bytecode.at(last).evaluated.set<addr_t>(read4BytesInt());
+                m_bytecode.at(last).size = m_ip - last;
+
+                return m_bytecode.at(last).evaluated;
+            }
+            m_ip += m_bytecode.at(last).size;
+            return m_bytecode.at(last).evaluated;
         }
 
     } // namespace abc

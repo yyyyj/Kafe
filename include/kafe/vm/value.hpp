@@ -104,7 +104,7 @@ namespace kafe
         Value(ValueType t) : type(t), is_const(false)  {}
         Value(ValueType t, bool b) : type(t), value(b), is_const(false) {}
 
-        Value& operator=(Value& other)
+        Value& operator=(const Value& other)
         {
             if (this != &other)
             {

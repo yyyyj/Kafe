@@ -95,8 +95,12 @@ int start_tests(int mode)
     std::cerr << "\tSizeof(Kafe::RefVar)    = " << sizeof(kafe::RefVar) << "B" << std::endl;
     std::cerr << "\tSizeof(Kafe::Call)      = " << sizeof(kafe::Call) << "B" << std::endl;
     std::cerr << "\tSizeof(Kafe::Structure) = " << sizeof(kafe::Structure) << "B" << std::endl;
-    std::cerr << "\tSizeof(Kafe::abc::BBM)  = " << sizeof(kafe::abc::BytecodeBlocksMaker) << "B" << std::endl;
     std::cerr << "\tSizeof(Kafe::ErrorH)    = " << sizeof(kafe::ErrorHandler) << "B" << std::endl;
+    std::cerr << "\tSizeof(abc::BBM)        = " << sizeof(kafe::abc::BytecodeBlocksMaker) << "B" << std::endl;
+    std::cerr << "\tSizeof(abc::Byte)       = " << sizeof(kafe::abc::Byte) << "B" << std::endl;
+    std::cerr << "\tSizeof(abc::Bytecode)   = " << sizeof(kafe::abc::Bytecode) << "B" << std::endl;
+    std::cerr << std::endl;
+    std::cerr << "\tKafe API version          " << kafe::abc::beautifyVersionNumber(KAFE_API_VERSION) << std::endl;
     std::cerr << std::endl;
 
     TEST("int:18768, str:hello, bool:true", {
