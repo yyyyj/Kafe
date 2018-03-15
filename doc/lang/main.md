@@ -6,7 +6,7 @@
 
 ### Const qualifier
 
-Variables can be either const or dynamic, const ones can only be read (they must have a value when creating them) and not modified.
+Variables can be either const or dynamic, const ones can only be read and not modified.
 
 ### Visibility
 

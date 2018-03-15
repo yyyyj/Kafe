@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
                     ,
                     (option("-i", "--interactive").set(interactive) % "Start a CLI to be able to execute a file instruction per instruction")
                     ,
-                    (option("-E", "--experimental").set(experimental) % "Enalbe experimental features")
+                    (option("-E", "--experimental").set(experimental) % "Enable experimental features")
                 )
                 | (command("--version").set(selected, mode::version) % "Display version number"),
                 any_other(wrong)
