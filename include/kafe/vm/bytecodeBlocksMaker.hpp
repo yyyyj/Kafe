@@ -31,16 +31,6 @@ namespace kafe
 
         constexpr int EXP_DOUBLE_LIMIT = 0b0100110100;  // (308) exponent limit for a double
         constexpr int EXP_DOUBLE_SIGN = 0b1000000000;   // (512)
-
-        struct Block
-        {
-            std::variant<micro_int_t, smol_int_t, int_t, double, str_t, bool> val;
-            std::size_t size;
-
-            template <typename T> bool holds() { return std::holds_alternative<T>(val); }
-            template <typename T> T    get() { return std::get<T>(val); }
-            template <typename T> void set(T&& v) { val = std::move(v); }
-        };
         
         class BytecodeBlocksMaker
         {
@@ -48,17 +38,12 @@ namespace kafe
             addr_t& m_ip;
             Bytecode& m_bytecode;
             ErrorHandler& m_errh;
-            bool m_typecheck;
-            // mapping instruction pointer to object
-            std::unordered_map<addr_t, Block> m_objects;
 
             void raiseException(int, const std::string&);
 
         public:
             BytecodeBlocksMaker(addr_t&, Bytecode&, ErrorHandler&);
             ~BytecodeBlocksMaker();
-
-            void setTypeCheck(bool);
 
             // about types
             inst_t      readByte     (addr_t i);
@@ -69,8 +54,12 @@ namespace kafe
             double      readDouble   ();
             str_t       readString   ();
             bool        readBool     ();
-            
-            void clear();
+            Value&      get2BytesInt ();
+            Value&      get4BytesInt ();
+            Value&      get8BytesInt ();
+            Value&      getDouble    ();
+            Value&      getString    ();
+            Value&      getBool      ();
         };
 
     }  // namespace abc

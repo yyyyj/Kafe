@@ -53,19 +53,19 @@ namespace kafe
         {
             if ((i == -1 || unsigned(i) == obj.size() - 1) && !!obj.size())
             {
-                T e(obj[(i >= 0 ? i : obj.size() + i)]);
+                T e = obj[obj.size() - 1];
                 obj.pop_back();
                 return e;
             }
             if (0 <= i && unsigned(i) < obj.size())
             {
-                T e(obj[i]);
+                T e = obj[i];
                 obj.erase(obj.begin() + i);
                 return e;
             }
             if (i < 0 && unsigned(-i) <= obj.size())
             {
-                T e(obj[obj.size() + i]);
+                T e = obj[obj.size() + i];
                 obj.erase(obj.begin() + obj.size() + i);
                 return e;
             }

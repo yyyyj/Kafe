@@ -75,7 +75,6 @@ namespace kafe
         dirtyClear();
 
         m_struct_definitions.clear();
-        m_bbm.clear();
     }
 
     void VM::loadLib()
@@ -227,8 +226,7 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "int 2B" << std::endl;
 
-                Value v(ValueType::Int);
-                v.set<int_t>(m_bbm.read2BytesInt());
+                Value v = m_bbm.get2BytesInt();
                 push(v);
 
                 break;
@@ -238,8 +236,7 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "int 4B" << std::endl;
 
-                Value v(ValueType::Int);
-                v.set<int_t>(m_bbm.read4BytesInt());
+                Value v = m_bbm.get4BytesInt();
                 push(v);
 
                 break;
@@ -249,8 +246,7 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "int 8B" << std::endl;
 
-                Value v(ValueType::Int);
-                v.set<int_t>(m_bbm.read8BytesInt());
+                Value v = m_bbm.get8BytesInt();
                 push(v);
 
                 break;
@@ -260,8 +256,7 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "double" << std::endl;
 
-                Value v(ValueType::Double);
-                v.set<double>(m_bbm.readDouble());
+                Value v = m_bbm.getDouble();
                 push(v);
 
                 break;
@@ -271,9 +266,8 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "str" << std::endl;
 
-                Value a(ValueType::String);
-                a.set<str_t>(m_bbm.readString());
-                push(a);
+                Value v = m_bbm.getString();
+                push(v);
 
                 break;
             }
@@ -282,8 +276,8 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "bool" << std::endl;
 
-                Value a(ValueType::Bool, m_bbm.readBool());
-                push(a);
+                Value v = m_bbm.getBool();
+                push(v);
 
                 break;
             }
@@ -292,9 +286,9 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "addr" << std::endl;
 
-                Value a(ValueType::Addr);
-                a.set<addr_t>(m_bbm.read4BytesInt());
-                push(a);
+                Value v = m_bbm.get4BytesInt();
+                v.type = ValueType::Addr;
+                push(v);
 
                 break;
             }
@@ -319,9 +313,9 @@ namespace kafe
             {
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "var" << std::endl;
 
-                Value a(ValueType::Var);
-                a.set<str_t>(m_bbm.readString());
-                push(a);
+                Value v = m_bbm.getString();
+                v.type = ValueType::Var;
+                push(v);
 
                 break;
             }
@@ -976,11 +970,6 @@ namespace kafe
     void VM::setMode(int mode)
     {
         m_debug_mode = mode;
-
-        if (mode & VM::FLAG_TYPECHECK)
-            m_bbm.setTypeCheck(true);
-        else
-            m_bbm.setTypeCheck(false);
     }
 
     void VM::load(bytecode_t bytecode)
@@ -1007,7 +996,7 @@ namespace kafe
             {
                 inst_t instruction = m_bbm.readByte(m_ip);
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG)
-                    std::cerr << "[" << m_ip << "] " << abc::hexstr((unsigned)instruction) << " ";
+                    std::cerr << "[" << m_ip << "] " << abc::hexstr(unsigned(instruction)) << " ";
 
                 if (INST_INT_2B <= instruction && instruction <= INST_STRUCT_TID)
                     exec_handleDataTypesDecl(instruction);
@@ -1027,7 +1016,7 @@ namespace kafe
                 else
                 {
                     if (instruction != 0x00)
-                        m_errh.raiseException(Exception::MALFORMED, "Can not identify the instruction " + abc::hexstr((unsigned) instruction), m_ip);
+                        m_errh.raiseException(Exception::MALFORMED, "Can not identify the instruction " + abc::hexstr(unsigned(instruction)), m_ip);
                 }
 
                 if (m_debug_mode & VM::FLAG_INTERACTIVE && (m_interactive_advance == 0 || m_interactive_advance <= old_ip))

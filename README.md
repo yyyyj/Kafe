@@ -24,21 +24,21 @@ The goal is to make a programming language fast enough to be used in video-games
 I won't post any bytecode samples here, but the syntax of the language which will be parsed and turned into Kafe bytecode (because you would not be able to read it anyway ahah).
 
 ```
-struct Character -- _name:str, _life:int
-    dyn name : str = _name
-    dyn life : int = _life
+Obj Character
+    dyn name
+    dyn life
     
-    fun update : int -- dt:double # always return a status code if the function has usually no value to give back
+    fun update(dt:double) -> int # always return a status code if the function has usually no value to give back
         # do stuff
         ret 0
 end
 
-dyn player : struct Character = "John Doe" 120
-dyn mob : struct Character = "Rabbit" 15
+dyn player : Character("John Doe" 120)
+dyn mob : Character("Rabbit" 15)
 
 # comma in arg list is optionnal
-fun update : int -- dt:double, component:str
-    dyn status : int = 0
+fun update(dt:double, component:str) -> int
+    dyn status = 0
     
     if component == "player" then
         print("updating player")

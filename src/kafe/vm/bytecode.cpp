@@ -37,7 +37,7 @@ namespace kafe
             
             for (std::size_t i = 0; i < bytecode.size(); ++i)
             {
-                Byte b = {/* read = */ false, /* code = */ bytecode[i]};
+                Byte b = {/* read = */ false, /* code = */ bytecode[i], /* size = */ 0, /* evaluated = */ Value()};
                 m_bytecode.push_back(b);
             }
         }

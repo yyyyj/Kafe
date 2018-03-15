@@ -16,6 +16,7 @@
 #include <vector>
 
 #include <kafe/types.hpp>
+#include <kafe/vm/value.hpp>
 
 namespace kafe
 {
@@ -26,6 +27,8 @@ namespace kafe
         {
             bool read;
             inst_t code;
+            std::size_t size;
+            Value evaluated;
         };
         
         class Bytecode
