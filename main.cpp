@@ -18,13 +18,15 @@
 #include <kafe/kafe.hpp>
 #include "tests/tests.hpp"
 
-int getDebugMode(bool debug, bool interactive)
+int getDebugMode(bool debug, bool interactive, bool experimental)
 {
     int debug_mode = 0;
     if (debug)
         debug_mode |= kafe::VM::FLAG_BASIC_DEBUG;
     if (interactive)
         debug_mode |= kafe::VM::FLAG_INTERACTIVE;
+    if (experimental)
+        debug_mode |= kafe::VM::FLAG_EXPERIMENTAL;
 
     return debug_mode;
 }
@@ -41,30 +43,30 @@ int main(int argc, char* argv[])
     std::string input_file = "";
     bool debug = false;
     bool interactive = false;
+    bool experimental = false;
     std::vector<std::string> wrong;
 
     auto cli = (
                 command("--help").set(selected, mode::help)
                 | (command("build").set(selected, mode::build),
                     values("file", infiles)
-                        .if_missing([]{ std::cerr << "You need to provide at least one filename !" << std::endl; })
                     ,
                     required("-o", "--out") & value("outfile", output_bytecode_file)
-                        .if_missing([]{ std::cerr << "You need to provide the name of the output file !" << std::endl; })
                     ,
-                    (option("-a", "--ast").set(display_ast_flag)   % "Save the generated AST to <file>.ast")
+                    (option("-a", "--ast").set(display_ast_flag) % "Save the generated AST to <file>.ast")
                  )
                 | (
                    (command("exec").set(selected, mode::exec)
                        ,
                         value("file", input_file)
-                            .if_missing([]{ std::cerr << "You need to provide the name of the file to execute !" << std::endl; })
                      )
                     | (command("tests").set(selected, mode::tests))
                     ,
                     (option("-d", "--debug").set(debug) % "Enable debug mode")
                     ,
                     (option("-i", "--interactive").set(interactive) % "Start a CLI to be able to execute a file instruction per instruction")
+                    ,
+                    (option("-E", "--experimental").set(experimental) % "Enalbe experimental features")
                 )
                 | (command("--version").set(selected, mode::version) % "Display version number"),
                 any_other(wrong)
@@ -94,7 +96,7 @@ int main(int argc, char* argv[])
         case mode::exec:
         {
             kafe::VM vm;
-            vm.setMode(getDebugMode(debug, interactive));
+            vm.setMode(getDebugMode(debug, interactive, experimental));
             vm.execFromFile(input_file);
             break;
         }
@@ -103,7 +105,7 @@ int main(int argc, char* argv[])
             std::cerr << "antlr" << std::endl;
             kafe::testANTLR();
             std::cerr << "end" << std::endl;
-            return start_tests(getDebugMode(debug, interactive));
+            return start_tests(getDebugMode(debug, interactive, experimental));
 
         case mode::version:
             std::cerr << "Kafe " << kafe::abc::beautifyVersionNumber(KAFE_API_VERSION) << std::endl;

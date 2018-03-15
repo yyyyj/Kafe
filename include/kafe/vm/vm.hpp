@@ -87,7 +87,7 @@ namespace kafe
         static const int FLAG_DEFAULT_MODE = 0;
         static const int FLAG_BASIC_DEBUG  = 1 << 0;
         static const int FLAG_INTERACTIVE  = 1 << 1;
-        static const int FLAG_CACHING_SYS  = 1 << 2;
+        static const int FLAG_EXPERIMENTAL = 1 << 2;
 
         bytecode_t readFile(const std::string& filePath);
 

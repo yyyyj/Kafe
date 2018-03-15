@@ -30,14 +30,16 @@ Finally, go back in the global configuration, and under Compiler settings > Othe
 
 #### Compiling under Linux
 
-Your g++ version must be >= 5 to work, because the API needs `<variant>` to compile.
+Your g++ version must be >= 5 to work, because the API needs `<variant>` and `<codecvt>`.
 
 ```
 $ g++ -c plugin.cpp -std=c++17 -I<kafe-install-path>/include
+
 # if you want to compile in debug mode :
-$ g++ plugin.o -o plugin_app -L<kafe-install-path>/lib/Debug -lkafe-api-d
+$ g++ plugin.o -shared plugin_app_debug.so -L<kafe-install-path>/lib/Debug -lkafe-api-d -O0 -g
+
 # if you want to compile in release mode :
-$ g++ plugin.o -o plugin_app -L<kafe-install-path>/lib/Release -lkafe-api-d
+$ g++ plugin.o -shared plugin_app_release.so -L<kafe-install-path>/lib/Release -lkafe-api-d -O2 -s
 ```
 
 ### The code

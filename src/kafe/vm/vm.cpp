@@ -207,9 +207,14 @@ namespace kafe
             if (lc.lastStackSize > m_stack.size())
             {
                 // we can only keep one element on the stack (the return value of the function)
-                //while (lc.lastStackSize - m_stack.size() > 1)
-                //    { pop(); }
-                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "[WARNING] entering the garbage collector (not implemented ATM), with lc.lastStackSize=" << lc.lastStackSize << " and m_stack.size()=" << m_stack.size() << std::endl;
+                if (m_debug_mode & VM::FLAG_EXPERIMENTAL)
+                {
+                    while (lc.lastStackSize - m_stack.size() > 1)
+                        pop();
+                }
+                else if (m_debug_mode & VM::FLAG_BASIC_DEBUG)
+                    std::cerr << "[WARNING] entering the garbage collector (not implemented ATM), with lc.lastStackSize="
+                              << lc.lastStackSize << " and m_stack.size()=" << m_stack.size() << std::endl;
             }
         }
         else
