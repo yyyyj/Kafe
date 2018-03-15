@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
     std::vector<std::string> wrong;
 
     auto cli = (
-                command("help").set(selected, mode::help)
+                command("--help").set(selected, mode::help)
                 | (command("build").set(selected, mode::build),
                     values("file", infiles)
                         .if_missing([]{ std::cerr << "You need to provide at least one filename !" << std::endl; })
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
                     required("-o", "--out") & value("outfile", output_bytecode_file)
                         .if_missing([]{ std::cerr << "You need to provide the name of the output file !" << std::endl; })
                     ,
-                    (option("-a", "--ast").set(display_ast_flag)   % "Save the generated AST to <outfile>.ast")
+                    (option("-a", "--ast").set(display_ast_flag)   % "Save the generated AST to <file>.ast")
                  )
                 | (
                    (command("exec").set(selected, mode::exec)

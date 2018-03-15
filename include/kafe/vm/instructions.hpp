@@ -29,6 +29,7 @@ namespace kafe
         INST_ADDR        = 0x07,  // 0x07 [address on 4 bytes] ; used to store an address of something in the bytecode
         INST_LIST        = 0x08,  // 0x08 [number of elements on 4 bytes = X] ; takes the X last elements put on the stack and put them into a list
         INST_VAR         = 0x09,  // 0x09 [name]
+        INST_EMPTY       = 0x0a,  // 0x0a ; create a Value of ValueType::Empty (useful for const variables)
         
         // structures
         INST_STRUCT      = 0x10,  // 0x10 [name] [number of pair<Value::Var, Value> = X] ; read X pair from the stack, var_name=stack[-1], value=stack[-2]

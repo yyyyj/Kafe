@@ -26,6 +26,7 @@ namespace kafe
         else if (t == ValueType::Struct)    return "STRUCT";
         else if (t == ValueType::Addr)      return "ADDR";
         else if (t == ValueType::Exception) return "EXCEPTION";
+        else if (t == ValueType::Empty)     return "EMPTY";
         else                                return "UNKNOWN";
     }
 
@@ -111,6 +112,10 @@ namespace kafe
 
         case ValueType::Exception:
             os << v.get<Exception>();
+            break;
+
+        case ValueType::Empty:
+            os << "***";
             break;
 
         default:

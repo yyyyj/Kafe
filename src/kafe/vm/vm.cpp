@@ -34,8 +34,7 @@
 namespace kafe
 {
 
-    VM::VM() : m_stack_size(0), m_ip(0), m_bbm(m_ip, m_bytecode, m_errh), m_debug_mode(0), m_interactive_advance(0), m_has_been_dirty_clean(false)
-    {}
+    VM::VM() : m_stack_size(0), m_ip(0), m_bbm(m_ip, m_bytecode, m_errh), m_debug_mode(0), m_interactive_advance(0), m_has_been_dirty_clean(false) {}
 
     VM::~VM()
     {
@@ -110,7 +109,7 @@ namespace kafe
         {
             // the variable is in the global scope, and we are in the global scope, no problems
             // we can read / write on it
-            if (!m_variables[varName].is_const)
+            if (!m_variables[varName].isConst())
                 return m_variables[varName];
             m_errh.raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`", m_ip);
         }
@@ -121,7 +120,7 @@ namespace kafe
             std::vector<str_t>& refs = m_call_stack[m_call_stack.size() - 1].refs_to_gscope;
             if (std::find(refs.begin(), refs.end(), varName) != refs.end())
             {
-                if (!m_call_stack[m_call_stack.size() - 1].vars[varName].is_const)
+                if (!m_call_stack[m_call_stack.size() - 1].vars[varName].isConst())
                     return m_call_stack[m_call_stack.size() - 1].vars[varName];
                 m_errh.raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`", m_ip);
             }
@@ -130,7 +129,7 @@ namespace kafe
         else if (vf == VarFound::InCurrentScopeNotGlobal)
         {
             // we found the variable in the current scope
-            if (!m_call_stack[m_call_stack.size() - 1].vars[varName].is_const)
+            if (!m_call_stack[m_call_stack.size() - 1].vars[varName].isConst())
                 return m_call_stack[m_call_stack.size() - 1].vars[varName];
             m_errh.raiseException(Exception::CRITIC, "Can not modify a const variable `" + varName + "`", m_ip);
         }
@@ -153,14 +152,14 @@ namespace kafe
             // we create it
             if (m_call_stack.size() == 0)
             {
-                if (!m_variables[varName].is_const)
+                if (!m_variables[varName].isConst())
                     m_variables[varName] = v;
                 else
                     m_errh.raiseException(Exception::CRITIC, "Can not modify a const variable", m_ip);
             }
             else
             {
-                if (!m_call_stack[m_call_stack.size() - 1].vars[varName].is_const)
+                if (!m_call_stack[m_call_stack.size() - 1].vars[varName].isConst())
                     m_call_stack[m_call_stack.size() - 1].vars[varName] = v;
                 else
                     m_errh.raiseException(Exception::CRITIC, "Can not modify a const variable", m_ip);
@@ -314,6 +313,16 @@ namespace kafe
 
                 Value v = m_bbm.getString();
                 v.type = ValueType::Var;
+                push(v);
+
+                break;
+            }
+
+            case INST_EMPTY:
+            {
+                if (m_debug_mode & VM::FLAG_BASIC_DEBUG) std::cerr << "empty value" << std::endl;
+
+                Value v(ValueType::Empty);
                 push(v);
 
                 break;

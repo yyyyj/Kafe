@@ -1,6 +1,83 @@
 # VM
 
+## Internal behaviour
+
+The Kafe VM is relying on a caching system for `Value`s, the `BytecodeBlocksMaker`, to speed up the process of reading bytes, assembling them into either a number, a boolean, a string...
+
+It is implements a call stack to keep track of all the function calls, using a vector of `kafe::Call` objects, storing a bunch of useful things (as well as their own variables table), but this costs memory. Indeed a single `kafe::Call` object weighs 52B (in Release mode using VS17). This means you have to be careful when creating recursive algorithms to avoid an OutOfMemory like exception.
+
+The definitions of the objects (called *structures* in the VM) are stored in an `unordered_map<string, Structure>`, (each `Structure` object weighs 24B, under the same conditions as before), and a `Structure` object is composed of a list of the ID of its parents (see below for more explanations) and a list of `StructElem` representing the members of the objects. A `StructElem` is mapping a string and a `Value`, consequently searching for a specific member in a `Structure` is O(n).
+
+### Inheritance
+
+As said before, a `Structure` is holding a list of the ID of its parents. For example, if we have :
+
+```
+    Obj A
+      |
+    --+--
+    v   v
+Obj B   Obj C
+    |       |
+    |       |
+    v       +---
+Obj D       v   v
+        Obj E   Obj F
+```
+
+*Each object get an ID when it is defined, calculated so that ID(new Obj) = ++Global ID.*
+
+Here we get :
+
+Obj | ID
+----|----
+Obj A | 1
+Obj B | 2
+Obj C | 3
+Obj D | 4
+Obj E | 5
+Obj F | 6
+
+F will have those IDs : `[1, 3, 6]`, will D would have `[1, 2, 4]`.
+
+When an object is inheriting from another (can only be done when the object is defined), it *earns* all the attributes of the parent object, which means there are no needs for a `super().__init__()` as in Python.
+
+### Structures filling
+
+Consider this Kafe source code :
+
+```
+Obj A
+    dyn a
+    dyn b
+    dyn c = 15  # a default value for c
+
+    # more stuff here, for examples methods
+end
+
+dyn instance_of_A1 : A(5)
+dyn instance_of_A2 : A(5, 6)
+dyn instance_of_A3 : A(5, 6, 7)
+```
+
+Each of the 3 declarations of objects of type `A` are valid, because the values are filled in order they appear, and if one (or more) are missing, they just keep their default values. Just take note that a function inside an object (alias a member function of an object) is considered as a regular member of the object, as well a `a`, `b` or `c` in our example, because they are represented using an address pointing to a segment of bytecode. A guard should prevent the user from doing this kind of silly stuff :
+
+```
+Obj B
+    dyn a
+
+    fun test() -> int
+        ret 0
+end
+
+dyn prank : B(5, 14000)
+```
+
+If we apply what we said before, `test()` is an address, for example `0xabcdef`, and by doing `dyn prank : B(5, 14000)` it should get the value `14000` instead of keeping its old value (`0xabcdef`). It's the role of the guard to prevent those kinds of thing to happen (it must crash the app if you are trying to do so).
+
 ## Bytecode instructions
+
+Below, you can find all the byte codes used by the VM and how they are supposed to work.
 
 ### Types
 
@@ -15,6 +92,7 @@ INST_BOOL        = 0x06 | 0x06 [value on 1 byte] ; if value > 0x00 => true
 INST_ADDR        = 0x07 | 0x07 [size of a segment name on 2 bytes] [name] ; used to store the address of a segment (kind of pointer, only pointing on something in the bytecode)
 INST_LIST        = 0x08 | 0x08 [number of elements on 4 bytes = X] ; takes the X last elements put on the stack and put them into a list
 INST_VAR         = 0x09 | 0x09 [var name size on 2 bytes] [name]
+INST_EMPTY       = 0x0a | 0x0a ; create a Value of ValueType::Empty (useful for const variables)
 
 ### Structures (alias Obj)
 

@@ -43,7 +43,8 @@ namespace kafe
         Var       = 1 << 5,
         Struct    = 1 << 6,
         Addr      = 1 << 7,
-        Exception = 1 << 8,
+        Exception = 1 << 8,  // it does exists but the exceptions CAN NOT be manipulated directly in Kafe, only the VM can rule them all
+        Empty     = 1 << 9,  // special type to keep track of uninitialized variables
 
         Unknown = -1
     };
@@ -113,6 +114,11 @@ namespace kafe
                 is_const = other.is_const;
             }
             return *this;
+        }
+
+        bool isConst() const
+        {
+            return is_const && type != ValueType::Empty;
         }
 
         template <typename T> T  get() const { return std::get<T>(value); }
