@@ -74,6 +74,8 @@ Special thanks addressed to
 
 * the-new-sky, Ahze, FrenchMS, just for being there and admiring this small project
 
+* Tartiflemme, for creating the logo (both .github/logo.png and .github/logo-bkg.png), all rights reserved
+
 [List](CONTRIBUTORS.txt) of all the contributors
 
 ## Third-party libraries already included and licenses
