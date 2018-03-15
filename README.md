@@ -1,6 +1,6 @@
 # Kafe
 
-![Kafe Logo](.github/logo-bkg.png)
+<img src=".github/logo-bkg.png" alt="Kafe open source project logo" width="250px" />
 
 Java was named Java because of the coffee of the same name. Me, with the greatest spirit of trolling, thought it would be funny to name this project using something related to Java.
 Why ? Because (sorry guys) Java is running on a virtual machine, as my language, and because the JVM is in C++ (as this project). So I searched why Java has this name, and found the company
