@@ -31,6 +31,25 @@
 namespace kafe
 {
 
+    class Parser
+    {
+    private:
+        antlr4::ANTLRInputStream m_input;
+        antlr4::tree::ParseTree* m_tree;
+        KafeParser* m_parser;
+
+    public:
+        Parser(std::ifstream&);
+        Parser(const std::string&);
+        ~Parser();
+
+        void parse(bool disable_errors=false);
+        void toBytecode(const std::string& fn);
+
+        std::string getAST();
+        void toStringTree();
+    };
+
     void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool save_ast=false, bool disable_errors=false);
 
     void testANTLR();
