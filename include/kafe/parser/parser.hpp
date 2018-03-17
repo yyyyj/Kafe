@@ -51,7 +51,7 @@ namespace kafe
         Parser(const std::string&);
         ~Parser();
 
-        void parse(bool disable_errors=false, bool save_ast=false);
+        void parse();
         /*
         *   https://github.com/Gabbell/CommandLineInterpreter/blob/master/OSMini/CommandLineInterpreter.cpp#L67-L72
         *   https://github.com/Gabbell/CommandLineInterpreter/blob/master/OSMini/Visitor.h
@@ -69,6 +69,7 @@ namespace kafe
 
         static const int DEFAULT = 0;
         static const int DEBUG = 1 << 1;
+        static const int NO_ERROR = 1 << 2;
     };
 
     void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool save_ast=false, bool disable_errors=false);

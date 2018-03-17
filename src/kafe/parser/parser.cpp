@@ -25,7 +25,7 @@ namespace kafe
     Parser::~Parser()
     {}
 
-    void Parser::parse(bool disable_errors, bool save_ast)
+    void Parser::parse()
     {
         // lexing
         KafeLexer lexer(&m_input);
@@ -38,7 +38,7 @@ namespace kafe
         if (lexerErr > 0)
         {
             std::cerr << "Lexer syntax error" << (lexerErr > 1 ? "s" : "") << " (" << lexerErr << ")" << std::endl;
-            if (!disable_errors)
+            if (m_mode & Parser::NO_ERROR == 0)
                 std::cerr << m_lexer_err_listener << std::endl;
             exit(1);
         }
@@ -53,12 +53,12 @@ namespace kafe
         if (parserErr > 0)
         {
             std::cerr << "Parser syntax error" << (parserErr > 1 ? "s" : "") << " (" << parserErr << ")" << std::endl;
-            if (!disable_errors)
+            if (m_mode & Parser::NO_ERROR == 0)
                 std::cerr << m_parser_err_listener << std::endl;
             exit(1);
         }
 
-        if (save_ast)
+        if (m_mode & Parser::DEBUG)
             m_ast = tree->toStringTree(&parser);
 
         abc::Visitor visitor(&m_gen);
@@ -93,7 +93,8 @@ namespace kafe
                 if (kafeFile.is_open())
                 {
                     Parser kparser(kafeFile);
-                    kparser.parse(disable_errors);
+                    kparser.setMode(save_ast ? (disable_errors ? Parser::DEBUG | Parser::NO_ERROR : Parser::DEBUG) : (disable_errors ? Parser::NO_ERROR : Parser::DEFAULT));
+                    kparser.parse();
 
                     if (save_ast)
                     {
