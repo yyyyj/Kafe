@@ -14,46 +14,49 @@
 
 namespace kafe
 {
-
-    ErrorHandler::ErrorHandler() {}
-
-    ErrorHandler::~ErrorHandler()
+    namespace abc
     {
-        if (!empty())
-            displayTraceback();
-        clear();
-    }
 
-    void ErrorHandler::raiseException(const Exception& exc)
-    {
-        m_exceptions.push_back(exc);
-        if (exc.errorCode() == Exception::CRITIC)
-            displayTraceback();
-    }
+        ErrorHandler::ErrorHandler() {}
 
-    void ErrorHandler::raiseException(int error, const std::string& message, addr_t ip)
-    {
-        raiseException(Exception(error, message, ip));
-    }
+        ErrorHandler::~ErrorHandler()
+        {
+            if (!empty())
+                displayTraceback();
+            clear();
+        }
 
-    void ErrorHandler::displayTraceback()
-    {
-        // display exception list
-        std::cerr << std::endl << "Traceback (most recent call last) :" << std::endl;
-        for (auto& e : m_exceptions)
-            std::cerr << '\t' << e << std::endl;
-        // exit the program
-        throw std::runtime_error("Fatal error occured, see traceback");
-    }
+        void ErrorHandler::raiseException(const Exception& exc)
+        {
+            m_exceptions.push_back(exc);
+            if (exc.errorCode() == Exception::CRITIC)
+                displayTraceback();
+        }
 
-    bool ErrorHandler::empty() const
-    {
-        return m_exceptions.empty();
-    }
+        void ErrorHandler::raiseException(int error, const std::string& message, addr_t ip)
+        {
+            raiseException(Exception(error, message, ip));
+        }
 
-    void ErrorHandler::clear()
-    {
-        m_exceptions.clear();
-    }
+        void ErrorHandler::displayTraceback()
+        {
+            // display exception list
+            std::cerr << std::endl << "Traceback (most recent call last) :" << std::endl;
+            for (auto& e : m_exceptions)
+                std::cerr << '\t' << e << std::endl;
+            // exit the program
+            throw std::runtime_error("Fatal error occured, see traceback");
+        }
 
+        bool ErrorHandler::empty() const
+        {
+            return m_exceptions.empty();
+        }
+
+        void ErrorHandler::clear()
+        {
+            m_exceptions.clear();
+        }
+
+    }  // namespace abc
 }  // namespace kafe

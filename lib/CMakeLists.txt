@@ -17,14 +17,18 @@ set(lib_kafe_api_SRC
 )
 set(lib_kafe_SRC
     ${KafeBuilder_SOURCE_DIR}/src/kafe/utils.cpp
-    ${KafeBuilder_SOURCE_DIR}/src/kafe/parser.cpp
     ${KafeBuilder_SOURCE_DIR}/src/kafe/KafeErrorListener.cpp
     ${KafeBuilder_SOURCE_DIR}/src/kafe/kafe.cpp
     ${KafeBuilder_SOURCE_DIR}/src/kafe/exception.cpp
     
+    ${KafeBuilder_SOURCE_DIR}/src/kafe/parser/parser.cpp
+    ${KafeBuilder_SOURCE_DIR}/src/kafe/parser/visitor.cpp
+    
     ${KafeBuilder_SOURCE_DIR}/src/kafe/vm/value.cpp
     ${KafeBuilder_SOURCE_DIR}/src/kafe/vm/vm.cpp
     ${KafeBuilder_SOURCE_DIR}/src/kafe/vm/vm_lib.cpp
+    ${KafeBuilder_SOURCE_DIR}/src/kafe/vm/errorHandler.cpp
+    ${KafeBuilder_SOURCE_DIR}/src/kafe/vm/bytecodeBlocksMaker.cpp
     
     ${KafeBuilder_SOURCE_DIR}/src/kafe/state/state.cpp
     ${KafeBuilder_SOURCE_DIR}/src/kafe/state/refvar.cpp
@@ -32,8 +36,10 @@ set(lib_kafe_SRC
     
     ${KafeBuilder_SOURCE_DIR}/src/kafe/plugins/loader.cpp
     
-    ${KafeBuilder_SOURCE_DIR}/include/kafe/parser/KafeLexer.cpp
-    ${KafeBuilder_SOURCE_DIR}/include/kafe/parser/KafeParser.cpp
+    ${KafeBuilder_SOURCE_DIR}/include/kafe/generated/KafeLexer.cpp
+    ${KafeBuilder_SOURCE_DIR}/include/kafe/generated/KafeParser.cpp
+    ${KafeBuilder_SOURCE_DIR}/include/kafe/generated/KafeBaseVisitor.cpp
+    ${KafeBuilder_SOURCE_DIR}/include/kafe/generated/KafeVisitor.cpp
 )
 
 add_library(lib_kafe_api STATIC ${lib_kafe_api_SRC})

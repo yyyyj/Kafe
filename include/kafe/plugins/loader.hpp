@@ -34,37 +34,40 @@
 
 namespace kafe
 {
-
-    class DLLModule
+    namespace abc
     {
-    private:
-        typedef void (*FNDOSMTH)(void);
-        typedef const char* (*FNGETNAME)(void);
-        typedef long (*FNGETVERSION)(void);
 
-        #ifdef RUNNING_WIN
+        class DLLModule
+        {
+        private:
+            typedef void(*FNDOSMTH)(void);
+            typedef const char* (*FNGETNAME)(void);
+            typedef long(*FNGETVERSION)(void);
+
+#ifdef RUNNING_WIN
             HINSTANCE m_hInstance;
-        #endif // RUNNING_WIN
-        #ifdef RUNNING_POSIX
+#endif // RUNNING_WIN
+#ifdef RUNNING_POSIX
             void* m_hInstance;
-        #endif // RUNNING_POSIX
-        std::string m_path;
-        bool m_loaded;
+#endif // RUNNING_POSIX
+            std::string m_path;
+            bool m_loaded;
 
-    public:
-        DLLModule();
-        DLLModule(const std::string& path);
-        ~DLLModule();
+        public:
+            DLLModule();
+            DLLModule(const std::string& path);
+            ~DLLModule();
 
-        void load(const std::string& path);
-        void unload();
+            void load(const std::string& path);
+            void unload();
 
-        FNDOSMTH doSomething;
-        FNGETNAME getName;
-        FNGETVERSION getVersion;
-        FNGETVERSION requiredKafeAPI;
-    };
+            FNDOSMTH doSomething;
+            FNGETNAME getName;
+            FNGETVERSION getVersion;
+            FNGETVERSION requiredKafeAPI;
+        };
 
+    }  // namespace abc
 }  // namespace kafe
 
 #endif  // kafe_dll_loader

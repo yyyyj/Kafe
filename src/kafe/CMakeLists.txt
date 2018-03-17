@@ -5,8 +5,8 @@ project(Kafe)
 
 message(STATUS "Building project ${PROJECT_NAME}")
 
-file(GLOB_RECURSE INCLUDE_FILES "${KafeBuilder_SOURCE_DIR}/include/kafe/*.hpp" "${KafeBuilder_SOURCE_DIR}/tests/*.hpp")
-file(GLOB_RECURSE SOURCES_FILES "${KafeBuilder_SOURCE_DIR}/include/kafe/parser/*.cpp" "${KafeBuilder_SOURCE_DIR}/src/kafe/*.cpp" "${CMAKE_SOURCE_DIR}/tests/*.cpp")
+file(GLOB_RECURSE INCLUDE_FILES "${KafeBuilder_SOURCE_DIR}/include/kafe/*.hpp" "${KafeBuilder_SOURCE_DIR}/include/kafe/*.h" "${KafeBuilder_SOURCE_DIR}/tests/*.hpp")
+file(GLOB_RECURSE SOURCES_FILES "${KafeBuilder_SOURCE_DIR}/include/kafe/generated/*.cpp" "${KafeBuilder_SOURCE_DIR}/src/kafe/*.cpp" "${CMAKE_SOURCE_DIR}/tests/*.cpp")
 
 include_directories(${KafeBuilder_SOURCE_DIR}/include)
 include_directories(${KafeBuilder_SOURCE_DIR}/thirdparty)

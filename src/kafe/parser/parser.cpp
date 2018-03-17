@@ -10,24 +10,19 @@
  * See https://superfola.github.io/Kafe/LICENSE for license information
  */
 
-#include <kafe/parser.hpp>
+#include <kafe/parser/parser.hpp>
+#include <kafe/parser/visitor.hpp>
 
 namespace kafe
 {
 
-    Parser::Parser(std::ifstream& file) : m_input(file), m_ast(""), m_tree(nullptr), m_parser(nullptr)
+    Parser::Parser(std::ifstream& file) : m_input(file), m_tree(nullptr), m_parser(nullptr), m_visitor(nullptr)
     {}
 
-    Parser::Parser(const std::string& code) : m_input(code), m_ast(""), m_tree(nullptr), m_parser(nullptr)
+    Parser::Parser(const std::string& code) : m_input(code), m_tree(nullptr), m_parser(nullptr), m_visitor(nullptr)
     {}
 
-    Parser::~Parser()
-    {
-        if (m_tree != nullptr)
-            delete m_tree;
-        if (m_parser != nullptr)
-            delete m_parser;
-    }
+    Parser::~Parser() {}
 
     void Parser::parse(bool disable_errors)
     {
@@ -50,12 +45,12 @@ namespace kafe
 
         // parsing
         KafeErrorListener parser_err_listener;
-        m_parser = new KafeParser(&tokens);
-        parser->removeErrorListeners();
-        parser->addErrorListener(&parser_err_listener);
-        m_tree = parser->chunk();
+        m_parser = std::make_unique<KafeParser>(&tokens);
+        m_parser->removeErrorListeners();
+        m_parser->addErrorListener(&parser_err_listener);
+        m_tree = std::make_unique<antlr4::tree::ParseTree>(m_parser->chunk());
 
-        std::size_t parserErr = parser->getNumberOfSyntaxErrors();
+        std::size_t parserErr = m_parser->getNumberOfSyntaxErrors();
         if (parserErr > 0)
         {
             std::cerr << "Parser syntax error" << (parserErr > 1 ? "s" : "") << " (" << parserErr << ")" << std::endl;
@@ -67,19 +62,19 @@ namespace kafe
 
     void Parser::toBytecode(const std::string& fn)
     {
-        // do stuff
+        m_visitor = std::make_unique<abc::Visitor>();
+        m_visitor->visit(m_tree.get());
     }
 
     std::string Parser::getAST()
     {
-        return m_tree->toStringTree(m_parser);
+        return m_tree->toStringTree(m_parser.get());
     }
 
     void Parser::toStringTree()
     {
-        std::cout << m_tree->toStringTree(m_parser) << std::endl;
+        std::cout << m_tree->toStringTree(m_parser.get()) << std::endl;
     }
-
 
     void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool save_ast, bool disable_errors)
     {

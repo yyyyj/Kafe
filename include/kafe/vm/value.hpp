@@ -60,7 +60,7 @@ namespace kafe
     };
 
     // forward declaration for Structure
-    struct StructElem;
+    namespace abc { struct StructElem; }
     struct Value;
 
     struct Structure
@@ -68,7 +68,7 @@ namespace kafe
         static int_t ID;
 
         // name of the variable : default value
-        std::vector<StructElem> members;
+        std::vector<abc::StructElem> members;
         // in order to be able to identify a structure
         // each structure keeps track of the id of its parents and its own id
         std::vector<int_t> struct_id;
@@ -82,7 +82,7 @@ namespace kafe
 
         void add(std::string name, Value val);
         void set(const std::string& name, Value val);
-        StructElem* findMember(const std::string& name);
+        abc::StructElem* findMember(const std::string& name);
         bool hasParent(const Structure& other);
 
         bool operator==(const Structure& other) const
@@ -98,7 +98,7 @@ namespace kafe
         typedef std::vector<Value> list_t;
 
         ValueType type;
-        std::variant<int_t, double, bool, str_t, list_t, Structure, addr_t, Exception> value;
+        std::variant<int_t, double, bool, str_t, list_t, Structure, addr_t, abc::Exception> value;
         bool is_const;
 
         Value() : is_const(false)                      {}
@@ -174,26 +174,32 @@ namespace kafe
     typedef tsl::hopscotch_sc_map<std::string, Value> VarStack_t;
 #endif  // ifndef KAFE_BUILD_WITH_TSL
 
-    struct Call
+    namespace abc
     {
-        addr_t lastPos;
-        addr_t lastStackSize;
-        VarStack_t vars;
-        std::vector<str_t> refs_to_gscope;
-    };
-    typedef std::vector<Call> CallStack_t;
+
+        struct Call
+        {
+            addr_t lastPos;
+            addr_t lastStackSize;
+            VarStack_t vars;
+            std::vector<str_t> refs_to_gscope;
+        };
+
+        struct StructElem
+        {
+            std::string name;
+            Value val;
+        };
+
+    }  // namespace abc
+
+    typedef std::vector<abc::Call> CallStack_t;
 
 #ifndef KAFE_BUILD_WITH_TSL
     typedef std::unordered_map<std::string, Structure> StructureMap_t;
 #else
     typedef tsl::hopscotch_sc_map<std::string, Structure> StructureMap_t;
 #endif  // ifndef KAFE_BUILD_WITH_TSL
-
-    struct StructElem
-    {
-        std::string name;
-        Value val;
-    };
 
 }  // namespace kafe
 

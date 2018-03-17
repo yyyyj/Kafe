@@ -48,7 +48,7 @@ namespace kafe
             add(name, val);
     }
 
-    StructElem* Structure::findMember(const std::string& name)
+    abc::StructElem* Structure::findMember(const std::string& name)
     {
         for (std::size_t i=0; i < members.size(); ++i)
         {

@@ -10,20 +10,18 @@
  * See https://superfola.github.io/Kafe/LICENSE for license information
  */
 
-#ifndef kafe_kafe
-#define kafe_kafe
-
-#include <kafe/vm/vm.hpp>
-#include <kafe/state/state.hpp>
-#include <kafe/utils.hpp>
-#include <kafe/types.hpp>
 #include <kafe/parser/parser.hpp>
-#include <kafe/constants.hpp>
-#include <kafe/plugins/loader.hpp>
+#include <kafe/parser/visitor.hpp>
 
 namespace kafe
 {
+    namespace abc
+    {
 
+        Visitor::Visitor(Parser* parser) : m_parser(parser)
+        {}
+
+        Visitor::~Visitor() {}
+
+    }  // namespacec abc
 }  // namespace kafe
-
-#endif // kafe_kafe

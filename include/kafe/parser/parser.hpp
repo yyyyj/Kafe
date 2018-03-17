@@ -22,11 +22,13 @@
 #include <stdexcept>
 #include <string>
 #include <fstream>
+#include <memory>
 #include <termcolor.hpp>
 
-#include <kafe/parser/KafeLexer.h>
-#include <kafe/parser/KafeParser.h>
+#include <kafe/generated/KafeLexer.h>
+#include <kafe/generated/KafeParser.h>
 #include <kafe/KafeErrorListener.hpp>
+#include <kafe/parser/visitor.hpp>
 
 namespace kafe
 {
@@ -35,8 +37,9 @@ namespace kafe
     {
     private:
         antlr4::ANTLRInputStream m_input;
-        antlr4::tree::ParseTree* m_tree;
-        KafeParser* m_parser;
+        std::unique_ptr<antlr4::tree::ParseTree> m_tree;
+        std::unique_ptr<KafeParser> m_parser;
+        std::unique_ptr<abc::Visitor> m_visitor;
 
     public:
         Parser(std::ifstream&);
@@ -44,6 +47,16 @@ namespace kafe
         ~Parser();
 
         void parse(bool disable_errors=false);
+        /*
+        *   https://github.com/Gabbell/CommandLineInterpreter/blob/master/OSMini/CommandLineInterpreter.cpp#L67-L72
+        *   https://github.com/Gabbell/CommandLineInterpreter/blob/master/OSMini/Visitor.h
+        *   https://github.com/flashpixx/DateformatParser/blob/master/src/ASTListener.cpp#L38
+        *   https://github.com/bajdcc/MyScript/search?utf8=?&q=walk&type=
+        *   https://github.com/Gabbell/CommandLineInterpreter/tree/master/OSMini
+        *   https://github.com/JaapSuter/Tard/blob/8d92087024d959ec4044c0e404330a0c87cbbb38/src/compiler.cpp
+        *   https://github.com/JaapSuter/Tard/blob/8d92087024d959ec4044c0e404330a0c87cbbb38/generated_src/tard_parser.cpp
+        *   
+        */
         void toBytecode(const std::string& fn);
 
         std::string getAST();

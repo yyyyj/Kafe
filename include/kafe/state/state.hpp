@@ -14,7 +14,7 @@
 #define kafe_state_state
 
 #include <kafe/vm/vm.hpp>
-#include <kafe/parser.hpp>
+#include <kafe/parser/parser.hpp>
 #include <kafe/types.hpp>
 #include <kafe/state/native_function.hpp>
 #include <kafe/state/refvar.hpp>

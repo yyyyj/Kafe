@@ -22,23 +22,26 @@
 
 namespace kafe
 {
-    
-    class ErrorHandler
+    namespace abc
     {
-    private:
-        std::vector<Exception> m_exceptions;
 
-    public:
-        ErrorHandler();
-        ~ErrorHandler();
+        class ErrorHandler
+        {
+        private:
+            std::vector<Exception> m_exceptions;
 
-        void raiseException  (const Exception&);
-        void raiseException  (int error, const std::string& message, addr_t ip);
-        void displayTraceback();
-        bool empty() const;
-        void clear();
-    };
+        public:
+            ErrorHandler();
+            ~ErrorHandler();
 
-}
+            void raiseException(const Exception&);
+            void raiseException(int error, const std::string& message, addr_t ip);
+            void displayTraceback();
+            bool empty() const;
+            void clear();
+        };
+
+    }  // namespace abc
+}  // namespace kafe
 
 #endif  // kafe_vm_errorhandler
