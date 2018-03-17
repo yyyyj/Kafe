@@ -19,7 +19,13 @@ namespace kafe
     {
         
         class Generator
-        {};
+        {
+        private:
+
+        public:
+            Generator();
+            ~Generator();
+        };
         
     }  // namespace abc
 }  // namespace kafe

@@ -17,5 +17,9 @@ namespace kafe
     namespace abc
     {
         
+        Generator::Generator() {}
+
+        Generator::~Generator() {}
+
     }  // namespace abc
 }  // namespace kafe
