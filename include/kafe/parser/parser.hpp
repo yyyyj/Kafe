@@ -69,7 +69,7 @@ namespace kafe
 
         static const int DEFAULT = 0;
         static const int DEBUG = 1 << 1;
-        static const int NO_ERROR = 1 << 2;
+        static const int DISABLE_ERR = 1 << 2;
     };
 
     void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool save_ast=false, bool disable_errors=false);

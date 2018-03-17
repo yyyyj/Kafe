@@ -38,7 +38,7 @@ namespace kafe
         if (lexerErr > 0)
         {
             std::cerr << "Lexer syntax error" << (lexerErr > 1 ? "s" : "") << " (" << lexerErr << ")" << std::endl;
-            if (m_mode & Parser::NO_ERROR == 0)
+            if (m_mode & Parser::DISABLE_ERR == 0)
                 std::cerr << m_lexer_err_listener << std::endl;
             exit(1);
         }
@@ -53,7 +53,7 @@ namespace kafe
         if (parserErr > 0)
         {
             std::cerr << "Parser syntax error" << (parserErr > 1 ? "s" : "") << " (" << parserErr << ")" << std::endl;
-            if (m_mode & Parser::NO_ERROR == 0)
+            if (m_mode & Parser::DISABLE_ERR == 0)
                 std::cerr << m_parser_err_listener << std::endl;
             exit(1);
         }
@@ -93,7 +93,7 @@ namespace kafe
                 if (kafeFile.is_open())
                 {
                     Parser kparser(kafeFile);
-                    kparser.setMode(save_ast ? (disable_errors ? Parser::DEBUG | Parser::NO_ERROR : Parser::DEBUG) : (disable_errors ? Parser::NO_ERROR : Parser::DEFAULT));
+                    kparser.setMode(save_ast ? (disable_errors ? Parser::DEBUG | Parser::DISABLE_ERR : Parser::DEBUG) : (disable_errors ? Parser::DISABLE_ERR : Parser::DEFAULT));
                     kparser.parse();
 
                     if (save_ast)
