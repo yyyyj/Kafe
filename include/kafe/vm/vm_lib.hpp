@@ -31,7 +31,7 @@ namespace kafe
             "and", "or", "not", "lw", "le", "gr", "ge", "eq", "ne"
         };
 
-        Value procName(micro_uint_t);
+        Value procName(abc::micro_uint_t);
 
         Value _doStuff(const Value&, const Value&);
 

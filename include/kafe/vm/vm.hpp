@@ -51,7 +51,7 @@ namespace kafe
         int m_debug_mode;
         addr_t m_interactive_advance;
         bool m_has_been_dirty_clean;
-        ErrorHandler m_errh;
+        abc::ErrorHandler m_errh;
         // we'll store the procedures and all that stuff inside this db, and use another one for user define functions
         FunctionDatabase m_fdb;
         FunctionDatabase m_fdb_user;

@@ -93,9 +93,9 @@ int start_tests(int mode)
     std::cerr << "\tSizeOf(Kafe::State)     = " << sizeof(kafe::State) << "B" << std::endl;
     std::cerr << "\tSizeof(Kafe::Function)  = " << sizeof(kafe::Function) << "B" << std::endl;
     std::cerr << "\tSizeof(Kafe::RefVar)    = " << sizeof(kafe::RefVar) << "B" << std::endl;
-    std::cerr << "\tSizeof(Kafe::Call)      = " << sizeof(kafe::Call) << "B" << std::endl;
+    std::cerr << "\tSizeof(Kafe::abc::Call) = " << sizeof(kafe::abc::Call) << "B" << std::endl;
     std::cerr << "\tSizeof(Kafe::Structure) = " << sizeof(kafe::Structure) << "B" << std::endl;
-    std::cerr << "\tSizeof(Kafe::ErrorH)    = " << sizeof(kafe::ErrorHandler) << "B" << std::endl;
+    std::cerr << "\tSizeof(Kafe::abcErrorH) = " << sizeof(kafe::abc::ErrorHandler) << "B" << std::endl;
     std::cerr << "\tSizeof(abc::BBM)        = " << sizeof(kafe::abc::BytecodeBlocksMaker) << "B" << std::endl;
     std::cerr << "\tSizeof(abc::Byte)       = " << sizeof(kafe::abc::Byte) << "B" << std::endl;
     std::cerr << "\tSizeof(abc::Bytecode)   = " << sizeof(kafe::abc::Bytecode) << "B" << std::endl;

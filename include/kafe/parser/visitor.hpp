@@ -13,18 +13,17 @@
 #ifndef kafe_parser_visitor
 #define kafe_parser_visitor
 
+#include "antlr4-runtime.h"
+
 #include <kafe/generated/KafeVisitor.h>
+#include <kafe/parser/generator.hpp>
 
 namespace kafe
 {
-
-    // forward declaration
-    class Parser;
-
     namespace abc
     {
         
-        template<typename T> bool instanceOf(tree::ParseTree* ctx)
+        template<typename T> bool instanceOf(antlr4::tree::ParseTree* ctx)
         {
             return dynamic_cast<T*>(ctx); // dynamic_cast will return nullptr if it fails to cast something to a ptr type
         }
@@ -32,39 +31,40 @@ namespace kafe
         class Visitor : public KafeVisitor
         {
         private:
-            Parser* m_parser;
+            Generator* m_gen;
 
         public:
-            Visitor(Parser* parser);
+            Visitor();
+            Visitor(Generator* generator);
             ~Visitor();
 
-            virtual antlrcpp::Any visitChunk(KafeParser::ChunkContext *context);
-            virtual antlrcpp::Any visitBlock(KafeParser::BlockContext *context);
-            virtual antlrcpp::Any visitStat(KafeParser::StatContext *context);
-            virtual antlrcpp::Any visitRetstat(KafeParser::RetstatContext *context);
-            virtual antlrcpp::Any visitVarqualifier(KafeParser::VarqualifierContext *context);
-            virtual antlrcpp::Any visitType(KafeParser::TypeContext *context);
-            virtual antlrcpp::Any visitNamelist(KafeParser::NamelistContext *context);
-            virtual antlrcpp::Any visitExplist(KafeParser::ExplistContext *context);
-            virtual antlrcpp::Any visitGetstructmember(KafeParser::GetstructmemberContext *context);
-            virtual antlrcpp::Any visitFunctioncall(KafeParser::FunctioncallContext *context);
-            virtual antlrcpp::Any visitExp(KafeParser::ExpContext *context);
-            virtual antlrcpp::Any visitArgslist(KafeParser::ArgslistContext *context);
-            virtual antlrcpp::Any visitFuncbody(KafeParser::FuncbodyContext *context);
-            virtual antlrcpp::Any visitStructbody(KafeParser::StructbodyContext *context);
-            virtual antlrcpp::Any visitOperatorOr(KafeParser::OperatorOrContext *context);
-            virtual antlrcpp::Any visitOperatorAnd(KafeParser::OperatorAndContext *context);
-            virtual antlrcpp::Any visitOperatorComparison(KafeParser::OperatorComparisonContext *context);
-            virtual antlrcpp::Any visitOperatorStrcat(KafeParser::OperatorStrcatContext *context);
-            virtual antlrcpp::Any visitOperatorAddSub(KafeParser::OperatorAddSubContext *context);
-            virtual antlrcpp::Any visitOperatorMulDivMod(KafeParser::OperatorMulDivModContext *context);
-            virtual antlrcpp::Any visitOperatorBitwise(KafeParser::OperatorBitwiseContext *context);
-            virtual antlrcpp::Any visitOperatorUnary(KafeParser::OperatorUnaryContext *context);
-            virtual antlrcpp::Any visitOperatorPower(KafeParser::OperatorPowerContext *context);
-            virtual antlrcpp::Any visitOperatorMathAffectation(KafeParser::OperatorMathAffectationContext *context);
-            virtual antlrcpp::Any visitNumber(KafeParser::NumberContext *context);
-            virtual antlrcpp::Any visitString(KafeParser::StringContext *context);
-            virtual antlrcpp::Any visitList(KafeParser::ListContext *context);
+            virtual antlrcpp::Any visitChunk(KafeParser::ChunkContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitBlock(KafeParser::BlockContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitStat(KafeParser::StatContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitRetstat(KafeParser::RetstatContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitVarqualifier(KafeParser::VarqualifierContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitType(KafeParser::TypeContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitNamelist(KafeParser::NamelistContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitExplist(KafeParser::ExplistContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitGetstructmember(KafeParser::GetstructmemberContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitFunctioncall(KafeParser::FunctioncallContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitExp(KafeParser::ExpContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitArgslist(KafeParser::ArgslistContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitFuncbody(KafeParser::FuncbodyContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitStructbody(KafeParser::StructbodyContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitOperatorOr(KafeParser::OperatorOrContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitOperatorAnd(KafeParser::OperatorAndContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitOperatorComparison(KafeParser::OperatorComparisonContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitOperatorStrcat(KafeParser::OperatorStrcatContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitOperatorAddSub(KafeParser::OperatorAddSubContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitOperatorMulDivMod(KafeParser::OperatorMulDivModContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitOperatorBitwise(KafeParser::OperatorBitwiseContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitOperatorUnary(KafeParser::OperatorUnaryContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitOperatorPower(KafeParser::OperatorPowerContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitOperatorMathAffectation(KafeParser::OperatorMathAffectationContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitNumber(KafeParser::NumberContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitString(KafeParser::StringContext *context) { return antlrcpp::Any(); }
+            virtual antlrcpp::Any visitList(KafeParser::ListContext *context) { return antlrcpp::Any(); }
         };
         
     }  // namespace abc

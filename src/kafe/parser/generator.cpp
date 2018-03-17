@@ -10,20 +10,12 @@
  * See https://superfola.github.io/Kafe/LICENSE for license information
  */
 
-#include <kafe/parser/visitor.hpp>
+#include <kafe/parser/generator.hpp>
 
 namespace kafe
 {
     namespace abc
     {
-
-        Visitor::Visitor() : m_gen(nullptr)
-        {}
-
-        Visitor::Visitor(Generator* generator) : m_gen(generator)
-        {}
-
-        Visitor::~Visitor() {}
-
-    }  // namespacec abc
+        
+    }  // namespace abc
 }  // namespace kafe

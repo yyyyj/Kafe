@@ -15,6 +15,9 @@
 
 namespace kafe
 {
+
+    using namespace abc;
+
     std::string convertTypeToString(ValueType t)
     {
         if (t == ValueType::Int)            return "INT";
@@ -111,7 +114,7 @@ namespace kafe
             break;
 
         case ValueType::Exception:
-            os << v.get<Exception>();
+            os << v.get<abc::Exception>();
             break;
 
         case ValueType::Empty:

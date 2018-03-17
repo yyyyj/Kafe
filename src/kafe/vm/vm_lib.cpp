@@ -16,6 +16,9 @@ namespace kafe
 {
     namespace StdLibVM
     {
+
+        using namespace abc;
+
         Value procName(micro_uint_t inst)
         {
             if (inst > 0)

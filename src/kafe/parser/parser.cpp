@@ -16,21 +16,21 @@
 namespace kafe
 {
 
-    Parser::Parser(std::ifstream& file) : m_input(file), m_tree(nullptr), m_parser(nullptr), m_visitor(nullptr)
+    Parser::Parser(std::ifstream& file) : m_mode(Parser::DEFAULT), m_input(file), m_ast("")
     {}
 
-    Parser::Parser(const std::string& code) : m_input(code), m_tree(nullptr), m_parser(nullptr), m_visitor(nullptr)
+    Parser::Parser(const std::string& code) : m_mode(Parser::DEFAULT), m_input(code), m_ast("")
     {}
 
-    Parser::~Parser() {}
+    Parser::~Parser()
+    {}
 
-    void Parser::parse(bool disable_errors)
+    void Parser::parse(bool disable_errors, bool save_ast)
     {
         // lexing
-        KafeErrorListener lexer_err_listener;
         KafeLexer lexer(&m_input);
         lexer.removeErrorListeners();
-        lexer.addErrorListener(&lexer_err_listener);
+        lexer.addErrorListener(&m_lexer_err_listener);
         antlr4::CommonTokenStream tokens(&lexer);
         tokens.fill();
 
@@ -39,41 +39,47 @@ namespace kafe
         {
             std::cerr << "Lexer syntax error" << (lexerErr > 1 ? "s" : "") << " (" << lexerErr << ")" << std::endl;
             if (!disable_errors)
-                std::cerr << lexer_err_listener << std::endl;
+                std::cerr << m_lexer_err_listener << std::endl;
             exit(1);
         }
 
         // parsing
-        KafeErrorListener parser_err_listener;
-        m_parser = std::make_unique<KafeParser>(&tokens);
-        m_parser->removeErrorListeners();
-        m_parser->addErrorListener(&parser_err_listener);
-        m_tree = std::make_unique<antlr4::tree::ParseTree>(m_parser->chunk());
+        KafeParser parser(&tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(&m_parser_err_listener);
+        antlr4::tree::ParseTree* tree = parser.chunk();
 
-        std::size_t parserErr = m_parser->getNumberOfSyntaxErrors();
+        std::size_t parserErr = parser.getNumberOfSyntaxErrors();
         if (parserErr > 0)
         {
             std::cerr << "Parser syntax error" << (parserErr > 1 ? "s" : "") << " (" << parserErr << ")" << std::endl;
             if (!disable_errors)
-                std::cerr << parser_err_listener << std::endl;
+                std::cerr << m_parser_err_listener << std::endl;
             exit(1);
         }
+
+        if (save_ast)
+            m_ast = tree->toStringTree(&parser);
+
+        abc::Visitor visitor(&m_gen);
+        visitor.visit(tree);
+
+        // organize bytecode generator code (functions calls, variables, structures definitions, halt...)
     }
 
-    void Parser::toBytecode(const std::string& fn)
+    void Parser::setMode(int mode)
     {
-        m_visitor = std::make_unique<abc::Visitor>();
-        m_visitor->visit(m_tree.get());
+        m_mode = mode;
     }
 
-    std::string Parser::getAST()
+    const bytecode_t& Parser::getBytecode()
     {
-        return m_tree->toStringTree(m_parser.get());
+        return m_bytecode;
     }
 
-    void Parser::toStringTree()
+    const std::string& Parser::getAST()
     {
-        std::cout << m_tree->toStringTree(m_parser.get()) << std::endl;
+        return m_ast;
     }
 
     void generateBytecode(const std::vector<std::string>& files, const std::string& output_fn, bool save_ast, bool disable_errors)
@@ -88,7 +94,6 @@ namespace kafe
                 {
                     Parser kparser(kafeFile);
                     kparser.parse(disable_errors);
-                    kparser.toBytecode(file);
 
                     if (save_ast)
                     {
@@ -123,10 +128,10 @@ namespace kafe
         if (kafeFile.is_open())
         {
             Parser kparser(kafeFile);
+            kparser.setMode(Parser::DEBUG);
             kparser.parse();
-            
-            // displaying AST
-            kparser.toStringTree();
+
+            std::cout << kparser.getAST() << std::endl;
 
             kafeFile.close();
         }

@@ -34,6 +34,8 @@
 namespace kafe
 {
 
+    using namespace abc;
+
     VM::VM() : m_stack_size(0), m_ip(0), m_bbm(m_ip, m_bytecode, m_errh), m_debug_mode(0), m_interactive_advance(0), m_has_been_dirty_clean(false) {}
 
     VM::~VM()
@@ -849,7 +851,7 @@ namespace kafe
             default:
             {
                 m_errh.raiseException(Exception::MALFORMED, "Invalid byte used to identify a non-existing procedure : " +
-                                         abc::str((unsigned) instruction), m_ip);
+                                         str((unsigned) instruction), m_ip);
             }
         }
     }
@@ -859,7 +861,7 @@ namespace kafe
     {
         // display stack + variables
         std::cerr << std::endl << "IP = " << std::setw(4) << termcolor::cyan << m_ip << termcolor::reset << " | Bytecode size = " << std::setw(5) << termcolor::cyan << m_bytecode.size() << termcolor::reset << " | "
-                  << "Instruction = " << abc::hexstr((unsigned) instruction) << std::endl
+                  << "Instruction = " << hexstr((unsigned) instruction)         << std::endl
                   << "Stack                     | Variables                   " << std::endl
                   << "--------------------------|-----------------------------" << std::endl;
         VarStack_t::iterator it = m_variables.begin();
@@ -918,7 +920,7 @@ namespace kafe
                     }
                     else
                     {
-                        int n = abc::strTo<int>(num);
+                        int n = strTo<int>(num);
                         if (n <= 0)
                         {
                             std::cerr << "A number < 0 is considered invalid" << std::endl;
@@ -1009,7 +1011,7 @@ namespace kafe
             {
                 inst_t instruction = m_bbm.readByte(m_ip);
                 if (m_debug_mode & VM::FLAG_BASIC_DEBUG)
-                    std::cerr << "[" << m_ip << "] " << abc::hexstr(unsigned(instruction)) << " ";
+                    std::cerr << "[" << m_ip << "] " << hexstr(unsigned(instruction)) << " ";
 
                 if (INST_INT_2B <= instruction && instruction <= INST_STRUCT_TID)
                     exec_handleDataTypesDecl(instruction);
@@ -1029,7 +1031,7 @@ namespace kafe
                 else
                 {
                     if (instruction != 0x00)
-                        m_errh.raiseException(Exception::MALFORMED, "Can not identify the instruction " + abc::hexstr(unsigned(instruction)), m_ip);
+                        m_errh.raiseException(Exception::MALFORMED, "Can not identify the instruction " + hexstr(unsigned(instruction)), m_ip);
                 }
 
                 if (m_debug_mode & VM::FLAG_INTERACTIVE && (m_interactive_advance == 0 || m_interactive_advance <= old_ip))

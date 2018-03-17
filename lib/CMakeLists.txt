@@ -23,6 +23,7 @@ set(lib_kafe_SRC
     
     ${KafeBuilder_SOURCE_DIR}/src/kafe/parser/parser.cpp
     ${KafeBuilder_SOURCE_DIR}/src/kafe/parser/visitor.cpp
+    ${KafeBuilder_SOURCE_DIR}/src/kafe/parser/generator.cpp
     
     ${KafeBuilder_SOURCE_DIR}/src/kafe/vm/value.cpp
     ${KafeBuilder_SOURCE_DIR}/src/kafe/vm/vm.cpp
