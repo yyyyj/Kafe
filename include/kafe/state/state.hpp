@@ -31,7 +31,7 @@ namespace kafe
     {
     private:
         std::unordered_map<std::string, Value> m_vars;
-        VM vm;
+        VM m_vm;
 
     public:
         State();
@@ -41,6 +41,8 @@ namespace kafe
         void execFile(const std::string&);
         Function loadFile(const std::string&);
         Function loadString(const std::string&);
+
+        void registerFunction(const std::string&, functionPtr);
         
         void operator()(const std::string&);
         RefVar operator[](const std::string&);

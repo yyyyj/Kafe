@@ -37,6 +37,11 @@ namespace kafe
         return Function(*this);
     }
 
+    void State::registerFunction(const std::string& name, functionPtr fct)
+    {
+        m_vm.registerFunction(name, fct);
+    }
+
     void State::operator()(const std::string& code)
     {}
 

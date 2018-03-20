@@ -1059,6 +1059,11 @@ namespace kafe
             throw std::logic_error("Can not run if no byte codes were given");
     }
 
+    void VM::registerFunction(const std::string& name, functionPtr fct)
+    {
+        m_fdb_user.add(name, fct);
+    }
+
     ValueStack_t& VM::getStack()
     {
         return m_stack;

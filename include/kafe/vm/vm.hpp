@@ -96,6 +96,8 @@ namespace kafe
         void load        (bytecode_t bytecode);
         int  exec        ();
 
+        void registerFunction(const std::string&, functionPtr);
+
         template <typename T> void push(T value)
         {
             ValueType t = Value::guessType<T>();

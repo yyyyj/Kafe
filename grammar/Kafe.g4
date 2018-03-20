@@ -31,7 +31,7 @@ stat
     | 'if' exp 'then' block ('elif' exp 'then' block)* ('else' block)? 'end'
     | 'while' exp 'do' block 'end'
     | 'fun' NAME argslist '->' type funcbody
-    | 'Obj' NAME structbody
+    | 'Obj' NAME structparents? structbody
     | getstructmember
     ;
 
@@ -49,7 +49,7 @@ type
     | 'double'
     | 'list'
     | 'bool'
-    | 'struct' NAME
+    | 'Obj' NAME
     ;
 
 namelist
@@ -93,6 +93,14 @@ argslist
 
 funcbody
     : block retstat
+    ;
+
+structparentslist
+    : NAME (','? structparentslist)*
+    ;
+
+structparents
+    : ':' structparentslist
     ;
 
 structbody

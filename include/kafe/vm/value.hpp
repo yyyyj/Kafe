@@ -167,6 +167,7 @@ namespace kafe
     // custom types to create stacks and avoid to much verbosity
     typedef Value::list_t list_t;
     typedef std::vector<Value> ValueStack_t;
+    typedef Value (*functionPtr)(const list_t&);
 
 #ifndef KAFE_BUILD_WITH_TSL
     typedef std::unordered_map<std::string, Value> VarStack_t;
