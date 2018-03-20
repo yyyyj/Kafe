@@ -26,7 +26,6 @@
 
 #ifdef _MSC_VER
     // if compiling with visual studio, disable those warnings
-    #pragma warning (disable: 4715)  // a function isn't returning a value
     #pragma warning (disable: 4244)  // conversion from addr_t to int, possible loss of data
     #pragma warning (disable: 4334)  // shift result of 32 bits implicitly converted in 64 bits
 #endif

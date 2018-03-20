@@ -1,4 +1,11 @@
 
+#ifdef _MSC_VER
+    // if compiling with visual studio, disable those warnings
+    #pragma warning (disable: 4251)  // need a dll to run
+    #pragma warning (disable: 4996)  // warnings from codecvt
+#endif
+
+
 // Generated from grammar/Kafe.g4 by ANTLR 4.7.1
 
 #pragma once
@@ -64,6 +71,10 @@ public:
   }
 
   virtual antlrcpp::Any visitFuncbody(KafeParser::FuncbodyContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitStructparents(KafeParser::StructparentsContext *ctx) override {
     return visitChildren(ctx);
   }
 

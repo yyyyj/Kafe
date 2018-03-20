@@ -12,6 +12,14 @@
 
 grammar Kafe;
 
+@header {
+#ifdef _MSC_VER
+    // if compiling with visual studio, disable those warnings
+    #pragma warning (disable: 4251)  // need a dll to run
+    #pragma warning (disable: 4996)  // warnings from codecvt
+#endif
+}
+
 chunk
     : block EOF
     ;
@@ -31,7 +39,7 @@ stat
     | 'if' exp 'then' block ('elif' exp 'then' block)* ('else' block)? 'end'
     | 'while' exp 'do' block 'end'
     | 'fun' NAME argslist '->' type funcbody
-    | 'Obj' NAME structparents? structbody
+    | 'Obj' NAME (':' structparents)? structbody
     | getstructmember
     ;
 
@@ -95,12 +103,8 @@ funcbody
     : block retstat
     ;
 
-structparentslist
-    : NAME (','? structparentslist)*
-    ;
-
 structparents
-    : ':' structparentslist
+    : NAME (','? NAME)*
     ;
 
 structbody

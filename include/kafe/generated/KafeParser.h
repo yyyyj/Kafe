@@ -1,4 +1,11 @@
 
+#ifdef _MSC_VER
+    // if compiling with visual studio, disable those warnings
+    #pragma warning (disable: 4251)  // need a dll to run
+    #pragma warning (disable: 4996)  // warnings from codecvt
+#endif
+
+
 // Generated from grammar/Kafe.g4 by ANTLR 4.7.1
 
 #pragma once
@@ -22,20 +29,20 @@ public:
     T__44 = 45, T__45 = 46, T__46 = 47, T__47 = 48, T__48 = 49, T__49 = 50, 
     T__50 = 51, T__51 = 52, T__52 = 53, T__53 = 54, T__54 = 55, T__55 = 56, 
     T__56 = 57, T__57 = 58, T__58 = 59, T__59 = 60, T__60 = 61, T__61 = 62, 
-    T__62 = 63, T__63 = 64, T__64 = 65, T__65 = 66, T__66 = 67, T__67 = 68, 
-    NAME = 69, NORMALSTRING = 70, CHARSTRING = 71, INT = 72, HEX = 73, FLOAT = 74, 
-    HEX_FLOAT = 75, COMMENT = 76, WS = 77
+    T__62 = 63, T__63 = 64, T__64 = 65, T__65 = 66, T__66 = 67, NAME = 68, 
+    NORMALSTRING = 69, CHARSTRING = 70, INT = 71, HEX = 72, FLOAT = 73, 
+    HEX_FLOAT = 74, COMMENT = 75, WS = 76
   };
 
   enum {
     RuleChunk = 0, RuleBlock = 1, RuleStat = 2, RuleRetstat = 3, RuleVarqualifier = 4, 
     RuleType = 5, RuleNamelist = 6, RuleExplist = 7, RuleGetstructmember = 8, 
     RuleFunctioncall = 9, RuleExp = 10, RuleArgslist = 11, RuleFuncbody = 12, 
-    RuleStructbody = 13, RuleOperatorOr = 14, RuleOperatorAnd = 15, RuleOperatorComparison = 16, 
-    RuleOperatorStrcat = 17, RuleOperatorAddSub = 18, RuleOperatorMulDivMod = 19, 
-    RuleOperatorBitwise = 20, RuleOperatorUnary = 21, RuleOperatorPower = 22, 
-    RuleOperatorMathAffectation = 23, RuleNumber = 24, RuleString = 25, 
-    RuleList = 26
+    RuleStructparents = 13, RuleStructbody = 14, RuleOperatorOr = 15, RuleOperatorAnd = 16, 
+    RuleOperatorComparison = 17, RuleOperatorStrcat = 18, RuleOperatorAddSub = 19, 
+    RuleOperatorMulDivMod = 20, RuleOperatorBitwise = 21, RuleOperatorUnary = 22, 
+    RuleOperatorPower = 23, RuleOperatorMathAffectation = 24, RuleNumber = 25, 
+    RuleString = 26, RuleList = 27
   };
 
   KafeParser(antlr4::TokenStream *input);
@@ -61,6 +68,7 @@ public:
   class ExpContext;
   class ArgslistContext;
   class FuncbodyContext;
+  class StructparentsContext;
   class StructbodyContext;
   class OperatorOrContext;
   class OperatorAndContext;
@@ -122,6 +130,7 @@ public:
     TypeContext *type();
     FuncbodyContext *funcbody();
     StructbodyContext *structbody();
+    StructparentsContext *structparents();
     GetstructmemberContext *getstructmember();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -275,6 +284,19 @@ public:
   };
 
   FuncbodyContext* funcbody();
+
+  class  StructparentsContext : public antlr4::ParserRuleContext {
+  public:
+    StructparentsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<antlr4::tree::TerminalNode *> NAME();
+    antlr4::tree::TerminalNode* NAME(size_t i);
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  StructparentsContext* structparents();
 
   class  StructbodyContext : public antlr4::ParserRuleContext {
   public:
