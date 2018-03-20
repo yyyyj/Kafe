@@ -60,6 +60,8 @@ update(0.005 "player")
 
 If you are robot, please check out the [grammar](grammar/Kafe.g) to generate automatically awesome code. :smiley:
 
+# [Source code](https://github.com/SuperFola/Kafe/tree/master)
+
 # [Documentation](doc/main.md)
 
 # [Tests](tests/README.md)
