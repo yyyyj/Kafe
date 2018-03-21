@@ -29,12 +29,26 @@ namespace kafe
 
     Function State::loadFile(const std::string& filename)
     {
-        return Function(*this);
+        std::ifstream file(filename);
+
+        if (file.good())
+        {
+            std::string content = "";
+            file >> content;
+            file.close();
+            Function f = loadString(content);
+            return f;
+        }
+        throw std::runtime_error("Could not find the specified file : " + filename);
     }
 
     Function State::loadString(const std::string& code)
     {
-        return Function(*this);
+        Parser kparser(code);
+        kparser.parse();
+        m_vm.load(kparser.getBytecode());
+        m_vm.exec();
+        return Function(*this);  // wut ?
     }
 
     void State::registerFunction(const std::string& name, functionPtr fct)
@@ -43,13 +57,15 @@ namespace kafe
     }
 
     void State::operator()(const std::string& code)
-    {}
+    {
+        (loadString(code))();
+    }
 
     RefVar State::operator[](const std::string& key)
     {
         if (m_vars.find(key) != m_vars.end())
-            return RefVar(m_vars[key]);
-        throw std::runtime_error("Could not get the wanted key : " + key);
+            return RefVar(m_vars[key]);  // wut wut wut ? need ref on refvar ???
+        throw std::runtime_error("Could not get the wanted variable : " + key);
     }
     
 }  // namespace kafe
