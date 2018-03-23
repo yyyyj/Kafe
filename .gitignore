@@ -36,6 +36,7 @@ __pycache__/
 
 # just some personnal stuff
 specs.txt
+idea.txt
 *.cmd
 *.sh
 *.old.txt

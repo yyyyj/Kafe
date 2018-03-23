@@ -1063,6 +1063,18 @@ namespace kafe
         m_fdb_user.add(name, fct);
     }
 
+    void VM::loadDLL(const std::string& name)
+    {
+        // load the plugin
+        DLLModule plugin = loadPlugin(name);
+        // and register the functions and structures declared in it, in the VM
+        // to be able to use them in the bytecode
+        // TODO
+        // plugin.registerFunctions();
+        // plugin.registerStructures();
+        m_dlls.push_back(plugin);
+    }
+
     ValueStack_t& VM::getStack()
     {
         return m_stack;

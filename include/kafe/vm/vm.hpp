@@ -21,6 +21,7 @@
 #include <kafe/vm/bytecodeBlocksMaker.hpp>
 #include <kafe/vm/errorHandler.hpp>
 #include <kafe/vm/bytecode.hpp>
+#include <kafe/plugins/packager.hpp>
 
 #include <string>
 #include <vector>
@@ -55,6 +56,8 @@ namespace kafe
         // we'll store the procedures and all that stuff inside this db, and use another one for user define functions
         FunctionDatabase m_fdb;
         FunctionDatabase m_fdb_user;
+        // we must keep the dll modules, otherway they would be destructed and unloaded
+        std::vector<abc::DLLModule> m_dlls;
 
         void     push      (Value value);
         Value    pop       ();
@@ -96,7 +99,8 @@ namespace kafe
         void load        (bytecode_t bytecode);
         int  exec        ();
 
-        void registerFunction(const std::string&, functionPtr);
+        void registerFunction(const std::string& name, functionPtr fct);
+        void loadDLL         (const std::string& name);
 
         template <typename T> void push(T value)
         {
