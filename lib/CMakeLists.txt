@@ -36,6 +36,7 @@ set(lib_kafe_SRC
     ${KafeBuilder_SOURCE_DIR}/src/kafe/state/native_function.cpp
     
     ${KafeBuilder_SOURCE_DIR}/src/kafe/plugins/loader.cpp
+    ${KafeBuilder_SOURCE_DIR}/src/kafe/plugins/packager.cpp
     
     ${KafeBuilder_SOURCE_DIR}/include/kafe/generated/KafeLexer.cpp
     ${KafeBuilder_SOURCE_DIR}/include/kafe/generated/KafeParser.cpp
