@@ -10,15 +10,22 @@
  * See https://superfola.github.io/Kafe/LICENSE for license information
  */
 
-#include <kafe/state/refvar.hpp>
+#ifndef kafe_plugins_packager
+#define kafe_plugins_packager
+
+#include <kafe/plugins/loader.hpp>
+#include <kafe/api.hpp>
+
+#include <string>
 
 namespace kafe
 {
-
-    RefVar::RefVar(Value& val) : m_v(val) {}
-
-    RefVar::~RefVar() {}
-
-    RefVar::RefVar(const RefVar& other) : m_v(other.m_v) {}
-    
+    namespace abc
+    {
+        
+        DLLModule loadPlugin(const std::string& name);
+        
+    }
 }
+
+#endif  // kafe_plugins_packager

@@ -18,6 +18,7 @@
 #include <variant>
 #include <exception>
 #include <stdexcept>
+#include <functional>
 
 namespace kafe
 {
@@ -25,14 +26,12 @@ namespace kafe
     class RefVar
     {
     private:
-        Value& m_v;
+        std::reference_wrapper<Value> m_v;
         
     public:
         RefVar() = delete;
         RefVar(Value&);
         ~RefVar();
-        RefVar(const RefVar&);
-        RefVar(RefVar&&);
         
         RefVar& operator=(RefVar&&);
 

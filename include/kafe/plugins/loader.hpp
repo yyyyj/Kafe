@@ -16,12 +16,20 @@
 #if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
     #define RUNNING_WIN
     #include <Windows.h>
+    #define LOAD_MY_DLL(my_dll, path) if (NULL == (my_dll = LoadLibrary(path))) \
+            { throw std::system_error(std::error_code(::GetLastError(), std::system_category()), "Couldn't load the library"); }
+    #define LOAD_FCT_FROM_DLL_WITH_TYPE(proc_name, my_dll, type)  if (NULL == (proc_name = reinterpret_cast<type>(GetProcAddress(my_dll, #proc_name)))) \
+            { throw std::system_error(std::error_code(::GetLastError(), std::system_category()), std::string("Couldn't find ") + #proc_name); }
 #endif // defined
 
 #if defined(__unix__) || defined(__linux__) || defined(__APPLE__) && defined(__MACH__)
     // linux, unix and apple systems should be recognized this way
     #define RUNNING_POSIX
     #include <dlfcn.h>
+    #define LOAD_MY_DLL(my_dll, path) if (NULL == (my_dll = dlopen(path, RTLD_LAZY))) \
+            { throw std::system_error(std::error_code(errno, std::system_category()), "Couldn't load the library"); }
+    #define LOAD_FCT_FROM_DLL_WITH_TYPE(proc_name, my_dll, type)  if (NULL == (proc_name = reinterpret_cast<type>(dlsym(my_dll, #proc_name)))) \
+            { throw std::system_error(std::error_code(errno, std::system_category()), std::string("Couldn't find ") + #proc_name); }
 #endif // defined
 
 #if !defined(RUNNING_WIN) && !defined(RUNNING_POSIX)
@@ -40,7 +48,6 @@ namespace kafe
         class DLLModule
         {
         private:
-            typedef void(*FNDOSMTH)(void);
             typedef const char* (*FNGETNAME)(void);
             typedef long(*FNGETVERSION)(void);
 
@@ -61,7 +68,6 @@ namespace kafe
             void load(const std::string& path);
             void unload();
 
-            FNDOSMTH doSomething;
             FNGETNAME getName;
             FNGETVERSION getVersion;
             FNGETVERSION requiredKafeAPI;

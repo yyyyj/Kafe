@@ -51,34 +51,12 @@ namespace kafe
             if (m_loaded)
                 unload();
             m_path = path;
-
-#ifdef RUNNING_WIN
-            if (NULL == (m_hInstance = LoadLibrary(m_path.c_str())))
-                throw std::system_error(std::error_code(::GetLastError(), std::system_category()), "Couldn't load the library");
-
-            if (NULL == (doSomething = reinterpret_cast<FNDOSMTH>(GetProcAddress(m_hInstance, "doSomething"))))
-                throw std::system_error(std::error_code(::GetLastError(), std::system_category()), "Couldn't find doSomething");
-            if (NULL == (getName = reinterpret_cast<FNGETNAME>(GetProcAddress(m_hInstance, "getName"))))
-                throw std::system_error(std::error_code(::GetLastError(), std::system_category()), "Couldn't find getName");
-            if (NULL == (getVersion = reinterpret_cast<FNGETVERSION>(GetProcAddress(m_hInstance, "getVersion"))))
-                throw std::system_error(std::error_code(::GetLastError(), std::system_category()), "Couldn't find getVersion");
-            if (NULL == (requiredKafeAPI = reinterpret_cast<FNGETVERSION>(GetProcAddress(m_hInstance, "requiredKafeAPI"))))
-                throw std::system_error(std::error_code(::GetLastError(), std::system_category()), "Couldn't find requiredKafeAPI");
-#endif // RUNNING_WIN
-
-#ifdef RUNNING_POSIX
-            if (NULL == (m_hInstance = dlopen(m_path.c_str(), RTLD_LAZY)))
-                throw std::system_error(std::error_code(errno, std::system_category()), "Couldn't load the library");
-
-            if (NULL == (doSomething = reinterpret_cast<FNDOSMTH>(dlsym(m_hInstance, "doSomething"))))
-                throw std::system_error(std::error_code(errno, std::system_category()), "Couldn't find doSomething");
-            if (NULL == (getName = reinterpret_cast<FNGETNAME>(dlsym(m_hInstance, "getName"))))
-                throw std::system_error(std::error_code(errno, std::system_category()), "Couldn't find getName");
-            if (NULL == (getVersion = reinterpret_cast<FNGETVERSION>(dlsym(m_hInstance, "getVersion"))))
-                throw std::system_error(std::error_code(errno, std::system_category()), "Couldn't find getVersion");
-            if (NULL == (requiredKafeAPI = reinterpret_cast<FNGETVERSION>(dlsym(m_hInstance, "requiredKafeAPI"))))
-                throw std::system_error(std::error_code(errno, std::system_category()), "Couldn't find requiredKafeAPI");
-#endif // RUNNING_POSIX
+            
+            LOAD_MY_DLL(m_hInstance, m_path.c_str())
+            
+            LOAD_FCT_FROM_DLL_WITH_TYPE(getName, m_hInstance, FNGETNAME)
+            LOAD_FCT_FROM_DLL_WITH_TYPE(getVersion, m_hInstance, FNGETVERSION)
+            LOAD_FCT_FROM_DLL_WITH_TYPE(requiredKafeAPI, m_hInstance, FNGETVERSION)
 
             m_loaded = true;
         }
